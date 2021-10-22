@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Worlds>
+
+	<!-- Includes -->
+	<Include file="adworlds.xml"/>
+
+	<World id="50000">
+		<Scenes>
+			<Scene id="50000"> 
+				<Attributes>
+				</Attributes>
+				<Conexions>
+				</Conexions>
+				<Maps>
+					<Map id="50000" file="maps/map.tmx"/>
+				</Maps>
+				<Entities>  
+					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
+				</Entities>
+			</Scene>
+		</Scenes>
+		<Attributes>
+		</Attributes>
+	</World>
+  
+</Worlds>

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Maps>
+
+	<!-- Includes -->
+	<Include file="admaps.xml"/>
+
+  <Map id="50000" type="1" file="maps/map.tmx"/>
+
+</Maps>
