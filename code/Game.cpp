@@ -142,7 +142,7 @@ void PacManII::Game::setLevel (int l, int nP)
 	activeWorld () -> activeScene () -> setMap (dataGame ().levelDefinition (l).mapTypeId ());
 	activeWorld () -> initialize ();
 	dynamic_cast <PacManII::Map*> (activeWorld () -> activeScene () -> activeMap ()) -> 
-		setBallsEaten (levelBallsEaten (level ())); // sets the balls eaten of the level fixed above...
+		setBallsEatenStatus (levelBallsEaten (level ())); // sets the balls eaten of the level fixed above...
 
 	// To maintain the coherence with the conf inherited!
 	((PacManII::Game::Conf*) configuration ()) -> 
@@ -259,6 +259,24 @@ void PacManII::Game::removeScoreObjects ()
 }
 
 // ---
+void PacManII::Game::pauseGame ()
+{
+	QGAMES::AdvancedArcadeGame::pauseGame ();
+
+	// Stop the seconds...
+	loopCounter (_COUNTERSECONDS) -> stop ();
+}
+
+// ---
+void PacManII::Game::continueGame ()
+{
+	QGAMES::AdvancedArcadeGame::continueGame ();
+
+	// The seconds continue...
+	loopCounter (_COUNTERSECONDS) -> run ();
+}
+
+// ---
 void PacManII::Game::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __QGAMES_KEYBOARDEVENT__)
@@ -337,7 +355,7 @@ QGAMES::GameStateBuilder* PacManII::Game::createGameStateBuilder ()
 QGAMES::MapBuilder* PacManII::Game::createMapBuilder ()
 {
 	QGAMES::MapBuilder* result = new QGAMES::MapBuilder (parameter (__GAME_MAPSOBJECTSFILE__));
-	result -> addAddsOn (new PacManII::TMXMapBuilder ((QGAMES::Sprite2DBuilder*) formBuilder ()));
+	result -> addAddsOn (_tmxAddsOnMapBuilder = new PacManII::TMXMapBuilder ((QGAMES::Sprite2DBuilder*) formBuilder ()));
 
 	return (result);
 }

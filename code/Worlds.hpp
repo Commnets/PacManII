@@ -36,6 +36,16 @@ namespace PacManII
 		bool isBlinking () const;
 		void stopBlinking ();
 
+		/** To manage the ball status of the world. */
+		int maxNumberBallsToEat () const;
+		int numberBallsEaten () const;
+		std::string ballsEatenStatus () const;
+		void setBallsEatenStatus (const std::string& st);
+
+		/** To play the sire. */
+		void playSiren (bool f = false);
+		void stopSiren ();
+
 		virtual void initialize () override;
 		virtual void finalize () override;
 
@@ -55,7 +65,9 @@ namespace PacManII
 	};
 
 	/** Basic Scene of the game. 
-		Maps can be only PacManII ones. */
+		Maps can be only PacManII ones. 
+		The Scene has a siren in the background.
+		The rate of the siren goes up as the pacman has less ball to eat. */
 	class Scene final : public QGAMES::Scene
 	{
 		public:
@@ -68,8 +80,20 @@ namespace PacManII
 		bool isBlinking () const;
 		void stopBlinking ();
 
+		/** To manage the ball status of the scene. */
+		int maxNumberBallsToEat () const;
+		int numberBallsEaten () const;
+		std::string ballsEatenStatus () const;
+		void setBallsEatenStatus (const std::string& st);
+
+		/** The siren will be played when the actual rate changes or when it was force. */
+		void playSiren (bool f = false);
+		void stopSiren ();
+
 		virtual void initialize () override;
 		virtual void finalize () override;
+
+		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		private:
 		PacMan* _pacman;
@@ -78,6 +102,10 @@ namespace PacManII
 		Pinky* _pinky;
 		Clyde* _clyde;
 
+		// Implementation
+		/** The percetnage of the maze cleaned. */
+		QGAMES::bdata _percentageCleaned;
+		enum class SirenRate { _NORMAL = 0, _FAST = 1, _VERYFAST = 2 } _sirenRate;
 	};
 
 	/** Basic map of the game. 
@@ -98,8 +126,14 @@ namespace PacManII
 		void stopBlinking ();
 
 		/** To manage the ball status of the map. */
-		std::string ballsEaten () const;
-		void setBallsEaten (const std::string& st);
+		int maxNumberBallsToEat () const;
+		int numberBallsEaten () const;
+		std::string ballsEatenStatus () const;
+		void setBallsEatenStatus (const std::string& st);
+
+		/** The events comming from the layers observed are transmitted up. */ 
+		virtual void processEvent (const QGAMES::Event& evnt) override
+							{ notify (QGAMES::Event (evnt.code (), this, evnt.values ())); }
 	};
 
 	/** The most common well known pacman maze. */
@@ -162,6 +196,16 @@ namespace PacManII
 		void startBlinking (QGAMES::bdata bT, int nB);
 		bool isBlinking () const;
 		void stopBlinking ();
+
+		/** To manage the ball status of the layer. */
+		int maxNumberBallsToEat () const;
+		int numberBallsEaten () const;
+		std::string ballsEatenStatus () const;
+		void setBallsEatenStatus (const std::string& st);
+
+		/** The events comming from the tiles observed are transmitted up. */ 
+		virtual void processEvent (const QGAMES::Event& evnt) override
+							{ notify (QGAMES::Event (evnt.code (), this, evnt.values ())); }
 	};
 
 	/** Representing the limit tile. */
@@ -176,22 +220,32 @@ namespace PacManII
 		void setBright (bool b);
 	};
 
-	/** Representing the normal ball eaten by the player. */
-	class TileNormalBall final : public QGAMES::Tile
+	/** Representing all types of possible path. */
+	class TilePath : public QGAMES::Tile
 	{
 		public:
-		TileNormalBall (int id, QGAMES::Form* f, int nf, const QGAMES::TileProperties& p = QGAMES::TileProperties ())
-			: QGAMES::Tile (id, f, nf, __PACMANII_NORMALBALL__, p)
-							{ }
-	};
+		typedef enum { _EMPTY = 0, _BALL = 1, _POWERBALL = 2, _RIGHTLIMIT = 3, _LEFTLIMIT = 4 } Type;
 
-	/** Representing the power ball (in the corners) eaten by the player. */
-	class TilePowerBall final : public QGAMES::Tile
-	{
-		public:
-		TilePowerBall (int id, QGAMES::Form* f, int nf, const QGAMES::TileProperties& p = QGAMES::TileProperties ())
-			: QGAMES::Tile (id, f, nf, __PACMANII_POWERBALL__, p)
+		TilePath (int id, QGAMES::Form* f, int nf, Type t, const QGAMES::TileProperties& p = QGAMES::TileProperties ())
+			: QGAMES::Tile (id, f, nf, t, p),
+			  _type (t),
+			  _originalType (t)
 							{ }
+
+		/** To know and change th type. */
+		Type type () const
+							{ return (_type); }
+		bool alreadyEaten () const
+							{ return (canBeEaten () && _type == _EMPTY); } 
+		bool canBeEaten () const
+							{ return (_originalType == _BALL || _originalType == _POWERBALL); }
+		bool eaten ();
+
+		protected:
+		Type _type;
+
+		// Implementation
+		Type _originalType;
 	};
 }
 

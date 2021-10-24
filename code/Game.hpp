@@ -117,7 +117,8 @@ namespace PacManII
 			  _scoreCounter (nullptr),
 			  _playerName (nullptr),
 			  _showFPS (false), // Not to show by default...
-			  _detectCollisions (false) // Not detected by default...
+			  _detectCollisions (false), // Not detected by default...
+			  _tmxAddsOnMapBuilder (nullptr)
 							{ }
 
 		~Game ()
@@ -216,6 +217,9 @@ namespace PacManII
 		virtual void addScoreObjects () override;
 		virtual void removeScoreObjects () override;
 
+		virtual void pauseGame () override;
+		virtual void continueGame () override;
+
 		virtual bool drawGameBeforeState () const override
 							{ return (true); }
 
@@ -228,6 +232,11 @@ namespace PacManII
 			But it has to be invoked anyway before starting the game. 
 			It can be overloaded. */
 		virtual void initializeEntitiesAndWorlds ();
+
+		const TMXMapBuilder* tmxAddsOnMapBuilder () const
+							{ return (_tmxAddsOnMapBuilder); }
+		TMXMapBuilder* tmxAddsOnMapBuilder () 
+							{ return (_tmxAddsOnMapBuilder); }
 
 		private:
 		virtual QGAMES::TextBuilder* createTextBuilder () override
@@ -273,6 +282,8 @@ namespace PacManII
 		bool _showFPS;
 		/** To control whether it makes or nor sense to detect collisions. */
 		bool _detectCollisions;
+		/** A reference to the adds on to create the maps. */
+		TMXMapBuilder* _tmxAddsOnMapBuilder;
 	};
 }
 

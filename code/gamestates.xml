@@ -460,16 +460,7 @@
 	
 	<!-- This game state is used to play. 
 		 The controls are then managed by the user -->
-	<GameState id="50107" type="50081" name="113Just Playing" main="YES"> <!-- Type PLAY -->
-		<Nested>
-			<GameState id="501070" type="10010" name="Siren Background Sound" main="NO"> <!-- Type SOUND -->
-				<Attributes>
-					<Attribute id="SOUNDID" value="50007"/>
-					<Attribute id="CHANNELID" value="3"/> <!-- In the background of the scene -->
-				</Attributes>
-			</GameState>
-		</Nested>
-	</GameState>
+	<GameState id="50107" type="50081" name="113Just Playing" main="YES"/> <!-- Type PLAY -->
 	
 	<!-- This game state is used when the options of the game have to be shown -->
 	<GameState id="50200" type="50082" name="116OOptions When Playing" main="YES"/> <!-- Type OPTIONS WHEN PLAYING -->

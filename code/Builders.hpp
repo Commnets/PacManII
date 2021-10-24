@@ -222,12 +222,16 @@ namespace PacManII
 	};
 
 	/** The extension to create maps. */
-	class TMXMapBuilder : public QGAMES::TMXMapBuilderAddsOn
+	class TMXMapBuilder final : public QGAMES::TMXMapBuilderAddsOn
 	{
 		public:
-		TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
-			: QGAMES::TMXMapBuilderAddsOn (sB)
-							{ }
+		TMXMapBuilder (QGAMES::Sprite2DBuilder* sB);
+
+		/** To know the basic number of frame used to represent the empty path. */
+		int frameForEmptyPath () const
+							{ return (_TILESPATH [0]); }
+		int brightFrameFor (int nF) const;
+		int darkFrameFor (int nF) const;
 
 		protected:
 		virtual QGAMES::Tile* createTile (int id, QGAMES::Form* form, int nf, 
@@ -241,6 +245,15 @@ namespace PacManII
 			QGAMES::Map* m, const QGAMES::LayerProperties& oP = QGAMES::LayerProperties ()) override;
 		virtual QGAMES::Map* createMapObject (int id, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD,
 			const QGAMES::MapProperties& p = QGAMES::MapProperties ()) override;
+
+		private:
+		bool isInType (int nF, const std::vector <int>& t) const
+							{ return (std::find (t.begin (), t.end (), nF) != t.end ()); };
+		int positionInType (int nF, const std::vector <int>& t) const;
+
+		private:
+		std::vector <int> _TILESLIMITDARK, _TILESLIMITBRIGHT, 
+			_TILESPOWERBALL, _TILESNORMALBALL, _TILESPATH, _TILESPATHLIMITRIGHT, _TILESPATHLIMITLEFT;
 	};
 
 	/** The extension to create worlds. */

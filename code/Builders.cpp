@@ -341,9 +341,56 @@ QGAMES::Entity* PacManII::EntityBuilder::createEntity (const QGAMES::EntityBuild
 }
 
 // ---
+PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
+	: QGAMES::TMXMapBuilderAddsOn (sB),
+	  _TILESLIMITDARK ({ 0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,20,21,22,23,24,25,26 }),
+	  _TILESLIMITBRIGHT ({ 50,51,52,53,54,55,56,57,58,59,60,62,63,64,65,66,67,70,71,72,73,74,75,76 }),
+	  _TILESPOWERBALL ({ 27,28,57,58 }),
+	  _TILESNORMALBALL ({ 29,59 }),
+	  _TILESPATH ({ 11,61,18,19,68,69 }),
+	  _TILESPATHLIMITRIGHT ({ 30,31,32,33,34,35,36,37,38,39 }),
+	  _TILESPATHLIMITLEFT ({ 40,41,42,43,44,45,46,47,48,49})
+{
+	assert (_TILESLIMITBRIGHT.size () == _TILESLIMITDARK.size ());
+	// The have to have the same size to change between them...
+}
+
+// ---
+int PacManII::TMXMapBuilder::brightFrameFor (int nF) const
+{
+	int result = nF;
+
+	if (isInType (nF, _TILESLIMITDARK)) // If not, it can't change...
+		result = _TILESLIMITBRIGHT [positionInType (nF, _TILESLIMITDARK)];
+
+	return (result);
+}
+
+// ---
+int PacManII::TMXMapBuilder::darkFrameFor (int nF) const
+{
+	int result = nF;
+
+	if (isInType (nF, _TILESLIMITBRIGHT)) // If not, it can't chang...
+		result = _TILESLIMITDARK [positionInType (nF, _TILESLIMITBRIGHT)];
+
+	return (result);
+}
+
+// ---
 QGAMES::Tile* PacManII::TMXMapBuilder::createTile (int id, QGAMES::Form* form, int nf, const QGAMES::TileProperties& p)
 {
-	return (new PacManII::TileLimit (id, form, nf, p));
+	QGAMES::Tile* result = nullptr;
+
+	if (isInType (nf, _TILESLIMITDARK) || isInType (nf, _TILESLIMITBRIGHT)) result = new PacManII::TileLimit (id, form, nf, p);
+	else if (isInType (nf, _TILESPOWERBALL)) result = new PacManII::TilePath (id, form, nf, PacManII::TilePath::Type::_POWERBALL,	p);
+	else if (isInType (nf, _TILESNORMALBALL)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_BALL, p);
+	else if (isInType (nf, _TILESPATH)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_EMPTY, p);
+	else if (isInType (nf, _TILESPATHLIMITRIGHT)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_RIGHTLIMIT, p);
+	else if (isInType (nf, _TILESPATHLIMITLEFT)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_LEFTLIMIT, p);
+	else result = new QGAMES::NullTile (id); /// Just in case, but a well defined maze whould reach this point ever...
+
+	return (result);
 }
 
 // ---
@@ -357,14 +404,14 @@ QGAMES::TileLayer* PacManII::TMXMapBuilder::createTileLayer (int id, const std::
 QGAMES::ObjectLayer* PacManII::TMXMapBuilder::createObjectLayer (int id, const std::string& n, const QGAMES::Objects&, 
 	QGAMES::Map* m, const QGAMES::LayerProperties& oP)
 {
-	return (nullptr); // Not used in pacman II
+	return (nullptr); // Not used in Pacman II
 }
 
 // ---
 QGAMES::ImageLayer* PacManII::TMXMapBuilder::createImageLayer (int id, const std::string& n, QGAMES::Image* i, 
 	QGAMES::Map* m, const QGAMES::LayerProperties& oP)
 {
-	return (nullptr); // Not used in pacman II
+	return (nullptr); // Not used in Pacman II
 }
 
 // ---
@@ -372,6 +419,22 @@ QGAMES::Map* PacManII::TMXMapBuilder::createMapObject (int id, const QGAMES::Lay
 	int w, int h, int d, int tW, int tH, int tD, const QGAMES::MapProperties& p)
 {
 	return (new PacManII::StandardMap (id, l, w, h, d, tW, tH, tD, p));
+}
+
+// ---
+int PacManII::TMXMapBuilder::positionInType (int nF, const std::vector <int>& t) const
+{
+	assert (isInType (nF, t));
+
+	bool found = false;
+	int result = 0;
+	for (std::vector <int>::const_iterator i = t.begin (); i != t.end () && !found; i++)
+		if ((*i) != nF) result++; 
+		else found = true;
+
+	assert (found); // Not possible other result...
+
+	return (result);
 }
 
 // ---

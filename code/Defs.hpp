@@ -30,14 +30,16 @@
 #define __PACMANII_PACMANLIVESFORM__								50000
 
 // Sounds
-#define __PACMANII_SOUNDBEGINNING									50000
-#define __PACMANII_SOUNDCHOMP										50001
-#define __PACMANII_SOUNDDEATH										50002
-#define __PACMANII_SOUNDEATFRUIT									50003
-#define __PACMANII_SOUNDEATGHOST									50004
-#define __PACMANII_SOUNDEXTRAPAC									50005
-#define __PACMANII_SOUNDINTERMISSION								50006
-#define __PACMANII_SOUNDSIREN										50007
+#define __PACMANII_SOUNDBEGINNING__									50000
+#define __PACMANII_SOUNDCHOMP__										50001
+#define __PACMANII_SOUNDDEATH__										50002
+#define __PACMANII_SOUNDEATFRUIT__									50003
+#define __PACMANII_SOUNDEATGHOST__									50004
+#define __PACMANII_SOUNDEXTRAPAC__									50005
+#define __PACMANII_SOUNDINTERMISSION__								50006
+#define __PACMANII_SOUNDSIREN__										50007
+#define __PACMANII_SOUNDSIRENFAST__									50007
+#define __PACMANII_SOUNDSIRENVERYFAST__								50007
 
 // Letters
 #define __PACMANII_NEWTOURLETTERS__									60000
@@ -188,6 +190,8 @@
 // Related with the situation of the pacman...
 #define __PACMANII_PACMANDESTROYED__								50100
 #define __PACMANII_PACMANREACHEDGOAL__								50101
+// A ball has been eaten...
+#define __PACMANII_BALLEATEN__										50200
 
 // The World and Scenes used for the game
 #define __PACMANII_WORLD__											50000
@@ -195,8 +199,7 @@
 #define __PACMANII_BASICMAP__										50000
 // The types of tiles in pacman: either a limit, a normal ball or power...
 #define __PACMANII_LIMITTILE__										50000
-#define __PACMANII_NORMALBALL__										50001
-#define __PACMANII_POWERBALL__										50002
+#define __PACMANII_PATH__											50001
 
 #endif
   

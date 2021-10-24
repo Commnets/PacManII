@@ -92,7 +92,7 @@ void PacManII::World::startBlinking (QGAMES::bdata bT, int nB)
 // ---
 bool PacManII::World::isBlinking () const
 {
-	// Only ober the active scene if any...
+	// Only over the active scene if any...
 	const PacManII::Scene* scn = dynamic_cast <const PacManII::Scene*> (activeScene ());
 	return ((scn != nullptr) ? scn -> isBlinking () : false);
 }
@@ -100,10 +100,61 @@ bool PacManII::World::isBlinking () const
 // ---
 void PacManII::World::stopBlinking ()
 {
-	// Only ober the active scene if any...
+	// Only over the active scene if any...
 	PacManII::Scene* scn = nullptr;
 	if ((scn = dynamic_cast <PacManII::Scene*> (activeScene ())) != nullptr)
 		scn -> stopBlinking ();
+}
+
+// ---
+int PacManII::World::maxNumberBallsToEat () const
+{
+	// Only over the active scene if any...
+	const PacManII::Scene* scn = dynamic_cast <const PacManII::Scene*> (activeScene ());
+	return ((scn != nullptr) ? scn -> maxNumberBallsToEat () : 0);
+}
+
+// ---
+int PacManII::World::numberBallsEaten () const
+{
+	// Only over the active scene if any...
+	const PacManII::Scene* scn = dynamic_cast <const PacManII::Scene*> (activeScene ());
+	return ((scn != nullptr) ? scn -> numberBallsEaten () : 0);
+}
+
+// ---
+std::string PacManII::World::ballsEatenStatus () const
+{
+	// Only over the active scene if any...
+	const PacManII::Scene* scn = dynamic_cast <const PacManII::Scene*> (activeScene ());
+	return ((scn != nullptr) ? scn -> ballsEatenStatus () : std::string (__NULL_STRING__));
+}
+
+// ---
+void PacManII::World::setBallsEatenStatus (const std::string& st)
+{
+	// Only over the active scene if any...
+	PacManII::Scene* scn = nullptr;
+	if ((scn = dynamic_cast <PacManII::Scene*> (activeScene ())) != nullptr)
+		scn -> setBallsEatenStatus (st);
+}
+
+// ---
+void PacManII::World::playSiren (bool f)
+{
+	// Only over the active scene if any...
+	PacManII::Scene* scn = nullptr;
+	if ((scn = dynamic_cast <PacManII::Scene*> (activeScene ())) != nullptr)
+		scn -> playSiren (f);
+}
+
+// ---
+void PacManII::World::stopSiren ()
+{
+	// Only over the active scene if any...
+	PacManII::Scene* scn = nullptr;
+	if ((scn = dynamic_cast <PacManII::Scene*> (activeScene ())) != nullptr)
+		scn -> stopSiren ();
 }
 
 // ---
@@ -167,7 +218,8 @@ PacManII::Scene::Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Conne
 		const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
 	: QGAMES::Scene (c, m, cn, p, ePL),
 	  _pacman (nullptr),
-	  _inky (nullptr), _blinky (nullptr), _pinky (nullptr), _clyde (nullptr)
+	  _inky (nullptr), _blinky (nullptr), _pinky (nullptr), _clyde (nullptr),
+	  _percentageCleaned (__BD 0)
 {
 #ifndef NDEBUG
 	for (auto i : maps ())
@@ -178,7 +230,7 @@ PacManII::Scene::Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Conne
 // ---
 void PacManII::Scene::startBlinking (QGAMES::bdata bT, int nB)
 {
-	// Only ober the actve map if any...
+	// Only over the actve map if any...
 	PacManII::Map* mp = nullptr;
 	if ((mp = dynamic_cast <PacManII::Map*> (activeMap ())) != nullptr)
 		mp -> startBlinking (bT, nB);
@@ -187,7 +239,7 @@ void PacManII::Scene::startBlinking (QGAMES::bdata bT, int nB)
 // ---
 bool PacManII::Scene::isBlinking () const
 {
-	// Only ober the actve map if any...
+	// Only over the actve map if any...
 	const PacManII::Map* mp = dynamic_cast <const PacManII::Map*> (activeMap ());
 	return ((mp != nullptr) ? mp -> isBlinking () : false);
 }
@@ -195,10 +247,63 @@ bool PacManII::Scene::isBlinking () const
 // ---
 void PacManII::Scene::stopBlinking ()
 {
-	// Only ober the actve map if any...
+	// Only over the actve map if any...
 	PacManII::Map* mp = nullptr;
 	if ((mp = dynamic_cast <PacManII::Map*> (activeMap ())) != nullptr)
 		mp -> stopBlinking ();
+}
+
+// ---
+int PacManII::Scene::maxNumberBallsToEat () const
+{
+	// Only over the actve map if any...
+	const PacManII::Map* mp = dynamic_cast <const PacManII::Map*> (activeMap ());
+	return ((mp != nullptr) ? mp -> maxNumberBallsToEat () : 0);
+}
+
+// ---
+int PacManII::Scene::numberBallsEaten () const
+{
+	// Only over the actve map if any...
+	const PacManII::Map* mp = dynamic_cast <const PacManII::Map*> (activeMap ());
+	return ((mp != nullptr) ? mp -> numberBallsEaten () : 0);
+}
+
+// ---
+std::string PacManII::Scene::ballsEatenStatus () const
+{
+	// Only over the actve map if any...
+	const PacManII::Map* mp = dynamic_cast <const PacManII::Map*> (activeMap ());
+	return ((mp != nullptr) ? mp -> ballsEatenStatus () : std::string (__NULL_STRING__));
+}
+
+// ---
+void PacManII::Scene::setBallsEatenStatus (const std::string& st)
+{
+	// Only over the actve map if any...
+	PacManII::Map* mp = nullptr;
+	if ((mp = dynamic_cast <PacManII::Map*> (activeMap ())) != nullptr)
+		mp -> setBallsEatenStatus (st);
+}
+
+// ---
+void PacManII::Scene::playSiren (bool f)
+{ 
+	SirenRate sR = SirenRate::_NORMAL;
+	if (_percentageCleaned > 30 && _percentageCleaned < 60) sR = SirenRate::_FAST;
+	if (_percentageCleaned > 60) sR = SirenRate::_VERYFAST;
+	if (sR != _sirenRate || f)
+	{
+		_sirenRate = sR;
+
+		game () -> sound (__PACMANII_SOUNDSIREN__ + static_cast <int> (sR)) -> play (__QGAMES_BACKGROUNDSOUNDCHANNEL__); 
+	}
+}
+
+// ---
+void PacManII::Scene::stopSiren ()
+{
+	QGAMES::SoundSystem::system () -> pauseChannel (__QGAMES_BACKGROUNDSOUNDCHANNEL__);
 }
 
 // ---
@@ -239,6 +344,8 @@ void PacManII::Scene::initialize ()
 		QGAMES::Vector (__BD (_pinky -> visualLength () >> 1), __BD (_pinky -> visualHeight () >> 1), __BD 0));
 	_clyde -> setPosition (aM -> monsterInitialPosition (3) - 
 		QGAMES::Vector (__BD (_clyde -> visualLength () >> 1), __BD (_clyde -> visualHeight () >> 1), __BD 0));
+
+	_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
 }
 
 // ---
@@ -256,7 +363,20 @@ void PacManII::Scene::finalize ()
 	_inky = nullptr; 
 	_blinky = nullptr;
 	_pinky = nullptr;
-	_clyde = nullptr; 
+	_clyde = nullptr;
+}
+
+// ---
+void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
+{
+	if (evnt.code () == __PACMANII_BALLEATEN__)
+	{
+		game () -> sound (__PACMANII_SOUNDCHOMP__) -> play (-1); // Chomp...
+
+		_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
+	}
+	else
+		notify (QGAMES::Event (evnt.code (), this, evnt.values ()));
 }
 
 // ---
@@ -305,15 +425,60 @@ void PacManII::Map::stopBlinking ()
 }
 
 // ---
-std::string PacManII::Map::ballsEaten () const
+int PacManII::Map::maxNumberBallsToEat () const
 {
-	return (std::string (__NULL_STRING__));
+	int result = 0;
+	for (auto i : layers ())
+	{
+		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
+		result += (tL != nullptr) ? tL -> maxNumberBallsToEat () : 0;
+	}
+
+	return (result);
 }
 
 // ---
-void PacManII::Map::setBallsEaten (const std::string& st)
+int PacManII::Map::numberBallsEaten () const
 {
-	// TODO
+	int result = 0;
+	for (auto i : layers ())
+	{
+		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
+		result += (tL != nullptr) ? tL -> numberBallsEaten () : 0;
+	}
+
+	return (result);
+
+}
+
+// ---
+std::string PacManII::Map::ballsEatenStatus () const
+{
+	std::string result (__NULL_STRING__);
+	for (auto i : layers ())
+	{
+		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
+		result += ((tL != nullptr) ? tL -> ballsEatenStatus () : std::string (__NULL_STRING__)) + std::string ("@"); // @ to separate
+	}
+
+	return (result);
+}
+
+// ---
+void PacManII::Map::setBallsEatenStatus (const std::string& st)
+{
+	if (st == std::string (__NULL_STRING__))
+		return;
+
+	std::string stC = st;
+	for (auto i : layers ())
+	{
+		PacManII::TileLayer* tL = dynamic_cast <PacManII::TileLayer*> (i);
+		assert (st.find ('@') != -1); // One per tile layer...mandatory
+		stC = stC.substr (0, stC.find ('@', 0));
+		if (tL != nullptr)
+			tL -> setBallsEatenStatus (stC);
+	}
 }
 
 // ---
@@ -340,9 +505,16 @@ PacManII::TileLayer::TileLayer (int c, const std::string& n, const QGAMES::Tiles
 	for (auto i : tiles ())
 		assert (dynamic_cast <QGAMES::NullTile*> (i) != nullptr ||
 				dynamic_cast <PacManII::TileLimit*> (i) != nullptr ||
-				dynamic_cast <PacManII::TileNormalBall*> (i) != nullptr ||
-				dynamic_cast <PacManII::TilePowerBall*> (i) != nullptr);
+				dynamic_cast <PacManII::TilePath*> (i) != nullptr);
 #endif
+
+	// Only the tiles type path are observed if they can be eaten...
+	for (auto i : tiles ())
+	{
+		PacManII::TilePath* tP = dynamic_cast <PacManII::TilePath*> (i);
+		if (tP != nullptr && tP -> canBeEaten ())
+			observe (i); // The observation stops when the layer is destroyed, if any...
+	}
 }
 
 // ---
@@ -422,11 +594,85 @@ void PacManII::TileLayer::stopBlinking ()
 }
 
 // ---
+int PacManII::TileLayer::maxNumberBallsToEat () const
+{
+	int result = 0;
+	for (auto i : tiles ())
+	{
+		const PacManII::TilePath* tl = dynamic_cast <const PacManII::TilePath*> (i); 
+		if (tl != nullptr && tl -> canBeEaten ())
+			result++;
+	}
+
+	return (result);
+}
+
+// ---
+int PacManII::TileLayer::numberBallsEaten () const
+{
+	int result = 0;
+	for (auto i : tiles ())
+	{
+		const PacManII::TilePath* tl = dynamic_cast <const PacManII::TilePath*> (i); 
+		if (tl != nullptr && tl -> alreadyEaten ())
+			result++;
+	}
+
+	return (result);
+}
+
+// ---
+std::string PacManII::TileLayer::ballsEatenStatus () const
+{
+	std::string result (__NULL_STRING__);
+
+	for (auto i : tiles ())
+	{
+		const PacManII::TilePath* tl = dynamic_cast <const PacManII::TilePath*> (i);
+		result += std::to_string ((int) tl -> type ());
+	}
+
+	return (result);
+}
+
+// ---
+void PacManII::TileLayer::setBallsEatenStatus (const std::string& st)
+{
+}
+
+// ---
 void PacManII::TileLimit::setBright (bool b)
 {
-	if (b && numberFrame () < 30)
-		setForm (form (), numberFrame () + 50);
-	else 
-	if (!b && numberFrame () >= 50)
-		setForm (form (), numberFrame () - 50);
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g); // It can only be made within a PacManII game, that it should be the case...
+	PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB); // Just in case...
+	// Reley in the builder to determine the equivalent frame...
+
+	setForm (form (), 
+		(b) ? mB -> brightFrameFor (numberFrame ()) : mB -> darkFrameFor (numberFrame ()));
+}
+
+// ---
+bool PacManII::TilePath::eaten ()
+{ 
+	bool result = false;
+
+	if (canBeEaten () && 
+		_type != PacManII::TilePath::Type::_EMPTY) // Only if it is possible...
+	{
+		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+		assert (g); // It can only be made within a PacManII game, that it should be the case...
+		PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+		assert (mB); // Just in case...
+
+		_type = PacManII::TilePath::Type::_EMPTY; // No more
+		setForm (form (), mB -> frameForEmptyPath ());
+
+		notify (QGAMES::Event (__PACMANII_BALLEATEN__, this));
+
+		result = true;
+	}
+
+	return (result);
 }

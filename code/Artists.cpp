@@ -74,8 +74,8 @@ void PacManII::PacMan::updatePositions ()
 	PacManII::Artist::updatePositions ();
 
 	if (_counter++ == 400)
-//		notify (QGAMES::Event (__1IN2PROBABLE__ ? __PACMANII_PACMANREACHEDGOAL__ : __PACMANII_PACMANDESTROYED__, this));
-		notify (QGAMES::Event (__PACMANII_PACMANDESTROYED__, this));
+		notify (QGAMES::Event (__1IN2PROBABLE__ ? __PACMANII_PACMANREACHEDGOAL__ : __PACMANII_PACMANDESTROYED__, this));
+//		notify (QGAMES::Event (__PACMANII_PACMANDESTROYED__, this));
 //		notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, this));
 
 	setScore (score () + 1);

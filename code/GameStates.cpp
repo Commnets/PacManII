@@ -506,6 +506,11 @@ void PacManII::PlayingGameState::onEnter ()
 	// That number of seconds is kept in the configuration object of the game, 
 	// and it is set to 0 when that object is instatiated first time or cleaned (@see @adjustPlayers in PacManII::Game)
 	observe (g -> loopCounter (PacManII::Game::_COUNTERSECONDS));
+
+	// Starts to play the siren...
+	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
+	assert (w);
+	w -> playSiren (true /** forced */);
 }
 
 // ---
@@ -523,6 +528,11 @@ void PacManII::PlayingGameState::onExit ()
 	unObserve (_pacman);
 
 	_pacman = nullptr;
+
+	// No more siren...
+	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
+	assert (w);
+	w -> stopSiren ();
 }
 
 // ---
