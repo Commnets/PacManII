@@ -157,8 +157,9 @@ namespace PacManII
 
 		constexpr DataGame& operator = (const DataGame& d) = default;
 
+		/** Parameter starts in 1. */
 		constexpr const LevelDefinition& levelDefinition (int lD) const
-							{ return (_levels [lD]); }
+							{ return (_levels [lD - 1]); }
 
 		constexpr const int numberLevels () const
 							{ return (__PACMANII_MAXNUMBERLEVELS__); }

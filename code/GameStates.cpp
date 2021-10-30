@@ -390,6 +390,8 @@ void PacManII::PlayingControlGameState::onEnter ()
 
 	// This instruction sets the world and the scene accoinding to the level defined in DataGame
 	g -> setLevel (g -> level ());
+	// ...and here we increment numbere of times the player tries this level...
+	g -> setTriesOnLevel (g -> level (), g -> triesOnLevel (g -> level ()) + 1);
 
 	g -> setSeconds (0);
 
@@ -428,6 +430,16 @@ int PacManII::PlayingControlGameState::circunstanceWhen (QGAMES::GameState* st, 
 	{
 		switch (st -> type ())
 		{
+			case __PACMNAII_SHOWINGTHELEVELGAMESTATE__:
+				{
+					PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+					assert (g);
+
+					result = (g -> triesOnLevel (g -> level ()) == 1) ? 0 : 1;
+				}
+
+				break;
+
 			case __PACMANII_PLAYINGGAMESTATE__:
 				{
 					PacManII::PlayingGameState* gS = dynamic_cast <PacManII::PlayingGameState*> (st);

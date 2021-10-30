@@ -11,7 +11,9 @@ PacManII::Game::Conf::Conf (int nP, int mL, int dL)
 	  _score (), 
 	  _playerSeconds (),
 	  _level (),
-	  _levelCompleted ()
+	  _levelCompleted (),
+	  _triesOnLevel (),
+	  _levelBallsEaten ()
 { 
 	assert (_numberPlayers > 0);
 	assert (_maxLives > 1);
@@ -47,6 +49,7 @@ void PacManII::Game::Conf::adjustToPlayers (int nP)
 	_playerSeconds = std::vector <int> (nP, 0);
 	_level = std::vector <int> (nP, _defaultLevel); 
 	_levelCompleted = std::vector <std::map <int, bool>> (nP, std::map <int, bool> ());
+	_triesOnLevel = std::vector <std::map <int, int>> (nP, std::map <int, int> ());
 	_levelBallsEaten = std::vector <std::map <int, std::string>> (nP, std::map <int, std::string> ()); 
 	// no ball in none level eaten so far
 
@@ -80,6 +83,14 @@ void PacManII::Game::Conf::cfgToStream (std::ostringstream& oS)
 		oS << _levelCompleted [i].size () << std::endl;
 		for (std::map <int, bool>::const_iterator j = _levelCompleted [i].begin (); 
 				j != _levelCompleted [i].end (); j++)
+			oS << (*j).first << std::endl << (*j).second << std::endl;
+	}
+	
+	for (int i = 0; i < _numberPlayers; i++)
+	{
+		oS << _triesOnLevel [i].size () << std::endl;
+		for (std::map <int, int>::const_iterator j = _triesOnLevel [i].begin (); 
+				j != _triesOnLevel [i].end (); j++)
 			oS << (*j).first << std::endl << (*j).second << std::endl;
 	}
 	
@@ -122,6 +133,18 @@ void PacManII::Game::Conf::cfgFromStream (std::istringstream& iS)
 		}
 	}
 	
+	_triesOnLevel.resize (_numberPlayers);
+	int nT;
+	for (int i = 0; i < _numberPlayers; i++)
+	{
+		iS >> nE;
+		for (int j = 0; j < nE; j++)
+		{
+			iS >> nSC; iS >> nT;
+			_triesOnLevel [i][nSC] = nT;
+		}
+	}
+	
 	_levelBallsEaten.resize (_numberPlayers);
 	for (int i = 0; i < _numberPlayers; i++)
 	{
@@ -145,10 +168,9 @@ void PacManII::Game::setLevel (int l, int nP)
 		setBallsEatenStatus (levelBallsEaten (level ())); // sets the balls eaten of the level fixed above...
 
 	// To maintain the coherence with the conf inherited!
-	((PacManII::Game::Conf*) configuration ()) -> 
-		setCurrentWorld ((nP == -1) ? currentPlayer () : nP, activeWorld () -> id ());
-	((PacManII::Game::Conf*) configuration ()) -> 
-		setCurrentScene ((nP == -1) ? currentPlayer () : nP, activeWorld () -> activeScene () -> id ());
+	// Here the configuracion method is invoked instead to avoid recursive!
+	setCurrentWorld (activeWorld () -> id (), nP);
+	setCurrentScene (activeWorld () -> activeScene () -> id (), nP);
 	((PacManII::Game::Conf*) configuration ()) -> setLevel ((nP == -1) ? currentPlayer () : nP, l);
 }
 

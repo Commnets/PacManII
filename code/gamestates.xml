@@ -393,9 +393,10 @@
 				 It could be just to start to play or whether to show the name of the world and sceme and counting down first -->
 			<FlowCondition on="50101" when="0" to="50102"/> <!-- After starting the game the name of the level must be shown -->
 			<FlowCondition on="50101" when="1" to="50107"/> <!-- After starting the game control is handed over the player -->
-			<FlowCondition on="50102" when="0" to="50105"/> <!-- After the number of the level... starting -->
-			<FlowCondition on="50105" when="0" to="50107"/> <!-- After starting...the control to the player -->
-			<FlowCondition on="50107" when="0" to="50113"/> <!-- When playing stops because the pacman has died, then stop a while -->
+			<FlowCondition on="50102" when="0" to="50105"/> <!-- After the number of the level... Get ready!, (only if first time in the level) -->
+			<FlowCondition on="50102" when="1" to="50107"/> <!-- After the number of the level... the control to the playere!, (If it is not the first time in the level) -->
+			<FlowCondition on="50105" when="0" to="50107"/> <!-- After Get ready...the control to the player -->
+			<FlowCondition on="50107" when="0" to="50113"/> <!-- When playing stops because the pacman has died, then stops a while -->
 			<FlowCondition on="50107" when="1" to="50112"/> <!-- When playing stops because the pacman has reached the goal, wait a while -->
 			<FlowCondition on="50107" when="2" to="50200"/> <!-- When playing stops because the pacman is asking for options -->
 			<FlowCondition on="50113" when="0" to="50109"/> <!-- After waiting when dieing starts back if possible -->

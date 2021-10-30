@@ -81,6 +81,13 @@ namespace PacManII
 			void setLevelCompleted (int nP, int nL, bool c = true)
 							{ assert (nP > 0 && nP <= (int) _levelCompleted.size ());
 							  _levelCompleted [nP - 1][nL] = c; }
+			int triesOnLevel (int nP, int nL) const
+							{ assert (nP > 0 && nP <= (int) _triesOnLevel.size ());
+							  std::map <int, int>::const_iterator i = _triesOnLevel [nP - 1].find (nL);
+							  return ((i != _triesOnLevel [nP - 1].end ()) ? (*i).second : 0); }
+			void setTriesOnLevel (int nP, int nL, int nT)
+							{ assert (nP > 0 && nP <= (int) _triesOnLevel.size ());
+							  _triesOnLevel [nP - 1][nL] = nT; }
 			std::string levelBallsEaten (int nP, int nL) const // ...necessary to know which balls have already been aeaten in this level
 							{ assert (nP > 0 && nP <= (int) _levelBallsEaten.size ());
 							  std::map <int, std::string>::const_iterator i = _levelBallsEaten [nP - 1].find (nL);
@@ -106,6 +113,7 @@ namespace PacManII
 			std::vector <int> _playerSeconds;
 			std::vector <int> _level;
 			std::vector <std::map <int, bool>> _levelCompleted;
+			std::vector <std::map <int, int>> _triesOnLevel;
 			std::vector <std::map <int, std::string>> _levelBallsEaten;
 		};
 
@@ -171,7 +179,7 @@ namespace PacManII
 		const DataGame::LevelDefinition& levelDefinition (int nL = -1) const
 							{ return (_theDataGame.levelDefinition ((nL == -1) ? level () : nL)); }
 
-		/** Managing the levels totally completed. */
+		/** Managing the levels totally or parcially completed. */
 		bool levelCompleted (int nL, int nP = -1) const
 							{ return (((Conf*) configuration ()) -> 
 								levelCompleted ((nP == -1) ? currentPlayer () : nP, nL)); }
@@ -180,6 +188,12 @@ namespace PacManII
 								setLevelCompleted ((nP == -1) ? currentPlayer () : nP, nL, c); }
 		bool stopsAfterCurrentLevel () const;
 		bool isCurrentLevelLast () const;
+		int triesOnLevel (int nL, int nP = -1) const
+							{ return (((Conf*) configuration ()) -> 
+								triesOnLevel ((nP == -1) ? currentPlayer () : nP, nL)); }
+		void setTriesOnLevel (int nL, int nT, int nP = -1)
+							{ ((Conf*) configuration ()) -> 
+								setTriesOnLevel ((nP == -1) ? currentPlayer () : nP, nL, nT); }
 
 		/** Managing the ball status per level.
 				In this string the cell (number) with a ball already eaten will appear! */
