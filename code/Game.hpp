@@ -25,11 +25,12 @@
 
 namespace PacManII
 {
-	/** The game class. */
-	class Game final : public QGAMES::AdvancedArcadeGame
+	/** The game class.
+		It is not a final class, because the game can be expanded later. */
+	class Game : public QGAMES::AdvancedArcadeGame
 	{
 		public:
-		class Conf final : public QGAMES::AdvancedArcadeGame::Conf
+		class Conf : public QGAMES::AdvancedArcadeGame::Conf
 		{
 			public:
 			Conf (int nP, int mL, int dL);
@@ -234,35 +235,36 @@ namespace PacManII
 		virtual void pauseGame () override;
 		virtual void continueGame () override;
 
-		virtual bool drawGameBeforeState () const override
+		virtual bool drawGameBeforeState () const final override /** Can't be overrided later. */
 							{ return (true); }
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		virtual void detectCollisions () override;
+		virtual void detectCollisions () final override; /** Can be overrided later */
 
 		/** To initilize the entities used by the game and the worlds. 
 			It has to be invoked from the InitializePacManIIGameState o directly. 
 			But it has to be invoked anyway before starting the game. 
-			It can be overloaded. */
-		virtual void initializeEntitiesAndWorlds ();
+			It can't be overloaded later. */
+		virtual void initializeEntitiesAndWorlds () final;
 
 		const TMXMapBuilder* tmxAddsOnMapBuilder () const
 							{ return (_tmxAddsOnMapBuilder); }
 		TMXMapBuilder* tmxAddsOnMapBuilder () 
 							{ return (_tmxAddsOnMapBuilder); }
 
-		private:
-		virtual QGAMES::TextBuilder* createTextBuilder () override
+		protected:
+		/** The core builder of pacman can't be overloaded later. */
+		virtual QGAMES::TextBuilder* createTextBuilder () final override
 							{ return (new TextBuilder ()); }
-		virtual QGAMES::GUISystemBuilder* createGUISystemBuilder ()
+		virtual QGAMES::GUISystemBuilder* createGUISystemBuilder () final override
 							{ return (new GUISystemBuilder (game () -> parameter (__GAME_PROPERTYGUISYSTEMFILE__), 
 								game () -> formBuilder ())); }
-		virtual QGAMES::GameStateBuilder* createGameStateBuilder ();
+		virtual QGAMES::GameStateBuilder* createGameStateBuilder () override;
 		virtual QGAMES::EntityBuilder* createEntityBuilder () override
 							{ return (new EntityBuilder (parameter (__GAME_PROPERTYENTITIESFILE__), 
 									formBuilder (), movementBuilder ())); }
-		virtual QGAMES::MovementBuilder* createMovementBuilder () override
+		virtual QGAMES::MovementBuilder* createMovementBuilder () final override
 							{ return (new MovementBuilder (parameter (__GAME_PROPERTYMOVEMENTSFILE__))); }
 		virtual QGAMES::MapBuilder* createMapBuilder () override;
 		virtual QGAMES::WorldBuilder* createWorldBuilder () override
@@ -274,10 +276,10 @@ namespace PacManII
 
 		virtual Configuration* createConfiguration () override;
 
-		virtual QGAMES::InputHandler* createInputHandler () override
+		virtual QGAMES::InputHandler* createInputHandler () final override
 							{ return (implementation () -> createInputHandler (new PacManII::InputHandlerBehaviour ())); }
 
-		virtual std::string defaultParameter (const std::string& p) const override;
+		virtual std::string defaultParameter (const std::string& p) const final override;
 
 		virtual void initialize () override;
 		virtual void finalize () override;

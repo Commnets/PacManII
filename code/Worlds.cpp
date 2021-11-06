@@ -15,7 +15,7 @@ PacManII::World::World (int c, const QGAMES::Scenes& s, const QGAMES::WorldPrope
 QGAMES::SetOfOpenValues PacManII::World::runtimeValues () const
 { 
 	const PacManII::Game* dG = dynamic_cast <const PacManII::Game*> (game ());
-	assert (dG); // Just in case...
+	assert (dG != nullptr); // Just in case...
 
 	// Remember that world's runtime values are kept per player
 	// Remember also that the runtime info of the characters and entities of a scene are not saved
@@ -163,9 +163,9 @@ void PacManII::World::initialize ()
 	QGAMES::World::initialize ();
 
 	PacManII::Game* dG = dynamic_cast <PacManII::Game*> (game ());
-	assert (dG);
+	assert (dG != nullptr);
 	PacManII::Game::Conf* cfg = dynamic_cast <PacManII::Game::Conf*> (dG -> configuration ());
-	assert (cfg); // Just in case...
+	assert (cfg != nullptr); // Just in case...
 
 	// Gets back the information kept for that world, if it exists
 	// Otherwise an empty element is set up...
@@ -207,7 +207,7 @@ void PacManII::World::finalize ()
 
 	// ...and put it back into the configuration object...
 	PacManII::Game::Conf* cfg = dynamic_cast <PacManII::Game::Conf*> (game () -> configuration ());
-	assert (cfg); // Just in case...
+	assert (cfg != nullptr); // Just in case...
 	cfg -> setConfValueForElement (id (), _fullConfPerPlayer);
 
 	QGAMES::World::finalize ();
@@ -333,17 +333,17 @@ void PacManII::Scene::initialize ()
 
 	// Set the characters in the right position of the map...
 	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (activeMap ());
-	assert (aM);
-	_pacman -> setPosition (aM -> pacmanInitialPosition () - 
+	assert (aM != nullptr);
+	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0)) - 
 		QGAMES::Vector (__BD (_pacman -> visualLength () >> 1), __BD (_pacman -> visualHeight () >> 1), __BD 0));
-	_inky -> setPosition (aM -> monsterInitialPosition (0) - 
-		QGAMES::Vector (__BD (_inky -> visualLength () >> 1), __BD (_inky -> visualHeight () >> 1), __BD 0));
-	_blinky -> setPosition (aM -> monsterInitialPosition (1) - 
-		QGAMES::Vector (__BD (_blinky -> visualLength () >> 1), __BD (_blinky -> visualHeight () >> 1), __BD 0));
-	_pinky -> setPosition (aM -> monsterInitialPosition (2) - 
-		QGAMES::Vector (__BD (_pinky -> visualLength () >> 1), __BD (_pinky -> visualHeight () >> 1), __BD 0));
-	_clyde -> setPosition (aM -> monsterInitialPosition (3) - 
-		QGAMES::Vector (__BD (_clyde -> visualLength () >> 1), __BD (_clyde -> visualHeight () >> 1), __BD 0));
+	_inky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (0)) - 
+		QGAMES::Vector (__BD (_inky -> visualLength ()), __BD (_inky -> visualHeight () >> 1), __BD 0));
+	_blinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (1)) - 
+		QGAMES::Vector (__BD (_blinky -> visualLength ()), __BD (_blinky -> visualHeight () >> 1), __BD 0));
+	_pinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (2)) - 
+		QGAMES::Vector (__BD (_pinky -> visualLength ()), __BD (_pinky -> visualHeight () >> 1), __BD 0));
+	_clyde -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (3)) - 
+		QGAMES::Vector (__BD (_clyde -> visualLength ()), __BD (_clyde -> visualHeight () >> 1), __BD 0));
 
 	_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
 }
@@ -380,88 +380,152 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 }
 
 // ---
-PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD, const QGAMES::MapProperties& p)
-	: QGAMES::TiledMap (c, l, w, h, d, tW, tH, tD, p)
+PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD, 
+		const QGAMES::MapProperties& p)
+	: QGAMES::TiledMap (c, l, w, h, d, tW, tH, tD, p),
+	  _maze (PacManII::Maze::generateEmptyMaze (w, h)), // It will be assigned later, in a more complex formula...
+	  _backgroundLayer (nullptr),
+	  _locationsLayer (nullptr),
+	  _directionsLayer (nullptr),
+	  _mazeLayer (nullptr)
 { 
-#ifndef NDEBUG
 	for (auto i : layers ())
-		assert (dynamic_cast <PacManII::TileLayer*> (i) != nullptr);
-#endif
+	{
+		assert (dynamic_cast <PacManII::BackgroundLayer*> (i) != nullptr ||
+				dynamic_cast <PacManII::LocationsLayer*> (i) != nullptr || 
+				dynamic_cast <PacManII::DirectionsLayer*> (i) != nullptr || 
+				dynamic_cast <PacManII::MazeLayer*> (i) != nullptr);
+
+		if (dynamic_cast <PacManII::BackgroundLayer*> (i) != nullptr)
+		{
+			assert (_backgroundLayer == nullptr); // Only one...
+			_backgroundLayer = dynamic_cast <PacManII::BackgroundLayer*> (i);
+		}
+		else 
+		if (dynamic_cast <PacManII::LocationsLayer*> (i) != nullptr)
+		{
+			assert (_locationsLayer == nullptr); // Only one...
+			_locationsLayer = dynamic_cast <PacManII::LocationsLayer*> (i);
+		}
+		else 
+		if (dynamic_cast <PacManII::DirectionsLayer*> (i) != nullptr)
+		{
+			assert (_directionsLayer == nullptr); // Only one...
+			_directionsLayer = dynamic_cast <PacManII::DirectionsLayer*> (i);
+		}
+		else 
+		if (dynamic_cast <PacManII::MazeLayer*> (i) != nullptr)
+		{
+			assert (_mazeLayer == nullptr); // Only one...
+			_mazeLayer = dynamic_cast <PacManII::MazeLayer*> (i);
+		}
+	}
+
+	// ...and one of each...
+	assert (_backgroundLayer != nullptr && _locationsLayer != nullptr &&
+			_directionsLayer != nullptr && _mazeLayer != nullptr); // There must be one of each minimum...
+
+	// Generates the map...
+	_maze = PacManII::Maze::generateMazeFrom (w, h, _directionsLayer);
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Map::pacmanInitialPosition (int nP) const
+{
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB);
+
+	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
+	for (QGAMES::Tiles::const_iterator i = _locationsLayer -> tiles ().begin (); 
+		i != _locationsLayer -> tiles ().end () && result == QGAMES::MazeModel::_noPosition; i++)
+	{
+		std::vector <int>::const_iterator j = 
+			std::find (mB -> pacmanHomeFrames ().begin (), mB -> pacmanHomeFrames ().end (), (*i) -> numberFrame ());
+		if (j != mB -> pacmanHomeFrames ().end () && ((*j) - mB -> pacmanHomeFrames () [0]) == nP)
+			result = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
+	}
+
+	return (result);
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterInitialPosition (int nP) const
+{
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB);
+
+	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
+	for (QGAMES::Tiles::const_iterator i = _locationsLayer -> tiles ().begin (); 
+		i != _locationsLayer -> tiles ().end () && result == QGAMES::MazeModel::_noPosition; i++)
+	{
+		std::vector <int>::const_iterator j = 
+			std::find (mB -> monsterHomeFrames ().begin (), mB -> monsterHomeFrames ().end (), (*i) -> numberFrame ());
+		if (j != mB -> monsterHomeFrames ().end () && ((*j) - mB -> monsterHomeFrames () [0]) == nP)
+			result = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
+	}
+
+	return (result);
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterRunAwayPosition (int nP) const
+{
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB);
+
+	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
+	for (QGAMES::Tiles::const_iterator i = _locationsLayer -> tiles ().begin (); 
+		i != _locationsLayer -> tiles ().end () && result == QGAMES::MazeModel::_noPosition; i++)
+	{
+		std::vector <int>::const_iterator j = 
+			std::find (mB -> monsterRunAwayFrames ().begin (), mB -> monsterRunAwayFrames ().end (), (*i) -> numberFrame ());
+		if (j != mB -> monsterRunAwayFrames ().end () && ((*j) - mB -> monsterRunAwayFrames () [0]) == nP)
+			result = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
+	}
+
+	return (result);
 }
 
 // ---
 void PacManII::Map::startBlinking (QGAMES::bdata bT, int nB)
-{
-	for (auto i : layers ())
-	{
-		PacManII::TileLayer* tL = nullptr;
-		if ((tL = dynamic_cast <PacManII::TileLayer*> (i)) != nullptr)
-			tL -> startBlinking (bT, nB);
-	}
+{ 
+	_mazeLayer -> startBlinking (bT, nB); 
 }
 
-// ---	
+// ---
 bool PacManII::Map::isBlinking () const
-{
-	bool result = false;
-	for (auto i : layers ())
-	{
-		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
-		result |= (tL != nullptr) ? tL -> isBlinking () : false;
-	}
-
-	return (result);
+{ 
+	return (_mazeLayer -> isBlinking ()); 
 }
 
 // ---
 void PacManII::Map::stopBlinking ()
-{
-	for (auto i : layers ())
-	{
-		PacManII::TileLayer* tL = nullptr;
-		if ((tL = dynamic_cast <PacManII::TileLayer*> (i)) != nullptr)
-			tL -> stopBlinking ();
-	}
+{ 
+	_mazeLayer -> stopBlinking (); 
 }
 
 // ---
 int PacManII::Map::maxNumberBallsToEat () const
-{
-	int result = 0;
-	for (auto i : layers ())
-	{
-		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
-		result += (tL != nullptr) ? tL -> maxNumberBallsToEat () : 0;
-	}
-
-	return (result);
+{ 
+	return (_mazeLayer -> maxNumberBallsToEat ()); 
 }
 
 // ---
 int PacManII::Map::numberBallsEaten () const
-{
-	int result = 0;
-	for (auto i : layers ())
-	{
-		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
-		result += (tL != nullptr) ? tL -> numberBallsEaten () : 0;
-	}
-
-	return (result);
-
+{ 
+	return (_mazeLayer -> numberBallsEaten ()); 
 }
 
 // ---
 std::string PacManII::Map::ballsEatenStatus () const
 {
-	std::string result (__NULL_STRING__);
-	for (auto i : layers ())
-	{
-		const PacManII::TileLayer* tL = dynamic_cast <const PacManII::TileLayer*> (i);
-		result += ((tL != nullptr) ? tL -> ballsEatenStatus () : std::string (__NULL_STRING__)) + std::string ("@"); // @ to separate
-	}
-
-	return (result);
+	return (_mazeLayer -> ballsEatenStatus ()); 
 }
 
 // ---
@@ -470,35 +534,11 @@ void PacManII::Map::setBallsEatenStatus (const std::string& st)
 	if (st == std::string (__NULL_STRING__))
 		return;
 
-	std::string stC = st;
-	for (auto i : layers ())
-	{
-		PacManII::TileLayer* tL = dynamic_cast <PacManII::TileLayer*> (i);
-		assert (st.find ('@') != -1); // One per tile layer...mandatory
-		stC = stC.substr (0, stC.find ('@', 0));
-		if (tL != nullptr)
-			tL -> setBallsEatenStatus (stC);
-	}
+	_mazeLayer -> setBallsEatenStatus (st);
 }
 
 // ---
-QGAMES::Position PacManII::StandardMap::pacmanInitialPosition () const
-{
-	return (QGAMES::Position (__BD ((10 * tileWidth ()) + (tileWidth () >> 1)), 
-							  __BD ((12 * tileHeight ()) + (tileHeight () >> 1)), __BD 0));
-}
-
-// ---
-QGAMES::Position PacManII::StandardMap::monsterInitialPosition (int nP) const
-{
-	QGAMES::Position cPos (__BD ((10 * tileWidth ()) + (tileWidth () >> 1)), 
-						   __BD ((10 * tileHeight ()) + (tileHeight () >> 1)), __BD 0);
-
-	return (cPos - QGAMES::Vector (__BD ((tileWidth () >> 1) + tileWidth () * (1 - nP)), __BD 0, __BD 0));
-}
-
-// ---
-PacManII::TileLayer::TileLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m, const QGAMES::LayerProperties& p)
+PacManII::MazeLayer::MazeLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m, const QGAMES::LayerProperties& p)
 	: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false)
 {
 #ifndef NDEBUG
@@ -518,7 +558,7 @@ PacManII::TileLayer::TileLayer (int c, const std::string& n, const QGAMES::Tiles
 }
 
 // ---
-void PacManII::TileLayer::BlinkingMaze::initialize ()
+void PacManII::MazeLayer::BlinkingMaze::initialize ()
 {
 	_counterBlinkingTime.initialize ();
 	_counterNumberBlinks.initialize ();
@@ -527,7 +567,7 @@ void PacManII::TileLayer::BlinkingMaze::initialize ()
 	_active = true;
 
 	// All must bright...
-	for (auto i : (dynamic_cast <PacManII::TileLayer*> (_layer)) -> tiles ())
+	for (auto i : (dynamic_cast <PacManII::MazeLayer*> (_layer)) -> tiles ())
 	{
 		PacManII::TileLimit* tL = nullptr;
 		if ((tL = dynamic_cast <PacManII::TileLimit*> (i)) != nullptr)
@@ -538,7 +578,7 @@ void PacManII::TileLayer::BlinkingMaze::initialize ()
 }
 
 // ---
-void PacManII::TileLayer::BlinkingMaze::updatePositions ()
+void PacManII::MazeLayer::BlinkingMaze::updatePositions ()
 {
 	if (!_active)
 		return;
@@ -560,7 +600,7 @@ void PacManII::TileLayer::BlinkingMaze::updatePositions ()
 }
 
 // ---
-void PacManII::TileLayer::BlinkingMaze::finalize ()
+void PacManII::MazeLayer::BlinkingMaze::finalize ()
 {
 	_switchBlinkOn.set (false);
 
@@ -575,26 +615,26 @@ void PacManII::TileLayer::BlinkingMaze::finalize ()
 }
 
 // ---
-void PacManII::TileLayer::startBlinking (QGAMES::bdata bT, int nB)
+void PacManII::MazeLayer::startBlinking (QGAMES::bdata bT, int nB)
 {
-	setVisualEffect (new PacManII::TileLayer::BlinkingMaze (this, bT, nB));
+	setVisualEffect (new PacManII::MazeLayer::BlinkingMaze (this, bT, nB));
 }
 
 // ---
-bool PacManII::TileLayer::isBlinking () const
+bool PacManII::MazeLayer::isBlinking () const
 {
 	return ((visualEffect () != nullptr) 
-		? (dynamic_cast <const PacManII::TileLayer::BlinkingMaze*> (visualEffect ())) -> isActive () : false);  
+		? (dynamic_cast <const PacManII::MazeLayer::BlinkingMaze*> (visualEffect ())) -> isActive () : false);  
 }
 
 // ---
-void PacManII::TileLayer::stopBlinking ()
+void PacManII::MazeLayer::stopBlinking ()
 {
 	setVisualEffect (nullptr);
 }
 
 // ---
-int PacManII::TileLayer::maxNumberBallsToEat () const
+int PacManII::MazeLayer::maxNumberBallsToEat () const
 {
 	int result = 0;
 	for (auto i : tiles ())
@@ -608,7 +648,7 @@ int PacManII::TileLayer::maxNumberBallsToEat () const
 }
 
 // ---
-int PacManII::TileLayer::numberBallsEaten () const
+int PacManII::MazeLayer::numberBallsEaten () const
 {
 	int result = 0;
 	for (auto i : tiles ())
@@ -622,7 +662,7 @@ int PacManII::TileLayer::numberBallsEaten () const
 }
 
 // ---
-std::string PacManII::TileLayer::ballsEatenStatus () const
+std::string PacManII::MazeLayer::ballsEatenStatus () const
 {
 	std::string result (__NULL_STRING__);
 
@@ -636,17 +676,18 @@ std::string PacManII::TileLayer::ballsEatenStatus () const
 }
 
 // ---
-void PacManII::TileLayer::setBallsEatenStatus (const std::string& st)
+void PacManII::MazeLayer::setBallsEatenStatus (const std::string& st)
 {
+	// TODO
 }
 
 // ---
 void PacManII::TileLimit::setBright (bool b)
 {
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // It can only be made within a PacManII game, that it should be the case...
+	assert (g != nullptr); // It can only be made within a PacManII game, that it should be the case...
 	PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
-	assert (mB); // Just in case...
+	assert (mB != nullptr); // Just in case...
 	// Reley in the builder to determine the equivalent frame...
 
 	setForm (form (), 
@@ -662,9 +703,9 @@ bool PacManII::TilePath::eaten ()
 		_type != PacManII::TilePath::Type::_EMPTY) // Only if it is possible...
 	{
 		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-		assert (g); // It can only be made within a PacManII game, that it should be the case...
+		assert (g != nullptr); // It can only be made within a PacManII game, that it should be the case...
 		PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
-		assert (mB); // Just in case...
+		assert (mB != nullptr); // Just in case...
 
 		_type = PacManII::TilePath::Type::_EMPTY; // No more
 		setForm (form (), mB -> frameForEmptyPath ());

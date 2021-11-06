@@ -40,9 +40,9 @@ namespace PacManII
 			const QGAMES::Position& p = QGAMES::Position::_noPoint) override;
 
 		/** @see parent. */
-		virtual void processEvent (const QGAMES::Event& evnt);
+		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		protected:
+		private:
 		/** The form used to represent the lives. */
 		int _livesForm;
 
@@ -67,11 +67,11 @@ namespace PacManII
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		protected:
+		private:
 		virtual int formToDrawLetters () override
 								{ return (_font); }
 
-		protected:
+		private:
 		/** The font used. */
 		int _font;
 	};
@@ -87,11 +87,11 @@ namespace PacManII
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		protected:
+		private:
 		virtual int formToDrawDigits () override
 								{ return (_font); }
 
-		protected:
+		private:
 		/** The font used. */
 		int _font;
 	};
@@ -106,11 +106,11 @@ namespace PacManII
 		virtual Entity* clone () const override
 								{ return (new FixText (_id, _text, _font)); }
 
-		protected:
+		private:
 		virtual int formToDrawLetters () override
 								{ return (_font); }
 
-		protected:
+		private:
 		/** The font used. */
 		int _font;
 	};

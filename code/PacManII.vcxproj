@@ -102,6 +102,8 @@
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="Letters.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Maze.cpp" />
+    <ClCompile Include="Movements.cpp" />
     <ClCompile Include="ScoreObjects.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Worlds.cpp" />
@@ -117,6 +119,8 @@
     <ClInclude Include="GUISystem.hpp" />
     <ClInclude Include="InputHandler.hpp" />
     <ClInclude Include="Letters.hpp" />
+    <ClInclude Include="Maze.hpp" />
+    <ClInclude Include="Movements.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="ScoreObjects.hpp" />
     <ClInclude Include="stdafx.h" />

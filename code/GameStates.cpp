@@ -7,7 +7,7 @@ void PacManII::InitializePacManIIGameState::onEnter ()
 	QGAMES::GameState::onEnter ();
 
 	PacManII::Game* aG = dynamic_cast <PacManII::Game*> (game ());
-	assert (aG); // Just in case...
+	assert (aG != nullptr); // Just in case...
 
 	aG -> initializeEntitiesAndWorlds ();
 }
@@ -60,7 +60,7 @@ void PacManII::MonsterMovingGameState::onEnter ()
 	_artists [4] = dynamic_cast <PacManII::Artist*> (game () -> entity (__PACMANII_CLYDEBASEENTITYID__));
 #ifndef _NDEBUG
 	for (int i = 0; i < (int) _artists.size (); i++)
-		assert (_artists [i]);
+		assert (_artists [i] != nullptr);
 #endif
 
 	// All of them are set in the state running to the right...
@@ -217,16 +217,16 @@ void PacManII::ShowingCurrentPlayerNameGameState::onEnter ()
 	// If there is no player name already introduced, then 
 	// a GUI system is started to ask for it...
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // Just in case...
+	assert (g != nullptr); // Just in case...
 
 	if (g -> playerName () == std::string (__NULL_STRING__))
 	{
 		_guiSystem = game () -> guiSystemBuilder () -> system (__PACMANII_PLAYERNAMEGUISYSTEM__);
 		QGAMES::CompositeWidget* cW = dynamic_cast <QGAMES::CompositeWidget*> (_guiSystem -> mainWidget ());
-		assert (cW); // Just in case...
+		assert (cW != nullptr); // Just in case...
 		QGAMES::IntroWidget* iW = 
 			dynamic_cast <QGAMES::IntroWidget*> (cW -> widget (__PACMANII_PLAYERNAMEOPTIONID__));
-		assert (iW); // Just in case...
+		assert (iW != nullptr); // Just in case...
 
 		// The position of the main widget is defined with the same
 		// attributes used when the name has already been introduced!
@@ -259,9 +259,9 @@ void PacManII::ShowingCurrentPlayerNameGameState::onExit ()
 		unObserve (game () -> inputHandler ());
 
 		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-		assert (g); // Just in case...
+		assert (g != nullptr); // Just in case...
 		QGAMES::CompositeWidget* cW = dynamic_cast <QGAMES::CompositeWidget*> (_guiSystem -> mainWidget ());
-		assert (cW);
+		assert (cW != nullptr);
 
 		// Get the name introduced...
 		std::string txt = ((QGAMES::IntroWidget*) cW -> widget (__PACMANII_PLAYERNAMEOPTIONID__)) -> text ();
@@ -299,7 +299,7 @@ void PacManII::ShowingCurrentPlayerNameGameState::actualizeText ()
 
 	if (!_guiSystem)
 	{
-		assert (dynamic_cast <PacManII::Game*> (game ()));
+		assert (dynamic_cast <PacManII::Game*> (game ()) != nullptr);
 
 		std::string str = _textString + std::string (" ") + // An space after...
 			((PacManII::Game*) game ()) -> playerName ();
@@ -327,7 +327,7 @@ void PacManII::ShowingCurrentPlayerNameGameState::deleteGUISystem ()
 void PacManII::ShowingCurrentLevelGameState::actualizeText ()
 {
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g);
+	assert (g != nullptr);
 
 	QGAMES::ShowingTextGameState::actualizeText ();
 	std::string str = _textString + std::string (" " /** a separation. */) + std::to_string (g -> level ());
@@ -382,9 +382,9 @@ void PacManII::PlayingControlGameState::onEnter ()
 	QGAMES::GameStateControl::onEnter ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // Just in case...
+	assert (g != nullptr); // Just in case...
 	_pacman = g -> pacman ();
-	assert (_pacman);
+	assert (_pacman != nullptr);
 
 	g -> addScoreObjects ();
 
@@ -395,7 +395,7 @@ void PacManII::PlayingControlGameState::onEnter ()
 
 	g -> setSeconds (0);
 
-	g -> mainScreen () -> setPosition (QGAMES::Position (__BD 32, __BD 0, __BD 0));
+	g -> mainScreen () -> setPosition (QGAMES::Position (__BD 32, __BD 32, __BD 0));
 }
 
 // ---
@@ -404,7 +404,7 @@ void PacManII::PlayingControlGameState::onExit ()
 	QGAMES::GameStateControl::onExit ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // Just in case...
+	assert (g != nullptr); // Just in case...
 
 	// Just to maintain the compatibility with the old conf...
 	g -> setSceneVisited (g -> activeWorld () -> activeScene () -> id ()); 
@@ -433,7 +433,7 @@ int PacManII::PlayingControlGameState::circunstanceWhen (QGAMES::GameState* st, 
 			case __PACMNAII_SHOWINGTHELEVELGAMESTATE__:
 				{
 					PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-					assert (g);
+					assert (g != nullptr);
 
 					result = (g -> triesOnLevel (g -> level ()) == 1) ? 0 : 1;
 				}
@@ -443,7 +443,7 @@ int PacManII::PlayingControlGameState::circunstanceWhen (QGAMES::GameState* st, 
 			case __PACMANII_PLAYINGGAMESTATE__:
 				{
 					PacManII::PlayingGameState* gS = dynamic_cast <PacManII::PlayingGameState*> (st);
-					assert (gS);
+					assert (gS != nullptr);
 
 					switch (gS -> lastMainCharacterState ())
 					{
@@ -461,7 +461,7 @@ int PacManII::PlayingControlGameState::circunstanceWhen (QGAMES::GameState* st, 
 						
 						default:
 							// No other situation of the character is tken into account so far!
-							assert (0);
+							assert (false);
 							break;
 					}
 				}
@@ -472,7 +472,7 @@ int PacManII::PlayingControlGameState::circunstanceWhen (QGAMES::GameState* st, 
 				{
 					PacManII::OptionsWhenPlayingGameState* gS =
 						dynamic_cast <PacManII::OptionsWhenPlayingGameState*> (st);
-					assert (gS);
+					assert (gS != nullptr);
 
 					switch (gS -> lastOptionSelected ())
 					{
@@ -503,9 +503,9 @@ void PacManII::PlayingGameState::onEnter ()
 	QGAMES::GameState::onEnter ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // Just in case...
+	assert (g != nullptr); // Just in case...
 	_pacman = g -> pacman ();
-	assert (_pacman); // Just in case...
+	assert (_pacman != nullptr); // Just in case...
 
 	observe (_pacman);
 
@@ -521,7 +521,7 @@ void PacManII::PlayingGameState::onEnter ()
 
 	// Starts to play the siren...
 	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
-	assert (w);
+	assert (w != nullptr);
 	w -> playSiren (true /** forced */);
 }
 
@@ -531,7 +531,7 @@ void PacManII::PlayingGameState::onExit ()
 	QGAMES::GameState::onExit ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // Just in case...
+	assert (g != nullptr); // Just in case...
 
 	unObserve (g -> loopCounter (PacManII::Game::_COUNTERSECONDS));
 
@@ -543,7 +543,7 @@ void PacManII::PlayingGameState::onExit ()
 
 	// No more siren...
 	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
-	assert (w);
+	assert (w != nullptr);
 	w -> stopSiren ();
 }
 
@@ -583,7 +583,7 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 			{
 				QGAMES::AdvancedArcadeGame::Conf* gCfg = 
 					dynamic_cast <QGAMES::AdvancedArcadeGame::Conf*> (game () -> configuration ());
-				assert (gCfg); // Just in case...(to look for the right key later)
+				assert (gCfg != nullptr); // Just in case...(to look for the right key later)
 
 				QGAMES::KeyBoardEventData* dt = (QGAMES::KeyBoardEventData*) evnt.data ();
 				if (dt -> _internalCode == QGAMES::KeyCode::QGAMES_ESCAPE && !dt -> _on) // ESC for options
@@ -609,7 +609,7 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 				{
 					PacManII::Game::Conf* conf = 
 						dynamic_cast <PacManII::Game::Conf*> (game () -> configuration ());
-					assert (conf); // It must be a BATTLESHIP
+					assert (conf != nullptr); // It must be a BATTLESHIP
 					conf -> save (game () -> parameter (__GAME_DATADIRPROPERTYNAME__) + 
 						std::string (__PATH_SEPARATOR__) + QGAMES::StandardInitialSelectionOptionsGameState::_CONFFILENAME);
 				}
@@ -671,7 +671,7 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 		case __QGAMES_LOOPCOUNTEREVENT__:
 			{
 				PacManII::Game* dG = dynamic_cast <PacManII::Game*> (game ());
-				assert (dG); // Just in case...
+				assert (dG != nullptr); // Just in case...
 				dG -> addToPlayerSeconds (1); // To the current player...
 			}
 
@@ -702,7 +702,7 @@ void PacManII::BlinkMazePlayingGameState::onEnter ()
 	QGAMES::GameState::onEnter ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-	assert (g); // Just in case...
+	assert (g != nullptr); // Just in case...
 	if ((_mazeWorld = dynamic_cast <PacManII::World*> (g -> activeWorld ())) != nullptr)
 		_mazeWorld -> startBlinking  (_properties._blinkingTime, _properties._numberBlinks); // Start blinking...
 	else
@@ -773,7 +773,7 @@ int PacManII::OptionsWhenPlayingGameState::SelectionHandler::whenWidgetSelected 
 {
 	PacManII::Game::Conf* conf = 
 		dynamic_cast <PacManII::Game::Conf*> (owner () -> game () -> configuration ());
-	assert (conf); // It must be a BATTLESHIP
+	assert (conf != nullptr); // It must be a BATTLESHIP
 
 	int result = 0; // To continue...
 
@@ -792,7 +792,7 @@ int PacManII::OptionsWhenPlayingGameState::SelectionHandler::whenWidgetSelected 
 			break;
 
 		default:
-			assert (0); // It shouldn't be here...It means there is options not controlled!!
+			assert (false); // It shouldn't be here...It means there is options not controlled!!
 			break;
 	}
 
@@ -807,7 +807,7 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 	if (evnt.code () == __QGAMES_GAMENESTEDSTATEFINISHED__)
 	{
 		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-		assert (g);
+		assert (g != nullptr);
 
 		switch (st -> type ())
 		{
@@ -816,7 +816,7 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 				{
 					QGAMES::StandardInitialSelectionOptionsGameState* gSS =
 						dynamic_cast <QGAMES::StandardInitialSelectionOptionsGameState*> (st);
-					assert (gSS); // Just in case there is mistake at some point of the code not totally controlled...
+					assert (gSS != nullptr); // Just in case there is mistake at some point of the code not totally controlled...
 					switch (gSS -> lastOptionSelected ())
 					{
 						case __QGAMES_STDGUISYSTEMSTARTGAMEWDT__: 
@@ -832,7 +832,7 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 							break;
 
 						default:
-							assert (0); // It shouldn't be here...It means there is an option not well managed!!
+							assert (false); // It shouldn't be here...It means there is an option not well managed!!
 							break;
 					}
 				}
@@ -846,9 +846,9 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 					// What to do will be different...
 					PacManII::PlayingControlGameState* cPS = 
 						dynamic_cast <PacManII::PlayingControlGameState*> (st);
-					assert (cPS); // Just in case...it shouldn't happen but who knows!
+					assert (cPS != nullptr); // Just in case...it shouldn't happen but who knows!
 					PacManII::PlayingGameState* pS = cPS -> playingState ();
-					assert (pS); // Same!...
+					assert (pS != nullptr); // Same!...
 
 					switch (pS -> lastMainCharacterState ())
 					{
@@ -870,7 +870,7 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 							break;
 
 						default:
-							assert (0); // It shouldn't be here. It means there is an state not weel managed!!
+							assert (false); // It shouldn't be here. It means there is an state not weel managed!!
 							break;
 					}
 				}

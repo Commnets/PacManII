@@ -198,6 +198,13 @@
 #define __PACMANII_WORLD__											50000
 #define __PACMANII_BASICSCENE__										50000
 #define __PACMANII_BASICMAP__										50000
+// Name of the standard layers every defined map has to content minimum
+#define __PACMANII_BACKGROUNDLAYERNAME__							"Background"
+#define __PACMANII_LOCATIONSLAYERNAME__								"Locations"
+#define __PACMANII_DIRECTIONSLAYERNAME__							"Directions"
+#define __PACMANII_MAZELAYERNAME__									"Maze"
+// Name of the different forms containing the tiles used to draw
+#define __PACMANII_FORMTILESMAZENAME__								"corners"
 // The types of tiles in pacman: either a limit, a normal ball or power...
 #define __PACMANII_LIMITTILE__										50000
 #define __PACMANII_PATH__											50001

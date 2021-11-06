@@ -22,7 +22,7 @@
 namespace PacManII
 {
 	/** A very simple game state to load the things that the game needs. */
-	class InitializePacManIIGameState : public QGAMES::GameState
+	class InitializePacManIIGameState final : public QGAMES::GameState
 	{
 		public:
 		InitializePacManIIGameState (int id, QGAMES::GameState* nS = NULL)
@@ -160,10 +160,9 @@ namespace PacManII
 
 		virtual void processEvent (const QGAMES::Event& evnt);
 
-		protected:
+		private:
 		void actualizeText () override;
 
-		private:
 		// Implementation
 		void deleteGUISystem ();
 
@@ -173,7 +172,7 @@ namespace PacManII
 	};
 
 	/** A game state to draw the name of the level where the current player is on. */ 
-	class ShowingCurrentLevelGameState : public QGAMES::ShowingStandardTextGameState
+	class ShowingCurrentLevelGameState final : public QGAMES::ShowingStandardTextGameState
 	{
 		public:
 		ShowingCurrentLevelGameState (int id, const std::string& txt, int fTp,
@@ -181,7 +180,7 @@ namespace PacManII
 			: QGAMES::ShowingStandardTextGameState (id, txt, fTp, prps, nS)
 							{ }
 
-		protected:
+		private:
 		/** @see parent. */
 		void actualizeText ();
 	};
@@ -234,10 +233,10 @@ namespace PacManII
 		virtual void onEnter () override;
 		virtual void onExit () override;
 
-		protected:
+		private:
 		virtual int circunstanceWhen (QGAMES::GameState* st, const QGAMES::Event& evnt) override;
 
-		protected:
+		private:
 		// Implementation
 		/** A reference to the dragon artist being controlled by this playing state. */
 		PacMan* _pacman;
@@ -265,7 +264,7 @@ namespace PacManII
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		protected:
+		private:
 		/** As the game goes on, the situation of the artist being controlled can vary. */
 		MainCharacterState _lastMainCharacterState;
 
@@ -365,10 +364,10 @@ namespace PacManII
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		protected:
+		private:
 		static SelectionOptionsGameState::Menus createMenus ();
 
-		protected:
+		private:
 		class SelectionHandler : public SelectionOptionsGameState::Handler
 		{
 			public:
@@ -377,12 +376,12 @@ namespace PacManII
 							{ }
 
 			/** @see parent. */
-			virtual int whenWidgetSelected (QGAMES::Widget* wdt);
+			virtual int whenWidgetSelected (QGAMES::Widget* wdt) override;
 		};
 	};
 
 	/** A specific object to control the states. */
-	class GameStateControl : public QGAMES::AdvancedGameStateControl
+	class GameStateControl final : public QGAMES::AdvancedGameStateControl
 	{
 		public:
 		GameStateControl (int id, GameState* psState, const QGAMES::GameStates& sts, 
@@ -390,9 +389,9 @@ namespace PacManII
 			: QGAMES::AdvancedGameStateControl (id, psState, sts, fM)
 							{ }
 
-		protected:
+		private:
 		/** @see parent. */
-		virtual int circunstanceWhen (QGAMES::GameState* st, const QGAMES::Event& evnt);
+		virtual int circunstanceWhen (QGAMES::GameState* st, const QGAMES::Event& evnt) override;
 	};
 }
 

@@ -16,13 +16,15 @@
 
 #include "Defs.hpp"
 #include "Artists.hpp"
+#include "Maze.hpp"
 #include <advancedArcade/adinclude.hpp>
 
 namespace PacManII
 {
 	/** Basic world of the game. 
-		Scenes can be only PacManII ones. */
-	class World final : public QGAMES::World
+		Scenes can be only PacManII ones. 
+		The game can be extended in terms of worlds as well. */
+	class World : public QGAMES::World
 	{
 		public:
 		World (int c, const QGAMES::Scenes& s, const QGAMES::WorldProperties& p = QGAMES::WorldProperties ());
@@ -67,8 +69,9 @@ namespace PacManII
 	/** Basic Scene of the game. 
 		Maps can be only PacManII ones. 
 		The Scene has a siren in the background.
-		The rate of the siren goes up as the pacman has less ball to eat. */
-	class Scene final : public QGAMES::Scene
+		The rate of the siren goes up as the pacman has less ball to eat. 
+		The game can be extended in terms of scenes. */
+	class Scene : public QGAMES::Scene
 	{
 		public:
 		Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
@@ -95,7 +98,7 @@ namespace PacManII
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
-		private:
+		protected:
 		PacMan* _pacman;
 		Inky* _inky;
 		Blinky* _blinky;
@@ -103,55 +106,107 @@ namespace PacManII
 		Clyde* _clyde;
 
 		// Implementation
-		/** The percetnage of the maze cleaned. */
+		/** The percentage of the maze cleaned. */
 		QGAMES::bdata _percentageCleaned;
 		enum class SirenRate { _NORMAL = 0, _FAST = 1, _VERYFAST = 2 } _sirenRate;
 	};
 
 	/** Basic map of the game. 
-		Layers can be only PacManII ones. */
+		Layers can be only PacManII ones. 
+		The game can be extended in terms of maps. */
+	class BackgroundLayer;
+	class LocationsLayer;
+	class DirectionsLayer;
+	class MazeLayer;
 	class Map : public QGAMES::TiledMap
 	{
 		public:
 		Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD,
-			const QGAMES::MapProperties& p = QGAMES::MapProperties ());
+			 const QGAMES::MapProperties& p = QGAMES::MapProperties ());
 
-		/** To know important positions of the map. */
-		virtual QGAMES::Position pacmanInitialPosition () const = 0;
-		virtual QGAMES::Position monsterInitialPosition (int nP) const = 0;
+		/** To know important positions of the map. 
+			If nothing is found a position out of the maze should be returned. */
+		virtual QGAMES::MazeModel::PositionInMaze pacmanInitialPosition (int nP) const;
+		virtual QGAMES::MazeModel::PositionInMaze monsterInitialPosition (int nP) const;
+		virtual QGAMES::MazeModel::PositionInMaze monsterRunAwayPosition (int nP) const;
+
+		/** To convert any position in the maze in a position in the map. 
+			What is returned is always the central position. */
+		QGAMES::Position mazePositionToMapPosition (const QGAMES::MazeModel::PositionInMaze& p) const
+							{ return (QGAMES::Position ((__BD p._positionX + __BD 0.5) * tileWidth (), 
+														(__BD p._positionY + __BD 0.5) * tileHeight (), __BD 0 /** 2d always. */)); }
+		/** To get the position in the maze of a position in the screen. 
+			Several positions can be matched to the same maze position. */
+		QGAMES::MazeModel::PositionInMaze mapPositionToMazePosition (const QGAMES::Position& p) const
+							{ return (QGAMES::MazeModel::PositionInMaze ((int) (p.posX () / __BD tileWidth ()), 
+																		 (int) (p.posY () / __BD tileHeight ()), 0)); }
+
+		/** To get the maze.
+			The maze is set at construction time, and can't be modifid at all. */
+		const Maze& maze () const
+							{ return (_maze); }
 
 		/** To blink. */
-		void startBlinking (QGAMES::bdata bT, int nB);
-		bool isBlinking () const;
-		void stopBlinking ();
+		inline void startBlinking (QGAMES::bdata bT, int nB);
+		inline bool isBlinking () const;
+		inline void stopBlinking ();
 
 		/** To manage the ball status of the map. */
-		int maxNumberBallsToEat () const;
-		int numberBallsEaten () const;
-		std::string ballsEatenStatus () const;
+		inline int maxNumberBallsToEat () const;
+		inline int numberBallsEaten () const;
+		inline std::string ballsEatenStatus () const;
 		void setBallsEatenStatus (const std::string& st);
 
 		/** The events comming from the layers observed are transmitted up. */ 
 		virtual void processEvent (const QGAMES::Event& evnt) override
 							{ notify (QGAMES::Event (evnt.code (), this, evnt.values ())); }
+
+		protected:
+		/** A representation of the maze, 
+			to indicate the different directions possible per position in the maze (if any). */
+		Maze _maze;
+
+		// Implementation
+		/** To accelerate the access to the different layers. */
+		BackgroundLayer* _backgroundLayer;
+		LocationsLayer* _locationsLayer;
+		DirectionsLayer* _directionsLayer;
+		MazeLayer* _mazeLayer;
 	};
 
-	/** The most common well known pacman maze. */
-	class StandardMap final : public Map
+	/** Representing the background layer. */
+	class BackgroundLayer final : public QGAMES::TileLayer
 	{
 		public:
-		StandardMap (int c, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD,
-			const QGAMES::MapProperties& p = QGAMES::MapProperties ())
-			: Map (c, l, w, h, d, tW, tH, tD, p)
+		BackgroundLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
+			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false)
 							{ }
+	};
 
-		virtual QGAMES::Position pacmanInitialPosition () const override;
-		virtual QGAMES::Position monsterInitialPosition (int nP) const override;
+	/** Representing the location layer. */
+	class LocationsLayer final : public QGAMES::TileLayer
+	{
+		public:
+		LocationsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
+			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false)
+							{ setVisible (false); /* Always */ }
+	};
+
+	/** Representing the maze description layer. */
+	class DirectionsLayer final : public QGAMES::TileLayer
+	{
+		public:
+		DirectionsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
+			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false)
+							{ setVisible (false); /* Always. */ }
 	};
 
 	/** Representing a layer of the game.
 		Tiles can be only PacManII ones. */
-	class TileLayer final : public QGAMES::TileLayer
+	class MazeLayer final : public QGAMES::TileLayer
 	{
 		public:
 		class BlinkingMaze final : public QGAMES::Layer::VisualEffect
@@ -189,7 +244,7 @@ namespace PacManII
 			bool _active;
 		};
 
-		TileLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+		MazeLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
 				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ());
 
 		/** Set the blink on/off. */

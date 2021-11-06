@@ -195,7 +195,7 @@ void PacManII::Game::setShowFPS (bool s)
 	QGAMES::AdvancedGameStateControl* gCS = 
 		dynamic_cast <QGAMES::AdvancedGameStateControl*> 
 			(gameStateBuilder () -> gameState (__PACMANII_STANDARDCONTROLGAMESTATE__));
-	assert (gCS);
+	assert (gCS != nullptr);
 
 	gCS -> setOverlay 
 		(_showFPS ? game () -> state (__QGAMES_GAMESTATEFPSNAME__) : nullptr); 
@@ -254,7 +254,7 @@ void PacManII::Game::addScoreObjects ()
 void PacManII::Game::removeScoreObjects ()
 {
 	PacManII::PacMan* pc = pacman ();
-	assert (pc); // It has to exist at this point...
+	assert (pc != nullptr); // It has to exist at this point...
 
 	// It is done one by one, 
 	// because depending on the final game different score objects could be avoided
@@ -340,7 +340,7 @@ void PacManII::Game::initializeEntitiesAndWorlds ()
 	// to guaranttee that they are kept right.
 	// Only worlds are added, because when they runtimeValues are got everything nested inside is also got.
 	PacManII::Game::Conf* cfg = dynamic_cast <PacManII::Game::Conf*> (configuration ());
-	assert (cfg);
+	assert (cfg != nullptr);
 	QGAMES::Elements elmts;
 	for (int i = 0; i < (int) wLst.size (); i++)
 		elmts.push_back (world (wLst [i]));
@@ -424,7 +424,7 @@ void PacManII::Game::initialize ()
 	QGAMES::AdvancedGameStateControl* gCS = 
 		dynamic_cast <QGAMES::AdvancedGameStateControl*> 
 			(gameStateBuilder () -> gameState (__PACMANII_STANDARDCONTROLGAMESTATE__));
-	assert (gCS);
+	assert (gCS != nullptr);
 
 #ifndef NDEBUG
 	setShowFPS (true);

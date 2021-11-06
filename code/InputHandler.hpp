@@ -54,12 +54,12 @@ namespace PacManII
 		~InputHandlerBehaviour ()
 							{ delete (_notificationData); }
 
-		virtual void onKeyboardStatus (const std::vector <bool>& kS);
-		virtual void manageKeyOnState (QGAMES::GameState* st, int kP) { }
-		virtual void manageJoystickMovementOnState (QGAMES::GameState* st, int nJ, const QGAMES::Vector& dr);
-		virtual void manageJoystickButtonOnState (QGAMES::GameState* st, int nJ, bool p, int nB, int bF);
+		virtual void onKeyboardStatus (const std::vector <bool>& kS) override;
+		virtual void manageKeyOnState (QGAMES::GameState* st, int kP) override { }
+		virtual void manageJoystickMovementOnState (QGAMES::GameState* st, int nJ, const QGAMES::Vector& dr) override;
+		virtual void manageJoystickButtonOnState (QGAMES::GameState* st, int nJ, bool p, int nB, int bF) override;
 
-		protected:
+		private:
 		// Implementation Data
 		NotificationData* _notificationData;
 		bool _force;

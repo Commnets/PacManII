@@ -29,14 +29,14 @@ namespace PacManII
 	};
 
 	/** To build the GUI systems and widgets of this game. */
-	class GUISystemBuilder : public QGAMES::StandardGUISystemBuilder
+	class GUISystemBuilder final : public QGAMES::StandardGUISystemBuilder
 	{
 		public:
 		GUISystemBuilder (const std::string& fDef, QGAMES::FormBuilder* fB)
 			:  QGAMES::StandardGUISystemBuilder (fDef, fB)
 							{ }
 
-		protected:
+		private:
 		virtual QGAMES::GUISystem* createSystem (const QGAMES::GUISystemBuilder::GUISystemDefinition& def, 
 			QGAMES::CompositeWidget* mW) override;
 		virtual QGAMES::Widget* createWidget (const QGAMES::GUISystemBuilder::WidgetDefinition& def) override;
@@ -106,7 +106,7 @@ namespace PacManII
 		virtual bool canCreateGameState (int t) const override
 						{ return (t == __PACMANII_GAMESTATECONTROLPLAYINGTYPE__); }
 
-		protected:
+		private:
 		virtual QGAMES::GameState* createControlGameState 
 			(const QGAMES::GameStateBuilder::ControlGameStateDefinition* def,
 			 const QGAMES::GameStates& sts, const QGAMES::GameStateControl::FlowMap& fl) override;
@@ -178,14 +178,15 @@ namespace PacManII
 						{ return (QGAMES::ForAdvancedGameStateControlAddon::canCreateGameState (t) ||
 								  t == __PACMANII_GAMESTATECTRLTYPE__); }
 
-		protected:
+		private:
 		virtual QGAMES::GameState* createControlGameState 
 			(const QGAMES::GameStateBuilder::ControlGameStateDefinition* def,
 			 const QGAMES::GameStates& sts, const QGAMES::GameStateControl::FlowMap& fl) override;
 	};
 
-	/** To create the movements of the game. */
-	class MovementBuilder final : public QGAMES::AdvancedMovementBuilder
+	/** To create the movements of the game. 
+		It is not a final class, because new movements can be added in future extension of the game. */
+	class MovementBuilder : public QGAMES::AdvancedMovementBuilder
 	{
 		public:
 		MovementBuilder () = delete;
@@ -203,8 +204,9 @@ namespace PacManII
 			(const QGAMES::MovementBuilder::MovementDefinition& def) override;
 	};
 
-	/** To create specific entities of the game. */
-	class EntityBuilder final : public QGAMES::AdvancedEntityBuilder
+	/** To create specific entities of the game. 
+		It is not a final class, because new entities can be added in future extension of the game. */
+	class EntityBuilder : public QGAMES::AdvancedEntityBuilder
 	{
 		public:
 		EntityBuilder () = delete;
@@ -221,17 +223,37 @@ namespace PacManII
 		virtual QGAMES::Entity* createEntity (const QGAMES::EntityBuilder::EntityDefinition& def) override;
 	};
 
-	/** The extension to create maps. */
-	class TMXMapBuilder final : public QGAMES::TMXMapBuilderAddsOn
+	/** The extension to create maps. 
+		It is not a final class, because new maps can be added in future extension of the game. */
+	class TMXMapBuilder : public QGAMES::TMXMapBuilderAddsOn
 	{
 		public:
 		TMXMapBuilder (QGAMES::Sprite2DBuilder* sB);
 
-		/** To know the basic number of frame used to represent the empty path. */
+		// Managing the tiles of the path
+		/** To know the basic number of frame used to represent things in the path. */
 		int frameForEmptyPath () const
 							{ return (_TILESPATH [0]); }
+		/** To calculate the bright frame equivalent to another that is not. */
 		int brightFrameFor (int nF) const;
+		/** The opposite of the precioud method. */
 		int darkFrameFor (int nF) const;
+
+		// Managing the tiles related to location
+		/** To know the tile frames to locate the pacman. */
+		const std::vector <int>& pacmanHomeFrames () const
+							{ return (_TILESHOMEPACMAN); }
+		/** To know the tile frames to locate monsters in the map. */
+		const std::vector <int>& monsterHomeFrames () const
+							{ return (_TILESHOMEMONSTERS); }
+		const std::vector <int>& monsterRunAwayFrames () const
+							{ return (_TILESRUNAWAYMONSTERS); }
+
+		// Managing the tiles of maze description (directions). */ 
+		/** To know the tiles describing a direction a the direction itself. 
+			4 bools: LEFT, RIGHT, UP, DOWN. */
+		const std::map <int, std::vector <bool>>& directionFrames () const
+							{ return (_TILESDIRECTIONMAZE); }
 
 		protected:
 		virtual QGAMES::Tile* createTile (int id, QGAMES::Form* form, int nf, 
@@ -246,18 +268,25 @@ namespace PacManII
 		virtual QGAMES::Map* createMapObject (int id, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD,
 			const QGAMES::MapProperties& p = QGAMES::MapProperties ()) override;
 
-		private:
+		protected:
 		bool isInType (int nF, const std::vector <int>& t) const
 							{ return (std::find (t.begin (), t.end (), nF) != t.end ()); };
 		int positionInType (int nF, const std::vector <int>& t) const;
 
-		private:
+		protected:
+		// Implementation
+		/** The tiles used to describe the path. */
 		std::vector <int> _TILESLIMITDARK, _TILESLIMITBRIGHT, 
 			_TILESPOWERBALL, _TILESNORMALBALL, _TILESPATH, _TILESPATHLIMITRIGHT, _TILESPATHLIMITLEFT;
+		/** The tiles used to define the location of monsters. */
+		std::vector <int> _TILESHOMEPACMAN, _TILESHOMEMONSTERS, _TILESRUNAWAYMONSTERS;
+		/** The equivalent between tiles to mark direection and the direction itself. */
+		std::map <int, std::vector <bool>> _TILESDIRECTIONMAZE;
 	};
 
-	/** The extension to create worlds. */
-	class WorldBuilder final : public QGAMES::WorldBuilder
+	/** The extension to create worlds. 
+		It is not a final class, because new worlds can be added in future extension of the game. */
+	class WorldBuilder : public QGAMES::WorldBuilder
 	{
 		public: 
 		WorldBuilder () = delete;
@@ -270,7 +299,7 @@ namespace PacManII
 
 		WorldBuilder& operator = (const WorldBuilder&) = delete;
 
-		private:
+		protected:
 		virtual QGAMES::World* createWorldObject (int no, const QGAMES::Scenes& s, 
 			const QGAMES::WorldProperties& p) override final;
 		virtual QGAMES::Scene* createSceneObject (int ns, const QGAMES::Maps& m, 
