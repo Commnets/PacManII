@@ -321,10 +321,17 @@ void PacManII::Scene::initialize ()
 	assert (_pacman != nullptr && 
 			_inky != nullptr && _blinky != nullptr && _pinky != nullptr && _clyde != nullptr); // It shouldn't but just in case...
 
+	_pacman -> setMap (activeMap ());
+	_inky -> setMap (activeMap ());
+	_blinky -> setMap (activeMap ());
+	_pinky -> setMap (activeMap ());
+	_clyde -> setMap (activeMap ());
+
 	// The scene has to be initialized just after characters are added...
 	QGAMES::Scene::initialize ();
 
 	// Set the initial state for each
+	// Byt the internal status will stay "_ATHOME"
 	_pacman -> setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__);
 	_inky -> setCurrentState (__PACMANII_INKYSTATEATHOMELOOKINGUP__);
 	_blinky -> setCurrentState (__PACMANII_BLINKYSTATEATHOMELOOKINGDOWN__);
@@ -334,15 +341,15 @@ void PacManII::Scene::initialize ()
 	// Set the characters in the right position of the map...
 	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (activeMap ());
 	assert (aM != nullptr);
-	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0)) - 
+	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0 /** It can be more. */)) - 
 		QGAMES::Vector (__BD (_pacman -> visualLength () >> 1), __BD (_pacman -> visualHeight () >> 1), __BD 0));
-	_inky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (0)) - 
+	_inky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Inky::_NUMBER)) - 
 		QGAMES::Vector (__BD (_inky -> visualLength ()), __BD (_inky -> visualHeight () >> 1), __BD 0));
-	_blinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (1)) - 
+	_blinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Blinky::_NUMBER)) - 
 		QGAMES::Vector (__BD (_blinky -> visualLength ()), __BD (_blinky -> visualHeight () >> 1), __BD 0));
-	_pinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (2)) - 
+	_pinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Pinky::_NUMBER)) - 
 		QGAMES::Vector (__BD (_pinky -> visualLength ()), __BD (_pinky -> visualHeight () >> 1), __BD 0));
-	_clyde -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (3)) - 
+	_clyde -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Clyde::_NUMBER)) - 
 		QGAMES::Vector (__BD (_clyde -> visualLength ()), __BD (_clyde -> visualHeight () >> 1), __BD 0));
 
 	_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
@@ -353,11 +360,17 @@ void PacManII::Scene::finalize ()
 {
 	QGAMES::Scene::finalize ();
 
-	removeCharacter (game () -> character (__PACMANII_PACMANBASEENTITYID__));
-	removeCharacter (game () -> character (__PACMANII_INKYBASEENTITYID__));
-	removeCharacter (game () -> character (__PACMANII_BLINKYBASEENTITYID__));
-	removeCharacter (game () -> character (__PACMANII_PINKYBASEENTITYID__));
-	removeCharacter (game () -> character (__PACMANII_CLYDEBASEENTITYID__));
+	_pacman -> setMap (nullptr);
+	_inky -> setMap (nullptr);
+	_blinky -> setMap (nullptr);
+	_pinky -> setMap (nullptr);
+	_clyde -> setMap (nullptr);
+
+	removeCharacter (_pacman);
+	removeCharacter (_inky);
+	removeCharacter (_blinky);
+	removeCharacter (_pinky);
+	removeCharacter (_clyde);
 
 	_pacman = nullptr;
 	_inky = nullptr; 
@@ -387,7 +400,11 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 	  _backgroundLayer (nullptr),
 	  _locationsLayer (nullptr),
 	  _directionsLayer (nullptr),
-	  _mazeLayer (nullptr)
+	  _mazeLayer (nullptr),
+	  _pacmanInitialPositions (), 
+	  _monsterInitialPositions (), 
+	  _monsterRunAwayPositions (),
+	  _monsterExitingHomePosition (QGAMES::MazeModel::_noPosition)
 { 
 	for (auto i : layers ())
 	{
@@ -432,6 +449,10 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 // ---
 QGAMES::MazeModel::PositionInMaze PacManII::Map::pacmanInitialPosition (int nP) const
 {
+	std::map <int, QGAMES::MazeModel::PositionInMaze>::const_iterator pP;
+	if ((pP = _pacmanInitialPositions.find (nP)) != _pacmanInitialPositions.end ())
+		return ((*pP).second);
+
 	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
 	assert (g);
 	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
@@ -447,12 +468,18 @@ QGAMES::MazeModel::PositionInMaze PacManII::Map::pacmanInitialPosition (int nP) 
 			result = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
 	}
 
+	_pacmanInitialPositions [nP] = result;
+
 	return (result);
 }
 
 // ---
 QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterInitialPosition (int nP) const
 {
+	std::map <int, QGAMES::MazeModel::PositionInMaze>::const_iterator mP;
+	if ((mP = _monsterInitialPositions.find (nP)) != _monsterInitialPositions.end ())
+		return ((*mP).second);
+
 	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
 	assert (g);
 	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
@@ -468,12 +495,18 @@ QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterInitialPosition (int nP)
 			result = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
 	}
 
+	_monsterInitialPositions [nP] = result;
+
 	return (result);
 }
 
 // ---
 QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterRunAwayPosition (int nP) const
 {
+	std::map <int, QGAMES::MazeModel::PositionInMaze>::const_iterator mP;
+	if ((mP = _monsterRunAwayPositions.find (nP)) != _monsterRunAwayPositions.end ())
+		return ((*mP).second);
+
 	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
 	assert (g);
 	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
@@ -489,7 +522,28 @@ QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterRunAwayPosition (int nP)
 			result = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
 	}
 
+	_monsterRunAwayPositions [nP] = result;
+
 	return (result);
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterExitingHomePosition () const
+{
+	if (_monsterExitingHomePosition != QGAMES::MazeModel::_noPosition)
+		return (_monsterExitingHomePosition);
+
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB);
+
+	for (QGAMES::Tiles::const_iterator i = _locationsLayer -> tiles ().begin (); 
+		i != _locationsLayer -> tiles ().end () && _monsterExitingHomePosition == QGAMES::MazeModel::_noPosition; i++)
+		if ((*i) -> numberFrame () == mB -> monsterExitingHomeFrame ())
+			_monsterExitingHomePosition = mapPositionToMazePosition (tilePosition ((*i), _locationsLayer));
+
+	return (_monsterExitingHomePosition);
 }
 
 // ---

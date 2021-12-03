@@ -170,7 +170,6 @@ void PacManII::Game::setLevel (int l, int nP)
 	// To maintain the coherence with the conf inherited!
 	// Here the configuracion method is invoked instead to avoid recursive!
 	setCurrentWorld (activeWorld () -> id (), nP);
-	setCurrentScene (activeWorld () -> activeScene () -> id (), nP);
 	((PacManII::Game::Conf*) configuration ()) -> setLevel ((nP == -1) ? currentPlayer () : nP, l);
 }
 

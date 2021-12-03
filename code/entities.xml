@@ -231,7 +231,7 @@
 					<!-- Not linked with anyone -->
 				</Attributes>
 			</Animation>
-			<!-- Going back home -->
+			<!-- After being eaten -->
 			<Animation id="5" type="0">
 				<Attributes>
 					<Attribute id="FORM" value="50020"/>
@@ -244,13 +244,13 @@
 			</Animation>
 		</Animations>
 		<States>
-			<!-- (Chasing/at home) Pacman while looking to the right -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
 			<State id="0" animation="0" movementBase="550010"/>
-			<!-- (Chasing/at home) Pacman while looking to the left -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the left -->
 			<State id="1" animation="1" movementBase="550010"/>
-			<!-- (Chasing/at home) Pacman while looking to the up -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the up -->
 			<State id="2" animation="2" movementBase="550010"/>
-			<!-- (Chasing/at home) Pacman while looking to the down -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550010"/>
 			<!-- Running away from Pacman (they can be eaten) -->
 			<State id="4" animation="4" movementBase="560010"/>
@@ -347,13 +347,13 @@
 			</Animation>
 		</Animations>
 		<States>
-			<!-- (Chasing/at home) Pacman while looking to the right -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
 			<State id="0" animation="0" movementBase="550020"/>
-			<!-- (Chasing/at home) Pacman while looking to the left -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the left -->
 			<State id="1" animation="1" movementBase="550020"/>
-			<!-- (Chasing/at home) Pacman while looking to the up -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the up -->
 			<State id="2" animation="2" movementBase="550020"/>
-			<!-- (Chasing/at home) Pacman while looking to the down -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550020"/>
 			<!-- Running away from Pacman (they can be eaten) -->
 			<State id="4" animation="4" movementBase="560020"/>
@@ -450,13 +450,13 @@
 			</Animation>
 		</Animations>
 		<States>
-			<!-- (Chasing/at home) Pacman while looking to the right -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
 			<State id="0" animation="0" movementBase="550030"/>
-			<!-- (Chasing/at home) Pacman while looking to the left -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the left -->
 			<State id="1" animation="1" movementBase="550030"/>
-			<!-- (Chasing/at home) Pacman while looking to the up -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the up -->
 			<State id="2" animation="2" movementBase="550030"/>
-			<!-- (Chasing/at home) Pacman while looking to the down -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550030"/>
 			<!-- Running away from Pacman (they can be eaten) -->
 			<State id="4" animation="4" movementBase="560030"/>
@@ -553,13 +553,13 @@
 			</Animation>
 		</Animations>
 		<States>
-			<!-- (Chasing/at home) Pacman while looking to the right -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
 			<State id="0" animation="0" movementBase="550040"/>
-			<!-- (Chasing/at home) Pacman while looking to the left -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the left -->
 			<State id="1" animation="1" movementBase="550040"/>
-			<!-- (Chasing/at home) Pacman while looking to the up -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the up -->
 			<State id="2" animation="2" movementBase="550040"/>
-			<!-- (Chasing/at home) Pacman while looking to the down -->
+			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550040"/>
 			<!-- Running away from Pacman (they can be eaten) -->
 			<State id="4" animation="4" movementBase="560040"/>

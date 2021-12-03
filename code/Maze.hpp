@@ -40,12 +40,17 @@ namespace PacManII
 
 		Maze& operator = (const Maze&) = default;
 
-		virtual int maxPossibleConnectionsPerPosition () const override
-								{ return (4); } // LEFT, RIGH, UP & DOWN...
-		virtual std::vector <QGAMES::Vector> possibleDirectionsAt (const PositionInMaze&) override;
-
 		static Maze generateEmptyMaze (int x, int y);
 		static Maze generateMazeFrom (int w, int h, const DirectionsLayer* dL);
+
+		protected:
+		virtual int maxPossibleConnectionsPerPosition () const override
+								{ return (4); } // LEFT, RIGH, UP & DOWN...
+		virtual std::vector <QGAMES::Vector> allPossibleDirectionsAt (const QGAMES::MazeModel::PositionInMaze&) const override;
+		virtual PositionInMaze nextPositionToFollowing 
+			(const QGAMES::MazeModel::PositionInMaze& p, const QGAMES::Vector& d) const override;
+		virtual std::vector <QGAMES::Vector> orderDirections (const QGAMES::MazeModel::PositionInMaze& p1, 
+			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& dirs) const override;
 	};
 }
 

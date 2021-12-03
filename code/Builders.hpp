@@ -248,6 +248,8 @@ namespace PacManII
 							{ return (_TILESHOMEMONSTERS); }
 		const std::vector <int>& monsterRunAwayFrames () const
 							{ return (_TILESRUNAWAYMONSTERS); }
+		int monsterExitingHomeFrame () const
+							{ return (_TILEEXITINGHOMEMONSTERS); }
 
 		// Managing the tiles of maze description (directions). */ 
 		/** To know the tiles describing a direction a the direction itself. 
@@ -280,7 +282,10 @@ namespace PacManII
 			_TILESPOWERBALL, _TILESNORMALBALL, _TILESPATH, _TILESPATHLIMITRIGHT, _TILESPATHLIMITLEFT;
 		/** The tiles used to define the location of monsters. */
 		std::vector <int> _TILESHOMEPACMAN, _TILESHOMEMONSTERS, _TILESRUNAWAYMONSTERS;
-		/** The equivalent between tiles to mark direection and the direction itself. */
+		/** The tile used to define the home exiting position. */
+		int _TILEEXITINGHOMEMONSTERS;
+		/** The equivalent between tiles to mark direection and the direction itself.
+			Th order of the second veector is LEFT/RIGHT/UP/DOWN. */
 		std::map <int, std::vector <bool>> _TILESDIRECTIONMAZE;
 	};
 

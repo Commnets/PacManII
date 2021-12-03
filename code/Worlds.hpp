@@ -129,6 +129,7 @@ namespace PacManII
 		virtual QGAMES::MazeModel::PositionInMaze pacmanInitialPosition (int nP) const;
 		virtual QGAMES::MazeModel::PositionInMaze monsterInitialPosition (int nP) const;
 		virtual QGAMES::MazeModel::PositionInMaze monsterRunAwayPosition (int nP) const;
+		virtual QGAMES::MazeModel::PositionInMaze monsterExitingHomePosition () const;
 
 		/** To convert any position in the maze in a position in the map. 
 			What is returned is always the central position. */
@@ -172,6 +173,12 @@ namespace PacManII
 		LocationsLayer* _locationsLayer;
 		DirectionsLayer* _directionsLayer;
 		MazeLayer* _mazeLayer;
+
+		/** To acclerate how runaway positions are calculated (per number of monster). */
+		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _pacmanInitialPositions;
+		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterInitialPositions;
+		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterRunAwayPositions;
+		mutable QGAMES::MazeModel::PositionInMaze _monsterExitingHomePosition;
 	};
 
 	/** Representing the background layer. */

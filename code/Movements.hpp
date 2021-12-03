@@ -20,18 +20,20 @@
 
 namespace PacManII
 {
-	/** Movements in th maze are similar for both pacman and monsters. */
+	/** Movements in the maze are similar for both pacman and monsters. */
 	class MazeMovement : public QGAMES::Movement
 	{
 		public:
+		static const int _CONSTANT = 2;
+
 		MazeMovement () = delete;
 
 		MazeMovement (int id, ::std::map <int, double> v)
 			: QGAMES::Movement (id, v),
-			  _currentMovDirection (QGAMES::Vector::_cero),
-			  _nextMovDirection (QGAMES::Vector::_cero),
-			  _position (QGAMES::Position::_cero),
-			  _firstMovement (true)
+			  _speed (__BD 0),
+			  _pathToFollow (),
+			  _lastDirection (QGAMES::Vector::_cero),
+			  _qLeft (__BD 0)
 							{ }
 
 		MazeMovement (const MazeMovement&) = delete;
@@ -42,33 +44,37 @@ namespace PacManII
 							{ return (new MazeMovement (_id, _variables)); }
 
 		virtual QGAMES::Vector direction () const override
-							{ return (_currentMovDirection); }
+							{ return (_lastDirection); }
 		virtual QGAMES::Vector acceleration () const override
-							{ return (QGAMES::Vector::_cero); }
+							{ return (QGAMES::Vector::_cero); } // No accelration in this simply movement...
 
 		/** To set the speed. 
 			This parameter comes from the configuration of the game. */
 		QGAMES::bdata speed () const
-							{ return (_inc); }
+							{ return (_speed); }
 		void setSpeed (QGAMES::bdata s)
-							{ _inc = s; }
+							{ _speed = s; }
+
+		/** Sets the path to follow. */
+		void setPathToFollow (const std::vector <QGAMES::MazeModel::PositionInMaze>& pF);
+		const std::vector <QGAMES::MazeModel::PositionInMaze>& pathToFollow () const
+							{ return (_pathToFollow); }
 
 		virtual void initialize () override;
 		virtual void initializeFrom (const QGAMES::Movement* m) override;
 		virtual void move (const QGAMES::Vector& d, const QGAMES::Vector& a, QGAMES::Entity* e) override;
 
 		protected:
-		/** The current direction of the movement. */
-		QGAMES::Vector _currentMovDirection;
-		/** The next direction of the movement. 
-			Whn the limit of the previous was reached. */
-		QGAMES::Vector _nextMovDirection; // It could be cero, meaning no movement after reaching limit
-		/** The inc in the movement, depending on the speed. */
-		QGAMES::bdata _inc;
+		/** The speed in the movement. */
+		QGAMES::bdata _speed;
+		/** The path the movement has to follow. */
+		std::vector <QGAMES::MazeModel::PositionInMaze> _pathToFollow;
 
 		// Implementation
-		QGAMES::Position _position;
-		bool _firstMovement;
+		QGAMES::Vector _lastDirection;
+		/** This variable is to define how much is left to move from th previous movement. 
+			It is actualized inside the updatePositions method. */
+		QGAMES::bdata _qLeft;
 	};
 }
 

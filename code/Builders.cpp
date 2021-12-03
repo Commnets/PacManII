@@ -2,6 +2,7 @@
 #include "Letters.hpp"
 #include "GUISystem.hpp"
 #include "Artists.hpp"
+#include "Movements.hpp"
 #include "GameStates.hpp"
 #include "Worlds.hpp"
 
@@ -258,7 +259,7 @@ QGAMES::Movement* PacManII::MovementBuilder::createMovement
 	else 
 	if (def._id >= __PACMANII_PACMANEATINGMOVEMENTBASEID__ &&
 		def._id < (__PACMANII_PACMANEATINGMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__))
-		result = new QGAMES::NoMovement (def._id, def._variables);
+		result = new PacManII::MazeMovement (def._id, def._variables);
 	else
 	// Monsters' chasing movements
 	if ((def._id >= __PACMANII_INKYCHASINGMOVEMENTBASEID__ &&
@@ -343,32 +344,33 @@ QGAMES::Entity* PacManII::EntityBuilder::createEntity (const QGAMES::EntityBuild
 // ---
 PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 	: QGAMES::TMXMapBuilderAddsOn (sB),
-	  _TILESLIMITDARK		({ 0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,20,21,22,23,24,25,26 }),
-	  _TILESLIMITBRIGHT		({ 50,51,52,53,54,55,56,57,58,59,60,62,63,64,65,66,67,70,71,72,73,74,75,76 }),
-	  _TILESPOWERBALL		({ 27,28,57,58 }),
-	  _TILESNORMALBALL		({ 29,59 }),
-	  _TILESPATH			({ 11,61,18,19,68,69 }),
-	  _TILESPATHLIMITRIGHT	({ 30,31,32,33,34,35,36,37,38,39 }),
-	  _TILESPATHLIMITLEFT	({ 40,41,42,43,44,45,46,47,48,49}),
-	  _TILESHOMEPACMAN		({ 20,21,22,23,24,25,26,27,28,29 }),
-	  _TILESHOMEMONSTERS	({ 10,11,12,13,14,15,16,17,18,19 }),
-	  _TILESRUNAWAYMONSTERS	({ 0,1,2,3,4,5,6,7,8,9 }),
-	  _TILESDIRECTIONMAZE	({	{  0, { false,	true,	false,	true	} },
-								{  1, { true,	true,	false,	true	} },
-								{  2, { true,	false,	false,	true	} },
-								{  3, { false,	false,	true,	false	} },
-								{  4, { false,	true,	false,	false	} },
-								{  5, { true,	true,	false,	false	} },
-								{  6, { true,	false,	false,	false	} },
-								{  7, { false,	true,	true,	true	} },
-								{  8, { true,	true,	true,	true	} },
-								{  9, { true,	false,	true,	true	} },
-								{ 10, { false,	false,	true,	true	} },
-								{ 11, { false,	true,	true,	false	} },
-								{ 12, { true,	true,	true,	false	} },
-								{ 13, { true,	false,	true,	false	} },
-								{ 14, { false,	false,	true,	false	} },
-								{ 15, { false,	false,	false,	false	} }})
+	  _TILESLIMITDARK			({ 0,1,2,3,4,5,6,7,8,9,10,12,13,14,15,16,17,20,21,22,23,24,25,26 }),
+	  _TILESLIMITBRIGHT			({ 50,51,52,53,54,55,56,57,58,59,60,62,63,64,65,66,67,70,71,72,73,74,75,76 }),
+	  _TILESPOWERBALL			({ 27,28,57,58 }),
+	  _TILESNORMALBALL			({ 29,59 }),
+	  _TILESPATH				({ 11,61,18,19,68,69 }),
+	  _TILESPATHLIMITRIGHT		({ 30,31,32,33,34,35,36,37,38,39 }),
+	  _TILESPATHLIMITLEFT		({ 40,41,42,43,44,45,46,47,48,49}),
+	  _TILESHOMEPACMAN			({ 20,21,22,23,24,25,26,27,28,29 }),
+	  _TILESHOMEMONSTERS		({ 10,11,12,13,14,15,16,17,18,19 }),
+	  _TILESRUNAWAYMONSTERS		({ 0,1,2,3,4,5,6,7,8,9 }),
+	  _TILEEXITINGHOMEMONSTERS	(50),
+	  _TILESDIRECTIONMAZE		({	{  0, { false,	true,	false,	true	} }, // LEFT, RIGHT, UP, DOWN
+									{  1, { true,	true,	false,	true	} },
+									{  2, { true,	false,	false,	true	} },
+									{  3, { false,	false,	true,	false	} },
+									{  4, { false,	true,	false,	false	} },
+									{  5, { true,	true,	false,	false	} },
+									{  6, { true,	false,	false,	false	} },
+									{  7, { false,	true,	true,	true	} },
+									{  8, { true,	true,	true,	true	} },
+									{  9, { true,	false,	true,	true	} },
+									{ 10, { false,	false,	true,	true	} },
+									{ 11, { false,	true,	true,	false	} },
+									{ 12, { true,	true,	true,	false	} },
+									{ 13, { true,	false,	true,	false	} },
+									{ 14, { false,	false,	true,	false	} },
+									{ 15, { false,	false,	false,	false	} }})
 {
 	assert (_TILESLIMITBRIGHT.size () == _TILESLIMITDARK.size ());
 	// The have to have the same size to change between them...

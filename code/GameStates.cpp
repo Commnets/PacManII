@@ -65,10 +65,10 @@ void PacManII::MonsterMovingGameState::onEnter ()
 
 	// All of them are set in the state running to the right...
 	_artists [0] -> setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__);
-	_artists [1] -> setCurrentState (__PACMANII_INKYSTATECHASINGANDLOOKINGRIGHT__);
-	_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATECHASINGANDLOOKINGRIGHT__);
-	_artists [3] -> setCurrentState (__PACMANII_PINKYSTATECHASINGANDLOOKINGRIGHT__);
-	_artists [4] -> setCurrentState (__PACMANII_CLYDESTATECHASINGANDLOOKINGRIGHT__);
+	_artists [1] -> setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [3] -> setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [4] -> setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGRIGHT__);
 
 	reStartAllCounters ();
 	counter (_COUNTERITERATIONS) -> initialize 
@@ -137,10 +137,10 @@ void PacManII::MonsterMovingGameState::updatePositions ()
 			else
 			{
 				_artists [0] -> setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__);
-				_artists [1] -> setCurrentState (__PACMANII_INKYSTATECHASINGANDLOOKINGRIGHT__);
-				_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATECHASINGANDLOOKINGRIGHT__);
-				_artists [3] -> setCurrentState (__PACMANII_PINKYSTATECHASINGANDLOOKINGRIGHT__);
-				_artists [4] -> setCurrentState (__PACMANII_CLYDESTATECHASINGANDLOOKINGRIGHT__);
+				_artists [1] -> setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [3] -> setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [4] -> setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGRIGHT__);
 
 				onOffSwitch (_SWITCHRIGHT) -> set (true); 
 
@@ -621,39 +621,39 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 		// Now a set of events comming from the specialized input event handler...
 		// Now the group of events related with how to control the main artist...
 		case __PACMANII_MOVINGUPEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD 0, __BD -1, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 0, __BD -1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGRIGHTEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD 1, __BD 0, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 1, __BD 0, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGUPRIGHTEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD 1, __BD -1, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 1, __BD -1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGDOWNEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD 0, __BD 1, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 0, __BD 1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGDOWNRIGHTEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD 1, __BD 1, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 1, __BD 1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGLEFTEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD -1, __BD 0, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD 0, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGUPLEFTEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD -1, __BD -1, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD -1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGDOWNLEFTEVENT__:
-			_pacman -> toMove (QGAMES::Vector (__BD -1, __BD 1, __BD 0));
+			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD 1, __BD 0));
 			break;
 
 		case __PACMANII_NOMOVINGEVENT__:
-			_pacman -> toMove (QGAMES::Vector::_cero);
+			_pacman -> changeDirectionWhenPossibleTo (_pacman -> direction ()); // Maintains th last direction...
 			break;
 
 		case __PACMANII_FIREEVENT__:
