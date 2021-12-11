@@ -21,7 +21,7 @@
 namespace PacManII
 {
 	/** Movements in the maze are similar for both pacman and monsters. */
-	class MazeMovement : public QGAMES::Movement
+	class MazeMovement final : public QGAMES::Movement
 	{
 		public:
 		static const int _CONSTANT = 2;
@@ -31,7 +31,6 @@ namespace PacManII
 		MazeMovement (int id, ::std::map <int, double> v)
 			: QGAMES::Movement (id, v),
 			  _speed (__BD 0),
-			  _pathToFollow (),
 			  _lastDirection (QGAMES::Vector::_cero),
 			  _qLeft (__BD 0)
 							{ }
@@ -55,11 +54,6 @@ namespace PacManII
 		void setSpeed (QGAMES::bdata s)
 							{ _speed = s; }
 
-		/** Sets the path to follow. */
-		void setPathToFollow (const std::vector <QGAMES::MazeModel::PositionInMaze>& pF);
-		const std::vector <QGAMES::MazeModel::PositionInMaze>& pathToFollow () const
-							{ return (_pathToFollow); }
-
 		virtual void initialize () override;
 		virtual void initializeFrom (const QGAMES::Movement* m) override;
 		virtual void move (const QGAMES::Vector& d, const QGAMES::Vector& a, QGAMES::Entity* e) override;
@@ -67,8 +61,6 @@ namespace PacManII
 		protected:
 		/** The speed in the movement. */
 		QGAMES::bdata _speed;
-		/** The path the movement has to follow. */
-		std::vector <QGAMES::MazeModel::PositionInMaze> _pathToFollow;
 
 		// Implementation
 		QGAMES::Vector _lastDirection;

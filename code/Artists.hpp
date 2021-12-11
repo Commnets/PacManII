@@ -27,17 +27,12 @@ namespace PacManII
 	class Artist : public QGAMES::ArtistInATiledMap
 	{
 		public:
+		friend class MazeMovement;
+
 		Artist () = delete;
 
 		Artist (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: QGAMES::ArtistInATiledMap (cId, f, d),
-			  _lastMazePosition (QGAMES::MazeModel::_noPosition),
-			  _pathInMaze (), // No defined by default...
-			  _referenceArtists (),
-			  _nextDirectionWhenPossible (QGAMES::Vector::_cero),
-			  _referenceArtistLastMazePositions ()
-							{ }
+				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ());
 
 		Artist (const Artist&) = delete;
 
@@ -50,20 +45,11 @@ namespace PacManII
 		const QGAMES::MazeModel::PositionInMaze lastMazePosition () const
 							{ return (_lastMazePosition); }
 
-		/** When it is needed to change the direction of the movement, 
-			this method should be invoked. The artist will change when possible. */
-		const QGAMES::Vector& directionWhenPossible () const
-							{ return (_nextDirectionWhenPossible); }
-		void changeDirectionWhenPossibleTo (const QGAMES::Vector& d)
-							{ _nextDirectionWhenPossible = d; }
-
 		/** To load other artists taken as a reference for this. */
 		const std::vector <const Artist*>& referenceArtists () const
 							{ return (_referenceArtists); }
 		virtual void setReferenceArtists (const std::vector <const Artist*>& r)
 							{ _referenceArtists = r; }
-		void keepLastReferenceArtistsPosition ();
-		bool hasReferenceArtistsPositionChanged () const;
 
 		virtual bool canMove (const QGAMES::Vector& d, const QGAMES::Vector& a) override;
 
@@ -75,38 +61,19 @@ namespace PacManII
 		/** To identify whether it is moving or not. */
 		virtual bool isMoving () const = 0;
 
-		// To control the different positions of the artist
-		/** To know the movement path of the artist if any. */
-		const std::vector <QGAMES::MazeModel::PositionInMaze>& pathInMaze () const
-							{ return (_pathInMaze); }
-		/** To set the path to the target fromthe current position. 
-			There is gneric way, but it can be redefined by typ of monster. */
-		virtual void calculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d);
-		/** To cancel the path. */
-		void anulePath ()
-							{ _pathInMaze = { }; }
-		/** To reduce the path in x elemnts from the beginning. */
-		void extractStepsFromPath (int nS);
-		/** To know which is the maze position if the position in the map was... \n
-			Obviouslly it makes only sense when the map has been set, otherwise returns no position. */
-		QGAMES::MazeModel::PositionInMaze mapPositionToMazePosition (const QGAMES::Position& p) const;
-		/** The opposite of the previous one. \n
-			To get the maze position from a theoretical maze position. \n 
-			Obviously it makes sense only when the map has been defined, otherwise it returns no position. */
-		QGAMES::Position mazePositionToMapPosition (const QGAMES::MazeModel::PositionInMaze& p) const;
+		/** When it is needed to change the direction of the movement, 
+			this method should be invoked. The artist will change when possible. */
+		void changeDirectionWhenPossibleTo (const QGAMES::Vector& d);
+
 		/** To know which is the current position in the maze. 
 			This method makes only sense when map has been set. */
 		QGAMES::MazeModel::PositionInMaze currentMazePosition () const
 							{ return (mapPositionToMazePosition (position ())); }
-		/** To know whether the current position matches exactly a tile position. \n
-			Makes sense only when map has been set. */
-		bool positionMatchesTile (const QGAMES::Position& p) const;
-		/** What is the target maze position of the artist. 
-			The target will depend on the artists itself, and even (in the case of monsters e.g.) on the status of it!. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const = 0;
-		/** To know the next target position of the artist. \n
-			The parameter indicats the number of step. It is grater than the maximum one, a no position is returned. */
-		QGAMES::MazeModel::PositionInMaze nextMazePosition (int n = 0) const;
+		/** To know what is the next expected position of the artist in the map. */
+		QGAMES::MazeModel::PositionInMaze nextMazePosition (int n = 0) const
+							{ return (_pathInMaze.empty () 
+								? currentMazePosition () 
+								: ((n < (int) _pathInMaze.size ()) ? _pathInMaze [n] : QGAMES::MazeModel::_noPosition)); }
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;
@@ -114,9 +81,10 @@ namespace PacManII
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		protected:
-		/** To facilitate the internal conversion. */
-		inline const Map* pMap () const;
-		inline Map* pMap ();
+		// Method to really overload per type of artist
+		/** What is the target maze position of the artist. 
+			The target will depend on the artists itself, and even (in the case of monsters e.g.) on the status of it!. */
+		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const = 0;
 
 		// To control the aspect and what to do when stopping and moving
 		/** To change the state of the artist to stand looking to a direction. */
@@ -127,14 +95,58 @@ namespace PacManII
 		virtual void whatToDoWhenStopIsRequested () = 0;
 		/** What to do when it is the beginning of a new requested movement. */
 		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) = 0;
+		/** What to do when artists is on a specific position in the maze.
+			What it is beneath the artist should modify actually the behaviour. \n
+			By default nothing is done. */
+		virtual void whatToDoOnPosition (const QGAMES::MazeModel::PositionInMaze& p)
+							{ }
+
+		/** Define a buoy to stop within the inEveryLoop method. */
+		class ToStopBuoy : public QGAMES::Buoy
+		{
+			public:
+			ToStopBuoy ()
+				: QGAMES::Buoy (__PACMANII_TOSTOPBUOYID__, (QGAMES::bdata) 0)
+							{ /** Nothing else to do. */ }
+
+			virtual void* treatFor (QGAMES::Element* e);
+		};
+
+		/** The method to stop deferred. */
+		void toStopDeferred ();
+
+		// Implementation
+		// Used many times inside...
+		/** Returns the PacMan map used. */
+		inline const Map* pMap () const; // Not defined here to avoid recursive #include
+		/** Same than above. */
+		inline Map* pMap ();
+		/** To convert a map position into a maze position. 
+			It relies in the information of the map. */
+		inline QGAMES::MazeModel::PositionInMaze mapPositionToMazePosition (const QGAMES::Position& p) const;
+		/** The opposite. It gives back position in the map from maze position. \n
+			The position returned is the center of the tile representing that maze position. */
+		inline QGAMES::Position mazePositionToMapPosition (const QGAMES::MazeModel::PositionInMaze& p) const;
+		/** Returns true when a map position is aligned exactly with an equivalent maze position. \n
+			This method is very useful to determine when is time for the artist to change the path followed. */
+		bool doesPositionMatchesTile (const QGAMES::Position& p) const;
+		/** To reacalculate the path to follow (usually 2 steps more) from the current position. \n
+			It doesn't matter whether it is aligned with the maze position, but usually it is invoked in that situation. */
+		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d);
+		/** To know whether the current situation in the path implies entering or not a tunnel. \n
+			It is useful to know e.g whether to move th eposition of the artist. */
+		bool isArtistEnteringATunnel () const;
+		/** To know whether the reference artists of the this on have or not change their positions. \n
+			In some cases, when this happens, the artist could vary it path. */
+		bool hasReferenceArtistsPositionChanged () const; 
 
 		protected:
 		QGAMES::MazeModel::PositionInMaze _lastMazePosition;
-		QGAMES::Vector _nextDirectionWhenPossible;
 		std::vector <QGAMES::MazeModel::PositionInMaze> _pathInMaze;
 		std::vector <const Artist*> _referenceArtists;
 
 		// Implementation
+		QGAMES::Vector _nextDirectionWhenPossible;
 		std::map <int, QGAMES::MazeModel::PositionInMaze> _referenceArtistLastMazePositions;
 	};
 
@@ -147,8 +159,7 @@ namespace PacManII
 			: Artist (cId, f, d),
 			  _alive (true),
 			  _chasing (false),
-			  _score (0),
-			  _counter (0)
+			  _score (0)
 							{ }
 
 		virtual Entity* clone () const override
@@ -174,21 +185,24 @@ namespace PacManII
 		// The movements of the pacman
 		void toShoot (int f, const QGAMES::Vector& d);
 
-		/** The target position is the limit of the maze in the current direction of the movement. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-
 		virtual void initialize () override;
 		virtual void updatePositions () override;
 		virtual void finalize () override;
 
 		protected:
+		/** The target position is the limit of the maze in the current direction of the movement. */
+		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
+
 		virtual void setStateToStandLookingTo (const QGAMES::Vector& d) override;
 		virtual void setStateToMoveTo (const QGAMES::Vector& d) override;
 		virtual void whatToDoWhenStopIsRequested () override;
 		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) override;
 
-		/** Internal method to adapt the speed. */
+		// Implementation
 		void adaptSpeed ();
+		/** It is a little bit different that the standard on as the movements made by the player 
+			in the joystick or keyboard have to be taken into account. */
+		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d) override;
 
 		private:
 		/** To indicate whether the pacman is alive. */
@@ -197,9 +211,6 @@ namespace PacManII
 		bool _chasing;
 		/** The score of the pacman. It is get and put back into the game. */
 		int _score;
-
-		// Implementation
-		int _counter;
 	};
 
 	/** What the machine controls. */
@@ -234,9 +245,6 @@ namespace PacManII
 		virtual bool isMoving () const override
 							{ return (true); }
 
-		/** To know where is the place to run away id needed. */
-		QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;
-
 		/** To set the the artist to pursuit. Usually it is a pacman, but... \n
 			It is null when none is pursuited. */
 		virtual void toPursuit (const Artist* a)
@@ -251,6 +259,9 @@ namespace PacManII
 		protected:
 		virtual void whatToDoWhenStopIsRequested () override;
 		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) override;
+
+		// Implementation
+		inline QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;
 
 		protected:
 		/** The number of the monster. */

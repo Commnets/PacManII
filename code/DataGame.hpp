@@ -7,7 +7,7 @@
  *	Game: PacManII \n
  *	Author: Ignacio Cea Forniés (Community Networks) \n
  *	Creation Date: 22/08/2021 \n
- *	Description: To include the definition data of the PacManII. \n
+ *	Description: To keep the main paramters to run a Pacman game. \n
  *	Versions: 1.0 Initial
  */
 
@@ -18,209 +18,147 @@
 
 namespace PacManII
 {
-	/** General data defining the game.
+	/** 
+		General data defining the game.
 		All información is describe in the pacman dossier, 
-		written down by Jamie Pittman: https://www.gamasutra.com/view/feature/3938/the_pacman_dossier.php?print=1. 
-		The class has been built to be used in const expressions. */
+		written down by Jamie Pittman: https://www.gamasutra.com/view/feature/3938/the_pacman_dossier.php?print=1.
+	  */
 	class DataGame final
 	{
 		public:
-		/** In pacman things like the relative speed among monsters and pacman, how much pacman delays when eats a ball,
-			or many other things, varies depending on the level. */
 		class LevelDefinition final
 		{
 			public:
-			/** Any monster consideres one of the four corners as his/her home.
-				During a game, the bad guys moves periodically between an attacking mode (chase) and a more relaxed one (scatter). 
-				The time between that two moments depends on the level. In a specific level 4 cycles minimum happens. */
 			class ScatterChaseCycle final
 			{
 				public:
-				constexpr ScatterChaseCycle ()
-					: _secondsScatter1 (7), _secondsChase1 (20), 
-					  _secondsScatter2 (7), _secondsChase2 (20),
-					  _secondsScatter3 (7), _secondsChase3 (20),
-					  _secondsScatter4 (7), _secondsChase4 (-1) // Infinite in the last one.
+				ScatterChaseCycle ()
+					: _secondsScatter (7), _secondsChase (20)
 							{ }
 
-				constexpr ScatterChaseCycle 
-						(int sS1, int sC1, int sS2, int sC2, int sS3, int sC3, int sS4, int sC4 = -1 /** meaning infinite */)
-					: _secondsScatter1 (sS1), _secondsChase1 (sC1),
-					  _secondsScatter2 (sS2), _secondsChase2 (sC2),
-					  _secondsScatter3 (sS3), _secondsChase3 (sC3),
-					  _secondsScatter4 (sS4), _secondsChase4 (sC4)
+				ScatterChaseCycle (unsigned int sS, unsigned int sC)
+					: _secondsScatter(sS), _secondsChase (sC)
 							{ }
 
-				constexpr ScatterChaseCycle (const ScatterChaseCycle&) = default;
+				ScatterChaseCycle (const ScatterChaseCycle&) = default;
 
-				constexpr ScatterChaseCycle& operator = (const ScatterChaseCycle&) = default;
+				ScatterChaseCycle& operator = (const ScatterChaseCycle&) = default;
 
-				constexpr int secondsScatter (int i) const
-							{ return ((i == 1) ? _secondsScatter1 
-												: ((i == 2) ? _secondsScatter2 
-															: ((i == 3) ? _secondsScatter3 : _secondsScatter4))); }
-				constexpr int secondsChase (int i) const
-							{ return ((i == 1) ? _secondsChase1 
-												: ((i == 2) ? _secondsChase2 
-															: ((i == 3) ? _secondsChase3 : _secondsChase4))); }
+				int secondsScatter () const
+							{ return (_secondsScatter); }
+				int secondsChase () const
+							{ return (_secondsChase); }
 
 				private:
-				int _secondsScatter1, _secondsChase1;
-				int _secondsScatter2, _secondsChase2;
-				int _secondsScatter3, _secondsChase3;
-				int _secondsScatter4, _secondsChase4;
+				/** Seconds running away from pacman to home,
+					and seconds chasing pacman. */
+				const unsigned int _secondsScatter, _secondsChase;
 			};
 
-			constexpr LevelDefinition ()
-				: _worldTypeId (__PACMANII_WORLD__),
-				  _sceneTypeId (__PACMANII_BASICSCENE__),
-				  _mapTypeId (__PACMANII_BASICMAP__),
-				  _bonusSymbolId (0),
-				  _bonusPoints (100),
-				  _scatterChaseCycle (/* the default one. */),
-				  _pacmanSpeed (1.0f), 
-				  _pacmanSpeedWhenEatingDots (1.0f), 
-				  _pacmanSpeedWhenFrighting (1.0f), 
-				  _pacmanSpeedWhenEatingFrightingDots (1.0f),
-				  _ghostSpeeed (1.0f), 
-				  _ghostSpeedWhenBeingFrighten (1.0f), 
-				  _ghostSpeedWhenCrossingTunnel (1.0f)
+			typedef std::vector <ScatterChaseCycle> ScatterChaseCycles;
+
+			LevelDefinition ()
+				: _worldTypeId (__PACMANII_WORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
+				  _bonusSymbolId (0), _bonusPoints (100),
+				  _scatterChaseCycles ({ ScatterChaseCycle () }),
+				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
+						_pacmanSpeedWhenFrighting (1.0f), _pacmanSpeedWhenEatingFrightingDots (1.0f),
+				  _ghostSpeeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
+						_ghostSpeedWhenCrossingTunnel (1.0f)
 							{ }
 
-			constexpr LevelDefinition (int wT, int sT, int mT, int bS, int bP, const ScatterChaseCycle& sC, 
+			LevelDefinition (int wT, int sT, int mT, int bS, int bP, const ScatterChaseCycles& sC, 
 					double pS, double pED, double pWF, double pWEFD, double gS, double gWF, double gWT)
-				: _worldTypeId (wT),
-				  _sceneTypeId (sT),
-				  _mapTypeId (mT),
-				  _bonusSymbolId (bS),
-				  _bonusPoints (bP),
-				  _scatterChaseCycle (sC),
-				  _pacmanSpeed (pS), 
-				  _pacmanSpeedWhenEatingDots (pED), 
-				  _pacmanSpeedWhenFrighting (pWF), 
-				  _pacmanSpeedWhenEatingFrightingDots (pWEFD),
-				  _ghostSpeeed (gS), 
-				  _ghostSpeedWhenBeingFrighten (gWF), 
-				  _ghostSpeedWhenCrossingTunnel (gWT)
-							{ }
+				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
+				  _bonusSymbolId (bS), _bonusPoints (bP),
+				  _scatterChaseCycles (sC),
+				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
+						_pacmanSpeedWhenFrighting (pWF), _pacmanSpeedWhenEatingFrightingDots (pWEFD),
+				  _ghostSpeeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
+						_ghostSpeedWhenCrossingTunnel (gWT)
+							{ assert (_scatterChaseCycles.size () != 0); }
 
-			constexpr LevelDefinition (const LevelDefinition&) = default;
+			LevelDefinition (const LevelDefinition&) = default;
 
-			constexpr LevelDefinition& operator = (const LevelDefinition&) = default;
+			LevelDefinition& operator = (const LevelDefinition&) = default;
 
-			constexpr int worldTypeId () const
+			int worldTypeId () const
 							{ return (_worldTypeId); }
-			constexpr int sceneTypeId () const 
+			int sceneTypeId () const 
 							{ return (_sceneTypeId); }
-			constexpr int mapTypeId () const
+			int mapTypeId () const
 							{ return (_mapTypeId); }
-			constexpr int bonusSymbolId () const 
+			int bonusSymbolId () const 
 							{ return (_bonusSymbolId); }
-			constexpr int bonusPoints () const 
+			int bonusPoints () const 
 							{ return (_bonusPoints); }
-			constexpr const ScatterChaseCycle& scatterChaseCycle () const 
-							{ return (_scatterChaseCycle); }
-			constexpr double pacmanSpeed () const 
+			const ScatterChaseCycle& scatterChaseCycle (unsigned int n) const 
+							{ return (n > _scatterChaseCycles.size () 
+								? _scatterChaseCycles [_scatterChaseCycles.size () - 1] : _scatterChaseCycles [n]); }
+			double pacmanSpeed () const 
 							{ return (_pacmanSpeed); } 
-			constexpr double pacmanSpeedWhenEatingDots () const 
+			double pacmanSpeedWhenEatingDots () const 
 							{ return (_pacmanSpeedWhenEatingDots); }
-			constexpr double pacmanSpeedWhenFrighting () const 
+			double pacmanSpeedWhenFrighting () const 
 							{ return (_pacmanSpeedWhenFrighting); }
-			constexpr double pacmanSpeedWhenEatingFrightingDots () const 
+			double pacmanSpeedWhenEatingFrightingDots () const 
 							{ return (_pacmanSpeedWhenEatingFrightingDots); } 
-			constexpr double ghostSpeeed () const 
+			double ghostSpeeed () const 
 							{ return (_ghostSpeeed); }
-			constexpr double ghostSpeedWhenBeingFrighten () const 
+			double ghostSpeedWhenBeingFrighten () const 
 							{ return (_ghostSpeedWhenBeingFrighten); }
-			constexpr double ghostSpeedWhenCrossingTunnel () const 
+			double ghostSpeedWhenCrossingTunnel () const 
 							{ return (_ghostSpeedWhenCrossingTunnel); }
 
 			private:
-			int _worldTypeId; // Usually it will be the same for all scenes in the game...
-			int _sceneTypeId;
-			int _mapTypeId;
-			int _bonusSymbolId;
-			int _bonusPoints;
-			ScatterChaseCycle _scatterChaseCycle;
-			double _pacmanSpeed; /** Percentage eover the maximum possible. */
-			double _pacmanSpeedWhenEatingDots;
-			double _pacmanSpeedWhenFrighting;
-			double _pacmanSpeedWhenEatingFrightingDots;
-			double _ghostSpeeed;
-			double _ghostSpeedWhenBeingFrighten;
-			double _ghostSpeedWhenCrossingTunnel;
+			/** The word, the scene and the map of the level. */
+			const int _worldTypeId; 
+			const int _sceneTypeId;
+			const int _mapTypeId;
+			/** Id of the symbol that will appears randomly at pacman's home after several of seconds. */
+			const int _bonusSymbolId;
+			/** How many point will eating it give you? */
+			const int _bonusPoints;
+			/** The cycles beetween scatting and chaseing */
+			const ScatterChaseCycles _scatterChaseCycles;
+			// Proportion eover the maximum possible...
+			/** Usual Pacman speed. */
+			const double _pacmanSpeed; 
+			/** Pacman's speed when eating dots. */
+			const double _pacmanSpeedWhenEatingDots;
+			/** Pacman's speed when chaesing monsters after eeating a poweer dot. */
+			const double _pacmanSpeedWhenFrighting;
+			/** Pacman's sped when bot eating and cheasing happens at the same time. */
+			const double _pacmanSpeedWhenEatingFrightingDots;
+			/** Usual Monster speed. */
+			const double _ghostSpeeed;
+			/** Monster's speed when are frighten because Pacman has eaten a power dot. */
+			const double _ghostSpeedWhenBeingFrighten;
+			/** Monster's speed when they are facind the tunnel. */
+			const double _ghostSpeedWhenCrossingTunnel;
 		};
 
-		inline constexpr DataGame ();
+		typedef std::vector <LevelDefinition> LevelDefinitions;
 
-		constexpr DataGame (const DataGame& d) = default;
+		DataGame (const LevelDefinitions& l = { LevelDefinition () })
+			: _levels (l)
+							{ }
 
-		constexpr DataGame& operator = (const DataGame& d) = default;
+		DataGame (const DataGame& d) = default;
 
-		/** Parameter starts in 1. */
-		constexpr const LevelDefinition& levelDefinition (int lD) const
-							{ return (_levels [lD - 1]); }
+		DataGame& operator = (const DataGame& d) = default;
 
-		constexpr const int numberLevels () const
-							{ return (__PACMANII_MAXNUMBERLEVELS__); }
+		/** Parameter starts in 1. 
+			The last on always repeat. */
+		const LevelDefinition& levelDefinition (unsigned int lD) const
+							{ return ((lD <= _levels.size ()) ? _levels [lD - 1] : _levels [_levels.size () - 1]); }
 
-		LevelDefinition _levels [__PACMANII_MAXNUMBERLEVELS__];
+		const unsigned int numberLevelsDefined () const
+							{ return ((unsigned int) _levels.size ()); }
+
+		private:
+		const LevelDefinitions _levels;
 	};
-
-	// ---
-	inline constexpr DataGame::DataGame ()
-		: _levels ()
-	{
-		DataGame::LevelDefinition::ScatterChaseCycle sC1 (7, 20, 7, 20, 5, 20, 5); // Only in level 1...
-		DataGame::LevelDefinition::ScatterChaseCycle sC2 (7, 20, 7, 20, 5, 20, 5); // From level 2 to 4...
-		DataGame::LevelDefinition::ScatterChaseCycle sC3 (7, 20, 7, 20, 5, 20, 5); // From level 5 onwards...
-
-		_levels [0]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC1, 0.80, 0.71, 0.90, 0.79, 0.75, 0.50, 0.40);
-		_levels [2]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC2, 0.90, 0.79, 0.95, 0.83, 0.85, 0.55, 0.45);
-		_levels [3]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC2, 0.90, 0.79, 0.95, 0.83, 0.85, 0.55, 0.45);
-		_levels [4]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC2, 0.90, 0.79, 0.95, 0.83, 0.85, 0.55, 0.45);
-		_levels [5]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [6]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [7]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [8]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [9]  = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [10] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [11] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [12] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [13] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [14] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [15] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [16] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [17] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [18] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [19] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-		_levels [20] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50);
-
-		// From level 21 onwards, all are the same...
-		_levels [21] = DataGame::LevelDefinition (__PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
-					0, 200, sC3, 0.90, 0.79, 0.90, 0.79, 0.95, 0.95, 0.50);
-		for (int i = 22; i < __PACMANII_MAXNUMBERLEVELS__; _levels [i++] = _levels [21]);
-	}
 }
 
 #endif

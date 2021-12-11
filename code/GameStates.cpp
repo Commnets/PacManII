@@ -652,9 +652,12 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD 1, __BD 0));
 			break;
 
+/** 
+	When nothing is pressed, pacman continues moving toward the direction
 		case __PACMANII_NOMOVINGEVENT__:
 			_pacman -> changeDirectionWhenPossibleTo (_pacman -> direction ()); // Maintains th last direction...
 			break;
+*/
 
 		case __PACMANII_FIREEVENT__:
 			{
@@ -664,6 +667,8 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 			}
 
 			break;
+
+		// Doing nothing with th joystick, doesn't mean to stop!
 		// ---
 
 		// Observing the loop just to add seconds to the time that the player has been playing

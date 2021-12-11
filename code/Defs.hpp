@@ -216,6 +216,7 @@
 #define __PACMANII_BALLEATEN__										50200
 // Related with the movement in the maze
 #define __PACMANII_LIMITMOVEMENTREACHED__							50201
+#define __PACMANII_MOVEMENTDORIENTATIONCHANGED__					50202
 
 // The World and Scenes used for the game
 #define __PACMANII_WORLD__											50000
@@ -231,6 +232,9 @@
 // The types of tiles in pacman: either a limit, a normal ball or power...
 #define __PACMANII_LIMITTILE__										50000
 #define __PACMANII_PATH__											50001
+
+// Buouy to stop the movement of the character
+#define __PACMANII_TOSTOPBUOYID__									0
 
 #endif
   

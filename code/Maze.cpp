@@ -5,18 +5,17 @@
 // ---
 std::vector <QGAMES::Vector> PacManII::Maze::allPossibleDirectionsAt (const PositionInMaze& p) const
 {
-	QGAMES::SetOfOpenValues mI = mazeInfoAt (p);
-	assert (mI.existOpenValue (0) && mI.existOpenValue (1) && 
-			mI.existOpenValue (2) && mI.existOpenValue (3)); // There must by 4 values...
-
 	std::vector <QGAMES::Vector> result;
 
-	// LEFT, RIGHT, UP, DOWN in th openValues,
-
+	// LEFT, RIGHT, UP, DOWN in the openValues,
+	QGAMES::SetOfOpenValues mI = mazeInfoAt (p);
 	if (mI.openValue (0).boolValue ()) result.push_back (QGAMES::Vector (__BD -1, __BD  0, __BD 0));
 	if (mI.openValue (1).boolValue ()) result.push_back (QGAMES::Vector (__BD  1, __BD  0, __BD 0));
 	if (mI.openValue (2).boolValue ()) result.push_back (QGAMES::Vector (__BD  0, __BD -1, __BD 0));
 	if (mI.openValue (3).boolValue ()) result.push_back (QGAMES::Vector (__BD  0, __BD  1, __BD 0));
+	// If the point is a tunnel,...
+	if (result.size () == 1 && mI.existOpenValue (4))
+		result.push_back (-result [0]);	// then the opposite direction to the only one allowed is also added (continue)
 
 	return (result);
 }
@@ -25,13 +24,23 @@ std::vector <QGAMES::Vector> PacManII::Maze::allPossibleDirectionsAt (const Posi
 QGAMES::MazeModel::PositionInMaze PacManII::Maze::nextPositionToFollowing 
 	(const QGAMES::MazeModel::PositionInMaze& p, const QGAMES::Vector& d) const
 {
-	QGAMES::MazeModel::PositionInMaze nP = p + d;
+	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
 
-	if (!isInMaze (nP))
-		return (QGAMES::MazeModel::_noPosition);
+	QGAMES::MazeModel::PositionInMaze nP = p + d; // The natural movement...
+	if (!isInMaze (nP)) // but if it is out...
+	{
+		QGAMES::SetOfOpenValues mI = mazeInfoAt (p);
+		if (mI.existOpenValue (4)) // ...it could be a tunnel, if it is defined as it!
+			result = QGAMES::MazeModel::PositionInMaze (QGAMES::Vector (mI.openValue (4).strValue ()));
+	}
+	else
+	{
+		std::vector <QGAMES::Vector> aP = allPossibleDirectionsAt (nP);
+		if (std::find (aP.begin (), aP.end (), -d) != aP.end ()) 
+			result = nP; 
+	}
 
-	std::vector <QGAMES::Vector> aP = allPossibleDirectionsAt (nP);
-	return ((std::find (aP.begin (), aP.end (), -d) == aP.end ()) ? QGAMES::MazeModel::_noPosition : nP); 
+	return (result);
 }
 
 // ---
@@ -76,6 +85,43 @@ std::vector <QGAMES::Vector> PacManII::Maze::orderDirections
 }
 
 // ---
+QGAMES::MazeModel::PathInMaze PacManII::Maze::next2StepsToGoTo (const QGAMES::MazeModel::PositionInMaze& p1, 
+	const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d) const
+{
+	std::vector <QGAMES::Vector> aD = getValidAndOrderedDirectionsPossibleFromTo (p1, p2, d);
+
+	QGAMES::MazeModel::PathInMaze result = { p1 };
+
+	if (aD.empty ())
+		return (result);
+
+	if (p1 == p2)
+		return (result);
+
+	QGAMES::MazeModel::PositionInMaze pA = QGAMES::MazeModel::_noPosition;
+	QGAMES::bdata mD = __MAXBDATA__;
+	for (auto i : aD)
+	{
+		if (std::find (d.begin (), d.end (), i) == d.end ())
+		{
+			QGAMES::MazeModel::PositionInMaze nP = nextPositionToFollowing (p1, i);
+			assert (nP != QGAMES::MazeModel::_noPosition); // It shouldn't but who knows!
+			QGAMES::bdata pD;
+			if ((pD = nP.asVector ().distanceTo (p2.asVector ())) < mD)
+			{
+				pA = p1 + i;
+				mD = pD;
+			}
+		}
+	}
+
+	if (pA != QGAMES::MazeModel::_noPosition)
+		result.push_back (pA);
+
+	return (result);
+}
+
+// ---
 PacManII::Maze PacManII::Maze::generateEmptyMaze (int x, int y)
 {
 	assert (x > 0 && y > 0);
@@ -92,16 +138,17 @@ PacManII::Maze PacManII::Maze::generateEmptyMaze (int x, int y)
 }
 
 // ---
-PacManII::Maze PacManII::Maze::generateMazeFrom (int x, int y, const PacManII::DirectionsLayer* dL)
+PacManII::Maze PacManII::Maze::generateMazeFrom (int x, int y, const PacManII::Map* mp)
 {
-	assert (x > 0 && y > 0 && dL != nullptr);
+	assert (x > 0 && y > 0 && mp != nullptr);
 
-	// Generate the map
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (QGAMES::Game::game ());
 	assert (g != nullptr);
 	PacManII::TMXMapBuilder* tB = g -> tmxAddsOnMapBuilder ();
+
+	// Generate the basic connections...
 	std::vector <QGAMES::SetOfOpenValues> mV;
-	for (auto i : dL -> tiles ())
+	for (auto i : mp -> directionsLayer () -> tiles ())
 	{
 		QGAMES::SetOfOpenValues tV;
 		if (dynamic_cast <QGAMES::NullTile*> (i) != nullptr)
@@ -123,5 +170,47 @@ PacManII::Maze PacManII::Maze::generateMazeFrom (int x, int y, const PacManII::D
 
 	assert ((int) mV.size () == (x * y));
 
-	return (PacManII::Maze (x, y, mV));
+	PacManII::Maze result (x, y, mV);
+
+	// Now it is time to add the info of the tunnels...
+	// First reads the info...
+	int cT = 0;
+	std::map <int, std::vector <QGAMES::MazeModel::PositionInMaze>> tunnelPos;
+	for (auto i : mp -> locationsLayer () -> tiles ())
+	{
+		if (std::find (tB -> connectionFrames ().begin (), 
+					   tB -> connectionFrames ().end (), i -> numberFrame ()) != tB -> connectionFrames ().end ())
+		{
+			// The tunnels have to be defined in the limits of the map...
+			assert (cT % x == 0 || cT % x == (x - 1) || 
+					cT / x == 0 || cT / x == (y - 1));
+
+			tunnelPos [i -> numberFrame () - tB -> connectionFrames ()[0]].
+				push_back (QGAMES::MazeModel::PositionInMaze (cT % x, cT / x, 0));
+		}
+
+		cT++;
+	}
+
+	// ...and finally adds that info to the info related with the path...
+	for (auto i : tunnelPos)
+	{
+		assert (i.second.size () == 2); // Entry and exit position...
+
+		// only one direction allowed to define a tunnel...
+		assert ((int) result.allPossibleDirectionsAt (i.second [0]).size () == 1); 
+		QGAMES::SetOfOpenValues mI1 = result.mazeInfoAt (i.second [0]);
+		mI1.addOpenValue (mI1.lastOpenValueId () + 1, 
+			QGAMES::OpenValue ((std::stringstream () << i.second [1].asVector ()).str ()));
+		result.setMazeInfoAt (i.second [0], mI1);
+
+		// only one direction allowed to define a tunnel...
+		assert ((int) result.allPossibleDirectionsAt (i.second [1]).size () == 1); // only one direction...
+		QGAMES::SetOfOpenValues mI2 = result.mazeInfoAt (i.second [1]);
+		mI2.addOpenValue (mI2.lastOpenValueId () + 1, 
+			QGAMES::OpenValue ((std::stringstream () << i.second [0].asVector ()).str ()));
+		result.setMazeInfoAt (i.second [1], mI2);
+	}
+
+	return (result);
 }

@@ -4,10 +4,166 @@
 #include "Worlds.hpp"
 
 // ---
-void PacManII::Artist::keepLastReferenceArtistsPosition ()
+PacManII::Artist::Artist (int cId, const QGAMES::Forms& f, const QGAMES::Entity::Data& d)
+	: QGAMES::ArtistInATiledMap (cId, f, d),
+	  _lastMazePosition (QGAMES::MazeModel::_noPosition),
+	  _pathInMaze (), // No defined by default...
+	  _referenceArtists (),
+	  _nextDirectionWhenPossible (QGAMES::Vector::_cero),
+	  _referenceArtistLastMazePositions ()
+{ 
+	// Adds a buoy to be abble to "stop" out of the process event manipulation...
+	assert (!buoys ().empty ()); // Just in case...
+	buoys ().insert (QGAMES::Buoys::value_type
+		(__PACMANII_TOSTOPBUOYID__, new PacManII::Artist::ToStopBuoy ()));
+}
+
+// ---
+bool PacManII::Artist::canMove (const QGAMES::Vector& d, const QGAMES::Vector& a)
 {
+	// TODO
+
+	return (true);
+}
+
+// ---
+void PacManII::Artist::changeDirectionWhenPossibleTo (const QGAMES::Vector& d)
+{ 
+	// An Artist can change the direction of the movement when it is moving...
+	// The change can happen in any moment between two tiles
+	// but it is only executed inmediately when the requested new direction is the opposite to the previous one...
+	// If it is not, the request is written down to be executed later.
+	if (isMoving () && direction () == -d)
+	{
+		setMove (d);
+
+		setStateToMoveTo (d); // It is important to notice that neither the aspect nor the movement
+							  // has to change if the new state doesn't imply so!
+	}
+	else
+		_nextDirectionWhenPossible = d;
+}
+
+// ---
+void PacManII::Artist::initialize ()
+{
+	QGAMES::ArtistInATiledMap::initialize ();
+
+	_lastMazePosition = QGAMES::MazeModel::_noPosition;
+
+	_pathInMaze = { };
+
+	_referenceArtists = { };
+
+	_nextDirectionWhenPossible = QGAMES::Vector::_cero;
+
+	_referenceArtistLastMazePositions = { };
+}
+
+// ---
+void PacManII::Artist::updatePositions ()
+{
+	QGAMES::MazeModel::PositionInMaze lP = currentMazePosition ();
+
+	QGAMES::ArtistInATiledMap::updatePositions ();
+
+	if (currentMazePosition () != lP)
+		_lastMazePosition = lP;
+
 	for (auto i : _referenceArtists)
 		_referenceArtistLastMazePositions [i -> id ()] = i -> currentMazePosition ();
+}
+
+// ---
+void PacManII::Artist::processEvent (const QGAMES::Event& evnt)
+{
+	if (evnt.code () == __PACMANII_MOVEMENTDORIENTATIONCHANGED__)
+	{
+		QGAMES::SetOfOpenValues dC = evnt.values ();
+		assert (dC.existOpenValue (0));
+		QGAMES::Vector o (dC.openValue (0).strValue ());
+		setOrientation (o);
+		setStateToMoveTo (o);
+	}
+	else
+	if (evnt.code () == __PACMANII_LIMITMOVEMENTREACHED__)
+		toStopDeferred ();
+	
+	QGAMES::ArtistInATiledMap::processEvent (evnt);
+}
+
+// ---
+void* PacManII::Artist::ToStopBuoy::treatFor (QGAMES::Element* e)
+{
+	PacManII::Artist* art = dynamic_cast <PacManII::Artist*> (e);
+	assert (art);
+
+	art -> whatToDoWhenStopIsRequested ();
+
+	return (this);
+}
+
+// ---
+void PacManII::Artist::toStopDeferred ()
+{
+	PacManII::Artist::ToStopBuoy* b = 
+		dynamic_cast <PacManII::Artist::ToStopBuoy*> (buoy (__PACMANII_TOSTOPBUOYID__));
+	assert (b); // Just in case...
+
+	b -> active (true); 
+}
+
+// ---
+const PacManII::Map* PacManII::Artist::pMap () const
+{ 
+	return (dynamic_cast <const Map*> (map ())); 
+}
+
+// ---
+PacManII::Map* PacManII::Artist::pMap ()
+{ 
+	return (dynamic_cast <Map*> (map ())); 
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Artist::mapPositionToMazePosition (const QGAMES::Position& p) const
+{ 
+	return ((pMap () == nullptr) 
+		? QGAMES::MazeModel::_noPosition : pMap () -> mapPositionToMazePosition (p));
+}
+
+// ---
+QGAMES::Position PacManII::Artist::mazePositionToMapPosition (const QGAMES::MazeModel::PositionInMaze& p) const
+{ 
+	return ((pMap () == nullptr) 
+		? QGAMES::Position::_noPoint : pMap () -> mazePositionToMapPosition (p)); 
+}
+
+// ---
+QGAMES::MazeModel::PathInMaze& PacManII::Artist::recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d)
+{ 
+	return (_pathInMaze = 
+		pMap () -> maze ().next2StepsToGoTo (currentMazePosition (), targetMazePosition (), d)); 
+}
+
+// ---
+bool PacManII::Artist::doesPositionMatchesTile (const QGAMES::Position& p) const
+{ 
+	if (pMap () == nullptr)
+		return (false);
+
+	QGAMES::Vector c (__BD (visualLength () >> 1), __BD (visualHeight () >> 1), __BD 0);
+	return ((p + c) == mazePositionToMapPosition (mapPositionToMazePosition (p + c))); 
+}
+
+// ---
+bool PacManII::Artist::isArtistEnteringATunnel () const
+{
+	if (_pathInMaze.size () < 2)
+		return (false); // Either it is not moving, or the path has only only step!
+
+	return ((nextMazePosition (1).asVector () - nextMazePosition (0).asVector ()) != 
+			 pMap () -> maze ().directionToGetFromTo (nextMazePosition (1), nextMazePosition (0)));
 }
 
 // ---
@@ -25,141 +181,6 @@ bool PacManII::Artist::hasReferenceArtistsPositionChanged () const
 	}
 
 	return (result);
-}
-
-// ---
-bool PacManII::Artist::canMove (const QGAMES::Vector& d, const QGAMES::Vector& a)
-{
-	return (true);
-}
-
-// ---
-void PacManII::Artist::calculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d)
-{
-	_pathInMaze = pMap () -> maze ().closestAndShortestWayToGoTo (currentMazePosition (), targetMazePosition (), d);
-}
-
-// ---
-void PacManII::Artist::extractStepsFromPath (int nS)
-{
-	if ((int) _pathInMaze.size () < nS)
-		_pathInMaze = { };
-	else
-		for (int i = 0; i < nS; i++)
-			_pathInMaze.erase (_pathInMaze.begin ());
-}
-
-// ---
-QGAMES::MazeModel::PositionInMaze PacManII::Artist::mapPositionToMazePosition (const QGAMES::Position& p) const
-{ 
-	return ((pMap () == nullptr) 
-		? QGAMES::MazeModel::_noPosition : pMap () -> mapPositionToMazePosition (p)); 
-}
-
-// ---
-QGAMES::Position PacManII::Artist::mazePositionToMapPosition (const QGAMES::MazeModel::PositionInMaze& p) const
-{ 
-	return ((pMap () == nullptr) 
-		? QGAMES::Position::_noPoint : pMap () -> mazePositionToMapPosition (p)); 
-}
-
-// ---
-bool PacManII::Artist::positionMatchesTile (const QGAMES::Position& p) const
-{ 
-	if (pMap () == nullptr)
-		return (false);
-
-	QGAMES::Vector c (__BD (visualLength () >> 1), __BD (visualHeight () >> 1), __BD 0);
-	return ((p + c) == mazePositionToMapPosition (mapPositionToMazePosition (p + c))); 
-}
-
-// ---
-QGAMES::MazeModel::PositionInMaze PacManII::Artist::nextMazePosition (int n) const
-{ 
-	return (_pathInMaze.empty () 
-		? currentMazePosition () : ((n < (int) _pathInMaze.size ()) ? _pathInMaze [n] : QGAMES::MazeModel::_noPosition)); 
-}
-
-// ---
-void PacManII::Artist::initialize ()
-{
-	QGAMES::ArtistInATiledMap::initialize ();
-
-	_lastMazePosition = QGAMES::MazeModel::_noPosition;
-
-	changeDirectionWhenPossibleTo (QGAMES::Vector::_cero);
-
-	anulePath ();
-
-	_referenceArtists = { };
-
-	_referenceArtistLastMazePositions = { };
-}
-
-// ---
-void PacManII::Artist::updatePositions ()
-{
-	QGAMES::MazeModel::PositionInMaze lP = currentMazePosition ();
-
-	QGAMES::ArtistInATiledMap::updatePositions ();
-
-	if (currentMazePosition () != lP)
-		_lastMazePosition = lP;
-
-	if (positionMatchesTile (position ()))
-	{
-		if (isMoving ())
-		{
-			if (directionWhenPossible () == QGAMES::Vector::_cero)
-				whatToDoWhenStopIsRequested ();
-			else
-			{
-				if (directionWhenPossible () == direction ())
-				{
-					if (hasReferenceArtistsPositionChanged ())
-						calculatePathInMazeAvoiding ({ direction () });
-				}
-				else
-				if (directionWhenPossible () != direction ())
-					whatToDoWhenMovementIsRequested (directionWhenPossible ());
-
-				QGAMES::MazeModel::PositionInMaze nP = nextMazePosition (1);
-				if (nP == QGAMES::MazeModel::_noPosition)
-						whatToDoWhenStopIsRequested ();
-				else
-					changeDirectionWhenPossibleTo (nP.asVector () - currentMazePosition ().asVector ());
-			}
-		}
-		else 
-		if (isStanding ())
-		{
-			if (directionWhenPossible () != QGAMES::Vector::_cero)
-				whatToDoWhenMovementIsRequested (directionWhenPossible ());
-		}
-	}
-
-	keepLastReferenceArtistsPosition ();
-}
-
-// ---
-void PacManII::Artist::processEvent (const QGAMES::Event& evnt)
-{
-	if (evnt.code () == __PACMANII_LIMITMOVEMENTREACHED__)
-		whatToDoWhenStopIsRequested ();
-	
-	QGAMES::ArtistInATiledMap::processEvent (evnt);
-}
-
-// ---
-const PacManII::Map* PacManII::Artist::pMap () const
-{ 
-	return (dynamic_cast <const Map*> (map ())); 
-}
-
-// ---
-PacManII::Map* PacManII::Artist::pMap ()
-{ 
-	return (dynamic_cast <Map*> (map ())); 
 }
 
 // ---
@@ -256,20 +277,6 @@ void PacManII::Monster::setStatus (const PacManII::Monster::Status& st)
 }
 
 // ---
-QGAMES::MazeModel::PositionInMaze PacManII::PacMan::targetMazePosition () const
-{
-	if (pMap () == nullptr)
-		return (QGAMES::MazeModel::_noPosition);
-
-	if (isStanding ())
-		return (currentMazePosition ());
-
-	QGAMES::MazeModel::PathInMaze pth = pMap () -> maze ().limitPathFromFollowing (currentMazePosition (), direction ());
-	assert (!pth.empty ());
-	return (pth [(int) pth.size () - 1]);
-}
-
-// ---
 void PacManII::PacMan::initialize ()
 {
 	PacManII::Artist::initialize ();
@@ -285,6 +292,15 @@ void PacManII::PacMan::initialize ()
 void PacManII::PacMan::updatePositions ()
 {
 	PacManII::Artist::updatePositions ();
+
+	if (doesPositionMatchesTile (position ()))
+	{
+		if (isStanding ())
+		{
+			if (_nextDirectionWhenPossible != QGAMES::Vector::_cero)
+				whatToDoWhenMovementIsRequested (_nextDirectionWhenPossible);
+		}
+	}
 
 /*
 	For testing purposes only:
@@ -309,6 +325,25 @@ void PacManII::PacMan::finalize ()
 }
 
 // ---
+QGAMES::MazeModel::PositionInMaze PacManII::PacMan::targetMazePosition () const
+{
+	if (pMap () == nullptr)
+		return (QGAMES::MazeModel::_noPosition);
+
+	if (isStanding ())
+		return (currentMazePosition ());
+
+	QGAMES::Vector dir = direction ();
+	if (isMoving () && 
+		_nextDirectionWhenPossible != QGAMES::Vector::_cero && 
+		pMap () -> maze ().isPossibleToMoveTo (currentMazePosition (), _nextDirectionWhenPossible))
+		dir = _nextDirectionWhenPossible;
+	QGAMES::MazeModel::PathInMaze pth = pMap () -> maze ().limitPathFromFollowing (currentMazePosition (), dir);
+	assert (!pth.empty ());
+	return (pth [(int) pth.size () - 1]);
+}
+
+// ---
 void PacManII::PacMan::setStateToStandLookingTo (const QGAMES::Vector& d)
 {
 	if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
@@ -327,13 +362,13 @@ void PacManII::PacMan::setStateToStandLookingTo (const QGAMES::Vector& d)
 void PacManII::PacMan::setStateToMoveTo (const QGAMES::Vector& d)
 {
 	if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__);
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__, true);
 	else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGLEFT__);
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGLEFT__, true);
 	else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGUP__);
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGUP__, true);
 	else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGDOWN__);
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGDOWN__, true);
 	else
 		assert (false);
 }
@@ -343,9 +378,8 @@ void PacManII::PacMan::whatToDoWhenStopIsRequested ()
 {
 	setStateToStandLookingTo (orientation ()); // Looking to the last direction...
 	setMove (QGAMES::Vector::_cero); // ...but not moving... 
-	anulePath (); // ..and with no path to follow
-
-	// Here is is not needed to change th speed...
+	_pathInMaze = { }; // ..and with no path to follow
+	changeDirectionWhenPossibleTo (QGAMES::Vector::_cero); // ...finally it stops!
 }
 
 // ---
@@ -354,8 +388,7 @@ void PacManII::PacMan::whatToDoWhenMovementIsRequested (const QGAMES::Vector& d)
 	setOrientation (d); // Look to..
 	setStateToMoveTo (orientation ()); // ..with the right aspect...
 	setMove (orientation ()); // ...and moving also towards there...
-	adaptSpeed ();
-	calculatePathInMazeAvoiding ({ -direction () }); // ...and with a new path, and at least avoiding the forbiden direction
+	adaptSpeed (); // That depends on many many things...
 }
 
 // ---
@@ -374,10 +407,20 @@ void PacManII::PacMan::adaptSpeed ()
 }
 
 // ---
-QGAMES::MazeModel::PositionInMaze PacManII::Monster::runAwayMazePosition () const
-{ 
-	return ((pMap () == nullptr) 
-		? QGAMES::MazeModel::_noPosition : pMap () -> monsterRunAwayPosition (monsterNumber ())); 
+QGAMES::MazeModel::PathInMaze& PacManII::PacMan::recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d)
+{
+	QGAMES::Vector dir = direction ();
+	if (isMoving () && 
+		_nextDirectionWhenPossible != QGAMES::Vector::_cero && 
+		pMap () -> maze ().isPossibleToMoveTo (currentMazePosition (), _nextDirectionWhenPossible))
+		dir = _nextDirectionWhenPossible;
+	QGAMES::MazeModel::PathInMaze pth = pMap () -> maze ().limitPathFromFollowing (currentMazePosition (), dir);
+
+	_pathInMaze = { currentMazePosition () };
+	if (pth.size () > 1)
+		_pathInMaze.push_back (pth [1]);
+
+	return (_pathInMaze);
 }
 
 // ---
@@ -417,7 +460,14 @@ void PacManII::Monster::whatToDoWhenMovementIsRequested (const QGAMES::Vector& d
 	setOrientation (d); // Look to..
 	setStateToMoveTo (orientation ()); // ..with the right aspect...
 	setMove (orientation ()); // ...and moving also towards there...
-	calculatePathInMazeAvoiding ({ }); // ...and with a new path
+	recalculatePathInMazeAvoiding ({ }); // ...and with a new path
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Monster::runAwayMazePosition () const
+{
+	return ((pMap () == nullptr) 
+		? QGAMES::MazeModel::_noPosition : pMap () -> monsterRunAwayPosition (monsterNumber ())); 
 }
 
 // ---
@@ -535,13 +585,13 @@ void PacManII::Inky::setStateToMoveTo (const QGAMES::Vector& d)
 		case PacManII::Monster::Status::_RUNNINGWAY:
 			{
 				if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGRIGHT__);
+					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGRIGHT__, true);
 				else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGLEFT__);
+					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGLEFT__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGUP__);
+					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGUP__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGDOWN__);
+					setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGDOWN__, true);
 				else
 					assert (false); // No state possible for other direction...
 			}
@@ -549,11 +599,11 @@ void PacManII::Inky::setStateToMoveTo (const QGAMES::Vector& d)
 			break;
 
 		case PacManII::Monster::Status::_TOBEEATEN:
-			setCurrentState (__PACMANII_INKYSTATERUNNINGAWAY__);
+			setCurrentState (__PACMANII_INKYSTATERUNNINGAWAY__, true);
 			break;
 
 		case PacManII::Monster::Status::_BEINGEATEN:
-			setCurrentState (__PACMANII_INKYSTATEEATEN__);
+			setCurrentState (__PACMANII_INKYSTATEEATEN__, true);
 			break;
 
 		default:
@@ -615,13 +665,13 @@ void PacManII::Blinky::setStateToMoveTo (const QGAMES::Vector& d)
 		case PacManII::Monster::Status::_RUNNINGWAY:
 			{
 				if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGRIGHT__);
+					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGRIGHT__, true);
 				else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGLEFT__);
+					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGLEFT__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGUP__);
+					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGUP__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGDOWN__);
+					setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGDOWN__, true);
 				else
 					assert (false); // No state possible for other direction...
 			}
@@ -629,11 +679,11 @@ void PacManII::Blinky::setStateToMoveTo (const QGAMES::Vector& d)
 			break;
 
 		case PacManII::Monster::Status::_TOBEEATEN:
-			setCurrentState (__PACMANII_BLINKYSTATERUNNINGAWAY__);
+			setCurrentState (__PACMANII_BLINKYSTATERUNNINGAWAY__, true);
 			break;
 
 		case PacManII::Monster::Status::_BEINGEATEN:
-			setCurrentState (__PACMANII_BLINKYSTATEEATEN__);
+			setCurrentState (__PACMANII_BLINKYSTATEEATEN__, true);
 			break;
 
 		default:
@@ -695,13 +745,13 @@ void PacManII::Pinky::setStateToMoveTo (const QGAMES::Vector& d)
 		case PacManII::Monster::Status::_RUNNINGWAY:
 			{
 				if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGRIGHT__);
+					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGRIGHT__, true);
 				else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGLEFT__);
+					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGLEFT__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGUP__);
+					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGUP__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGDOWN__);
+					setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGDOWN__, true);
 				else
 					assert (false); // No state possible for other direction...
 			}
@@ -709,11 +759,11 @@ void PacManII::Pinky::setStateToMoveTo (const QGAMES::Vector& d)
 			break;
 
 		case PacManII::Monster::Status::_TOBEEATEN:
-			setCurrentState (__PACMANII_PINKYSTATERUNNINGAWAY__);
+			setCurrentState (__PACMANII_PINKYSTATERUNNINGAWAY__, true);
 			break;
 
 		case PacManII::Monster::Status::_BEINGEATEN:
-			setCurrentState (__PACMANII_PINKYSTATEEATEN__);
+			setCurrentState (__PACMANII_PINKYSTATEEATEN__, true);
 			break;
 
 		default:
@@ -778,13 +828,13 @@ void PacManII::Clyde::setStateToMoveTo (const QGAMES::Vector& d)
 		case PacManII::Monster::Status::_RUNNINGWAY:
 			{
 				if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGRIGHT__);
+					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGRIGHT__, true);
 				else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGLEFT__);
+					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGLEFT__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGUP__);
+					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGUP__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGDOWN__);
+					setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGDOWN__, true);
 				else
 					assert (false); // No state possible for other direction...
 			}
@@ -792,11 +842,11 @@ void PacManII::Clyde::setStateToMoveTo (const QGAMES::Vector& d)
 			break;
 
 		case PacManII::Monster::Status::_TOBEEATEN:
-			setCurrentState (__PACMANII_CLYDESTATERUNNINGAWAY__);
+			setCurrentState (__PACMANII_CLYDESTATERUNNINGAWAY__, true);
 			break;
 
 		case PacManII::Monster::Status::_BEINGEATEN:
-			setCurrentState (__PACMANII_CLYDESTATEEATEN__);
+			setCurrentState (__PACMANII_CLYDESTATEEATEN__, true);
 			break;
 
 		default:

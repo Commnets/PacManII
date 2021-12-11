@@ -183,7 +183,7 @@ bool PacManII::Game::stopsAfterCurrentLevel () const
 // ---
 bool PacManII::Game::isCurrentLevelLast () const
 {
-	return (level () == _theDataGame.numberLevels ());
+	return (level () == _theDataGame.numberLevelsDefined ());
 }
 
 // ---

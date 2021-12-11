@@ -118,29 +118,46 @@ namespace PacManII
 	class LocationsLayer;
 	class DirectionsLayer;
 	class MazeLayer;
-	class Map : public QGAMES::TiledMap
+	class Map final : public QGAMES::TiledMap
 	{
 		public:
 		Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD,
 			 const QGAMES::MapProperties& p = QGAMES::MapProperties ());
 
+		const BackgroundLayer* backgroundLayer () const
+							{ return (_backgroundLayer); }
+		BackgroundLayer* backgroundLayer ()
+							{ return (_backgroundLayer); }
+		const LocationsLayer* locationsLayer () const
+							{ return (_locationsLayer); }
+		LocationsLayer* locationsLayer () 
+							{ return (_locationsLayer); }
+		const DirectionsLayer* directionsLayer () const
+							{ return (_directionsLayer); }
+		DirectionsLayer* directionsLayer () 
+							{ return (_directionsLayer); }
+
 		/** To know important positions of the map. 
 			If nothing is found a position out of the maze should be returned. */
-		virtual QGAMES::MazeModel::PositionInMaze pacmanInitialPosition (int nP) const;
-		virtual QGAMES::MazeModel::PositionInMaze monsterInitialPosition (int nP) const;
-		virtual QGAMES::MazeModel::PositionInMaze monsterRunAwayPosition (int nP) const;
-		virtual QGAMES::MazeModel::PositionInMaze monsterExitingHomePosition () const;
+		QGAMES::MazeModel::PositionInMaze pacmanInitialPosition (int nP) const;
+		QGAMES::MazeModel::PositionInMaze monsterInitialPosition (int nM) const;
+		QGAMES::MazeModel::PositionInMaze monsterRunAwayPosition (int nM) const;
+		QGAMES::MazeModel::PositionInMaze monsterExitingHomePosition () const;
 
 		/** To convert any position in the maze in a position in the map. 
 			What is returned is always the central position. */
 		QGAMES::Position mazePositionToMapPosition (const QGAMES::MazeModel::PositionInMaze& p) const
-							{ return (QGAMES::Position ((__BD p._positionX + __BD 0.5) * tileWidth (), 
-														(__BD p._positionY + __BD 0.5) * tileHeight (), __BD 0 /** 2d always. */)); }
+							{ return ((p == QGAMES::MazeModel::_noPosition)
+								? QGAMES::Position::_noPoint
+								: QGAMES::Position ((__BD p._positionX + __BD 0.5) * tileWidth (), 
+													(__BD p._positionY + __BD 0.5) * tileHeight (), __BD 0 /** 2d always. */)); }
 		/** To get the position in the maze of a position in the screen. 
 			Several positions can be matched to the same maze position. */
 		QGAMES::MazeModel::PositionInMaze mapPositionToMazePosition (const QGAMES::Position& p) const
-							{ return (QGAMES::MazeModel::PositionInMaze ((int) (p.posX () / __BD tileWidth ()), 
-																		 (int) (p.posY () / __BD tileHeight ()), 0)); }
+							{ return ((p == QGAMES::Position::_noPoint) 
+								? QGAMES::MazeModel::_noPosition
+								: QGAMES::MazeModel::PositionInMaze ((int) (p.posX () / __BD tileWidth ()), 
+																	 (int) (p.posY () / __BD tileHeight ()), 0)); }
 
 		/** To get the maze.
 			The maze is set at construction time, and can't be modifid at all. */
@@ -174,7 +191,7 @@ namespace PacManII
 		DirectionsLayer* _directionsLayer;
 		MazeLayer* _mazeLayer;
 
-		/** To acclerate how runaway positions are calculated (per number of monster). */
+		/** To acclerate how positions are calculated (per number of artist). */
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _pacmanInitialPositions;
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterRunAwayPositions;
@@ -197,8 +214,26 @@ namespace PacManII
 		public:
 		LocationsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
 				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
-			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false)
+			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false),
+			  _pacmanInitialPositions (), 
+			  _monsterInitialPositions (), 
+			  _monsterRunAwayPositions (),
+			  _monsterExitingHomePosition (QGAMES::Position::_noPoint)
 							{ setVisible (false); /* Always */ }
+
+		/** To know important positions kept in this layer. 
+			The position of the tile is returned. */
+		QGAMES::Position pacmanInitialPosition (int nM) const;
+		QGAMES::Position monsterInitialPosition (int nM) const;
+		QGAMES::Position monsterRunAwayPosition (int nM) const;
+		QGAMES::Position monsterExitingHomePosition () const;
+
+		protected:
+		/** To acclerate how positions are calculated (per number of artist). */
+		mutable std::map <int, QGAMES::Position> _pacmanInitialPositions;
+		mutable std::map <int, QGAMES::Position> _monsterInitialPositions;
+		mutable std::map <int, QGAMES::Position> _monsterRunAwayPositions;
+		mutable QGAMES::Position _monsterExitingHomePosition;
 	};
 
 	/** Representing the maze description layer. */
@@ -283,7 +318,7 @@ namespace PacManII
 	};
 
 	/** Representing all types of possible path. */
-	class TilePath : public QGAMES::Tile
+	class TilePath final : public QGAMES::Tile
 	{
 		public:
 		typedef enum { _EMPTY = 0, _BALL = 1, _POWERBALL = 2, _RIGHTLIMIT = 3, _LEFTLIMIT = 4 } Type;

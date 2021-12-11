@@ -184,9 +184,8 @@ namespace PacManII
 			 const QGAMES::GameStates& sts, const QGAMES::GameStateControl::FlowMap& fl) override;
 	};
 
-	/** To create the movements of the game. 
-		It is not a final class, because new movements can be added in future extension of the game. */
-	class MovementBuilder : public QGAMES::AdvancedMovementBuilder
+	/** To create the movements of the game. */
+	class MovementBuilder final : public QGAMES::AdvancedMovementBuilder
 	{
 		public:
 		MovementBuilder () = delete;
@@ -204,9 +203,8 @@ namespace PacManII
 			(const QGAMES::MovementBuilder::MovementDefinition& def) override;
 	};
 
-	/** To create specific entities of the game. 
-		It is not a final class, because new entities can be added in future extension of the game. */
-	class EntityBuilder : public QGAMES::AdvancedEntityBuilder
+	/** To create specific entities of the game. */
+	class EntityBuilder final : public QGAMES::AdvancedEntityBuilder
 	{
 		public:
 		EntityBuilder () = delete;
@@ -223,9 +221,8 @@ namespace PacManII
 		virtual QGAMES::Entity* createEntity (const QGAMES::EntityBuilder::EntityDefinition& def) override;
 	};
 
-	/** The extension to create maps. 
-		It is not a final class, because new maps can be added in future extension of the game. */
-	class TMXMapBuilder : public QGAMES::TMXMapBuilderAddsOn
+	/** The extension to create maps. */
+	class TMXMapBuilder final : public QGAMES::TMXMapBuilderAddsOn
 	{
 		public:
 		TMXMapBuilder (QGAMES::Sprite2DBuilder* sB);
@@ -250,6 +247,10 @@ namespace PacManII
 							{ return (_TILESRUNAWAYMONSTERS); }
 		int monsterExitingHomeFrame () const
 							{ return (_TILEEXITINGHOMEMONSTERS); }
+		int tunnelPathEntryExitFrame () const
+							{ return (_TILEDEFININGTUNNELPATH); }
+		const std::vector <int>& connectionFrames () const
+							{ return (_TILESCONNECTION); }
 
 		// Managing the tiles of maze description (directions). */ 
 		/** To know the tiles describing a direction a the direction itself. 
@@ -284,9 +285,14 @@ namespace PacManII
 		std::vector <int> _TILESHOMEPACMAN, _TILESHOMEMONSTERS, _TILESRUNAWAYMONSTERS;
 		/** The tile used to define the home exiting position. */
 		int _TILEEXITINGHOMEMONSTERS;
+		/** The tile used to define when the tunnel path starts. 
+			It means e.g. that the monsters slow down. */
+		int _TILEDEFININGTUNNELPATH;
 		/** The equivalent between tiles to mark direection and the direction itself.
 			Th order of the second veector is LEFT/RIGHT/UP/DOWN. */
 		std::map <int, std::vector <bool>> _TILESDIRECTIONMAZE;
+		/** Tile indicating the connection points. */
+		std::vector <int> _TILESCONNECTION;
 	};
 
 	/** The extension to create worlds. 

@@ -38,7 +38,57 @@ int _tmain (int argc, char *argv [])
 			property (std::string (__GAME_DATADIRPROPERTYNAME__)));
 #endif
 
-	Game game;
+	DataGame::LevelDefinition::ScatterChaseCycles c1 =
+		{ { 7, 20 }, { 7, 20 }, { 5, 20 }, { 5, std::numeric_limits <unsigned int>::max () } };
+	DataGame::LevelDefinition::ScatterChaseCycles c2 =
+		{ { 7, 20 }, { 7, 20 }, { 5, 1033 }, { 0, std::numeric_limits <unsigned int>::max () } };
+	DataGame::LevelDefinition::ScatterChaseCycles c3 =
+		{ { 5, 20 }, { 5, 20 }, { 5, 1037 }, { 0, std::numeric_limits <unsigned int>::max () } };
+	DataGame::LevelDefinitions lD =
+		{ { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c1, 0.80, 0.71, 0.90, 0.79, 0.75, 0.50, 0.40 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c2, 0.90, 0.79, 0.95, 0.83, 0.85, 0.55, 0.45 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c2, 0.90, 0.79, 0.95, 0.83, 0.85, 0.55, 0.45 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c2, 0.90, 0.79, 0.95, 0.83, 0.85, 0.55, 0.45},
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 },
+		  { __PACMANII_WORLD__, __PACMANII_BASICSCENE__, __PACMANII_BASICMAP__,
+					0, 200, c3, 1.00, 0.87, 1.00, 0.87, 0.95, 0.60, 0.50 }
+		};
+
+	DataGame dt (lD);
+	Game game (dt);
 	game.setLinkDrawToFrameRate (true); 
 	game.setPreLoad (false); 
 	game.exec ();

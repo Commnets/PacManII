@@ -118,9 +118,9 @@ namespace PacManII
 			std::vector <std::map <int, std::string>> _levelBallsEaten;
 		};
 
-		Game ()
+		Game (const DataGame& dt)
 			: QGAMES::AdvancedArcadeGame (),
-			  _theDataGame (),
+			  _theDataGame (dt),
 			  _lives (nullptr),
 			  _timeCounter (nullptr),
 			  _scoreCounter (nullptr),
@@ -133,7 +133,7 @@ namespace PacManII
 		~Game ()
 							{ removeScoreObjects (); }
 
-		constexpr const DataGame& dataGame () const
+		const DataGame& dataGame () const
 							{ return (_theDataGame); }
 
 		/** To activate or desactivate the detection of collisions. */

@@ -355,6 +355,7 @@ PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 	  _TILESHOMEMONSTERS		({ 10,11,12,13,14,15,16,17,18,19 }),
 	  _TILESRUNAWAYMONSTERS		({ 0,1,2,3,4,5,6,7,8,9 }),
 	  _TILEEXITINGHOMEMONSTERS	(50),
+	  _TILEDEFININGTUNNELPATH (51),
 	  _TILESDIRECTIONMAZE		({	{  0, { false,	true,	false,	true	} }, // LEFT, RIGHT, UP, DOWN
 									{  1, { true,	true,	false,	true	} },
 									{  2, { true,	false,	false,	true	} },
@@ -370,7 +371,8 @@ PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 									{ 12, { true,	true,	true,	false	} },
 									{ 13, { true,	false,	true,	false	} },
 									{ 14, { false,	false,	true,	false	} },
-									{ 15, { false,	false,	false,	false	} }})
+									{ 15, { false,	false,	false,	false	} }}),
+	  _TILESCONNECTION			( { 30,31,32,33,34,35,36,37,38,39 })
 {
 	assert (_TILESLIMITBRIGHT.size () == _TILESLIMITDARK.size ());
 	// The have to have the same size to change between them...
@@ -457,7 +459,7 @@ QGAMES::ImageLayer* PacManII::TMXMapBuilder::createImageLayer (int id, const std
 QGAMES::Map* PacManII::TMXMapBuilder::createMapObject (int id, const QGAMES::Layers& l, 
 	int w, int h, int d, int tW, int tH, int tD, const QGAMES::MapProperties& p)
 {
-
+	// Th only type of map that can be created here...
 	return (new PacManII::Map (id, l, w, h, d, tW, tH, tD, p));
 }
 
