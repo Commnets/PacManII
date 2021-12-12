@@ -59,6 +59,7 @@ namespace PacManII
 
 			LevelDefinition ()
 				: _worldTypeId (__PACMANII_WORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
+				  _pointsBall (50), _pointsPowerBall (200), _secondsChasing (1.0f),
 				  _bonusSymbolId (0), _bonusPoints (100),
 				  _scatterChaseCycles ({ ScatterChaseCycle () }),
 				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
@@ -67,9 +68,11 @@ namespace PacManII
 						_ghostSpeedWhenCrossingTunnel (1.0f)
 							{ }
 
-			LevelDefinition (int wT, int sT, int mT, int bS, int bP, const ScatterChaseCycles& sC, 
+			LevelDefinition (int wT, int sT, int mT, int pB, int pPB, double mSC, 
+					int bS, int bP, const ScatterChaseCycles& sC, 
 					double pS, double pED, double pWF, double pWEFD, double gS, double gWF, double gWT)
 				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
+				  _pointsBall (pB), _pointsPowerBall (pPB), _secondsChasing (mSC),
 				  _bonusSymbolId (bS), _bonusPoints (bP),
 				  _scatterChaseCycles (sC),
 				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
@@ -88,6 +91,12 @@ namespace PacManII
 							{ return (_sceneTypeId); }
 			int mapTypeId () const
 							{ return (_mapTypeId); }
+			int pointsBall () const
+							{ return (_pointsBall); }
+			int pointsPowerBall () const
+							{ return (_pointsPowerBall); }
+			double secondsChasing () const
+							{ return (_secondsChasing); }
 			int bonusSymbolId () const 
 							{ return (_bonusSymbolId); }
 			int bonusPoints () const 
@@ -115,6 +124,12 @@ namespace PacManII
 			const int _worldTypeId; 
 			const int _sceneTypeId;
 			const int _mapTypeId;
+			/** The number of points for eating a ball */
+			const int _pointsBall;
+			/** Idem but for a power ball. */
+			const int _pointsPowerBall;
+			/** The seconds chasing. */
+			const double _secondsChasing;
 			/** Id of the symbol that will appears randomly at pacman's home after several of seconds. */
 			const int _bonusSymbolId;
 			/** How many point will eating it give you? */

@@ -96,10 +96,8 @@ namespace PacManII
 		/** What to do when it is the beginning of a new requested movement. */
 		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) = 0;
 		/** What to do when artists is on a specific position in the maze.
-			What it is beneath the artist should modify actually the behaviour. \n
-			By default nothing is done. */
-		virtual void whatToDoOnPosition (const QGAMES::MazeModel::PositionInMaze& p)
-							{ }
+			What it is beneath the artist should modify actually the behaviour. \n */
+		virtual void whatToDoOnCurrentPosition () = 0;
 
 		/** Define a buoy to stop within the inEveryLoop method. */
 		class ToStopBuoy : public QGAMES::Buoy
@@ -159,6 +157,7 @@ namespace PacManII
 			: Artist (cId, f, d),
 			  _alive (true),
 			  _chasing (false),
+			  _hasEaten (false),
 			  _score (0)
 							{ }
 
@@ -172,11 +171,15 @@ namespace PacManII
 		virtual bool isStanding () const override;
 		virtual bool isMoving () const override;
 
-		// To manahe when it has "power"
+		// To manage when it has "power" to fight the monsters
 		// In this situations, e.g. the speed of the movement could be different...
 		bool isChasing () const
 							{ return (_chasing); }
 		void setChasing (bool c);
+		// To manage when it has eaten a ball
+		bool hasEaten () const
+							{ return (_hasEaten); }
+		void setEaten (bool e);
 
 		int score () const
 							{ return (_score); }
@@ -197,6 +200,7 @@ namespace PacManII
 		virtual void setStateToMoveTo (const QGAMES::Vector& d) override;
 		virtual void whatToDoWhenStopIsRequested () override;
 		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) override;
+		virtual void whatToDoOnCurrentPosition () override;
 
 		// Implementation
 		void adaptSpeed ();
@@ -209,6 +213,8 @@ namespace PacManII
 		bool _alive;
 		/** To indicate whether the pacman in o no chasing monsters. */
 		bool _chasing;
+		/** To indicate whether the pacman has eaten or not something. */
+		bool _hasEaten;
 		/** The score of the pacman. It is get and put back into the game. */
 		int _score;
 	};
@@ -259,6 +265,8 @@ namespace PacManII
 		protected:
 		virtual void whatToDoWhenStopIsRequested () override;
 		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) override;
+		virtual void whatToDoOnCurrentPosition () override
+							{ }
 
 		// Implementation
 		inline QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;

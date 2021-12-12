@@ -224,6 +224,16 @@ void PacManII::PacMan::setChasing (bool c)
 }
 
 // ---
+void PacManII::PacMan::setEaten (bool e)
+{
+	_hasEaten = e;
+
+	// If it was moving, the speed should be adapted...
+	if (isMoving ())
+		adaptSpeed ();
+}
+
+// ---
 void PacManII::PacMan::setScore (int s) 
 {
 	_score = s; 
@@ -310,8 +320,6 @@ void PacManII::PacMan::updatePositions ()
 		notify (QGAMES::Event (__PACMANII_PACMANDESTROYED__, this));
 		notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, this));
 */
-
-	setScore (score () + 1);
 }
 
 // ---
@@ -392,6 +400,40 @@ void PacManII::PacMan::whatToDoWhenMovementIsRequested (const QGAMES::Vector& d)
 }
 
 // ---
+void PacManII::PacMan::whatToDoOnCurrentPosition ()
+{
+	PacManII::TilePath* t = dynamic_cast <PacManII::TilePath*> 
+		(pMap () -> tileAt (position (), pMap () -> mazeLayer ()));
+	if (t == nullptr)
+		return;
+
+	if (t -> canBeEaten ())
+	{
+		if (!t -> alreadyEaten ())
+		{
+			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+			assert (g != nullptr);
+
+			t -> eaten (true); // Shoots whatever is needed in the pacman an others....
+
+			game () -> sound (__PACMANII_SOUNDCHOMP__) -> play (__QGAMES_MAINCHARACTERSOUNDCHANNEL__); // Chomp...
+
+			setEaten (true);
+
+			if (t -> hasPower ())
+				setChasing (true);
+
+			setScore (score () + 
+				(t -> hasPower () 
+					? g -> dataGame ().levelDefinition (g -> level ()).pointsPowerBall ()
+					: g -> dataGame ().levelDefinition (g -> level ()).pointsBall ()));
+		}
+		else
+			setEaten (false);
+	}
+}
+
+// ---
 void PacManII::PacMan::adaptSpeed ()
 {
 	if (!isMoving ())
@@ -403,7 +445,9 @@ void PacManII::PacMan::adaptSpeed ()
 	assert (mM != nullptr); // is moving?
 
 	const PacManII::DataGame::LevelDefinition& lD = pG -> dataGame ().levelDefinition (pG -> level ());
-	mM -> setSpeed (isChasing () ? __BD lD.pacmanSpeedWhenFrighting () : __BD lD.pacmanSpeed ());
+	mM -> setSpeed (isChasing () 
+		? (hasEaten () ? __BD lD.pacmanSpeedWhenEatingFrightingDots () : __BD lD.pacmanSpeedWhenFrighting ()) 
+		: (hasEaten () ? __BD lD.pacmanSpeedWhenEatingDots () : __BD lD.pacmanSpeed ()));
 }
 
 // ---

@@ -1,10 +1,12 @@
 #include "Movements.hpp"
 #include "Artists.hpp"
 
+const QGAMES::bdata PacManII::MazeMovement::_CONSTANT = 2.5;
+
 // ---
 void PacManII::MazeMovement::initialize ()
 { 
-	_speed = __BD 2;
+	_speed = __BD 1;
 
 	_lastDirection = QGAMES::Vector::_cero;
 
@@ -44,7 +46,7 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 	// But it can change along the cycle!
 	_lastDirection = art -> direction ();
 
-	for (int i = (int) ((_speed * __BD _CONSTANT) + _qLeft); i > 0; i--)
+	for (int i = (int) ((_speed * _CONSTANT) + _qLeft); i > 0; i--)
 	{
 		bool move = true;
 
@@ -73,7 +75,7 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 				}
 
 				// Depeding on the type of artist things can happen when it is on a new position...
-				art -> whatToDoOnPosition (art -> nextMazePosition (1));
+				art -> whatToDoOnCurrentPosition ();
 
 				_lastDirection = art -> nextMazePosition (1).asVector () - 
 					art -> nextMazePosition (0).asVector (); 

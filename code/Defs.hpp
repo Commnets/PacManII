@@ -214,9 +214,11 @@
 #define __PACMANII_PACMANREACHEDGOAL__								50101
 // A ball has been eaten...
 #define __PACMANII_BALLEATEN__										50200
+// And the scene has been completed...
+#define __PACMANII_SCENECOMPLETED__									50201
 // Related with the movement in the maze
-#define __PACMANII_LIMITMOVEMENTREACHED__							50201
-#define __PACMANII_MOVEMENTDORIENTATIONCHANGED__					50202
+#define __PACMANII_LIMITMOVEMENTREACHED__							50202
+#define __PACMANII_MOVEMENTDORIENTATIONCHANGED__					50203
 
 // The World and Scenes used for the game
 #define __PACMANII_WORLD__											50000

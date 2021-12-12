@@ -390,6 +390,7 @@ void PacManII::PlayingControlGameState::onEnter ()
 
 	// This instruction sets the world and the scene accoinding to the level defined in DataGame
 	g -> setLevel (g -> level ());
+
 	// ...and here we increment numbere of times the player tries this level...
 	g -> setTriesOnLevel (g -> level (), g -> triesOnLevel (g -> level ()) + 1);
 
@@ -523,6 +524,9 @@ void PacManII::PlayingGameState::onEnter ()
 	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
 	assert (w != nullptr);
 	w -> playSiren (true /** forced */);
+
+	// The world is also observed, among other things to detect when it has been empty up!
+	observe (w);
 }
 
 // ---
@@ -545,6 +549,8 @@ void PacManII::PlayingGameState::onExit ()
 	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
 	assert (w != nullptr);
 	w -> stopSiren ();
+
+	unObserve (w);
 }
 
 // ---

@@ -24,7 +24,7 @@ namespace PacManII
 	class MazeMovement final : public QGAMES::Movement
 	{
 		public:
-		static const int _CONSTANT = 2;
+		static const QGAMES::bdata _CONSTANT;
 
 		MazeMovement () = delete;
 

@@ -12,8 +12,7 @@ PacManII::Game::Conf::Conf (int nP, int mL, int dL)
 	  _playerSeconds (),
 	  _level (),
 	  _levelCompleted (),
-	  _triesOnLevel (),
-	  _levelBallsEaten ()
+	  _triesOnLevel ()
 { 
 	assert (_numberPlayers > 0);
 	assert (_maxLives > 1);
@@ -50,7 +49,6 @@ void PacManII::Game::Conf::adjustToPlayers (int nP)
 	_level = std::vector <int> (nP, _defaultLevel); 
 	_levelCompleted = std::vector <std::map <int, bool>> (nP, std::map <int, bool> ());
 	_triesOnLevel = std::vector <std::map <int, int>> (nP, std::map <int, int> ());
-	_levelBallsEaten = std::vector <std::map <int, std::string>> (nP, std::map <int, std::string> ()); 
 	// no ball in none level eaten so far
 
 	// When the players are adjusted, the information kept in the worlds have to be deleted to...
@@ -91,14 +89,6 @@ void PacManII::Game::Conf::cfgToStream (std::ostringstream& oS)
 		oS << _triesOnLevel [i].size () << std::endl;
 		for (std::map <int, int>::const_iterator j = _triesOnLevel [i].begin (); 
 				j != _triesOnLevel [i].end (); j++)
-			oS << (*j).first << std::endl << (*j).second << std::endl;
-	}
-	
-	for (int i = 0; i < _numberPlayers; i++)
-	{
-		oS << _levelBallsEaten [i].size () << std::endl;
-		for (std::map <int, std::string>::const_iterator j = _levelBallsEaten [i].begin (); 
-				j != _levelBallsEaten [i].end (); j++)
 			oS << (*j).first << std::endl << (*j).second << std::endl;
 	}
 }
@@ -144,17 +134,6 @@ void PacManII::Game::Conf::cfgFromStream (std::istringstream& iS)
 			_triesOnLevel [i][nSC] = nT;
 		}
 	}
-	
-	_levelBallsEaten.resize (_numberPlayers);
-	for (int i = 0; i < _numberPlayers; i++)
-	{
-		iS >> nE;
-		for (int j = 0; j < nE; j++)
-		{
-			iS >> nSC; iS >> sC;
-			_levelBallsEaten [i][nSC] = sC;
-		}
-	}
 }
 
 // ---
@@ -164,8 +143,6 @@ void PacManII::Game::setLevel (int l, int nP)
 	activeWorld () -> setScene (dataGame ().levelDefinition (l).sceneTypeId ());
 	activeWorld () -> activeScene () -> setMap (dataGame ().levelDefinition (l).mapTypeId ());
 	activeWorld () -> initialize ();
-	dynamic_cast <PacManII::Map*> (activeWorld () -> activeScene () -> activeMap ()) -> 
-		setBallsEatenStatus (levelBallsEaten (level ())); // sets the balls eaten of the level fixed above...
 
 	// To maintain the coherence with the conf inherited!
 	// Here the configuracion method is invoked instead to avoid recursive!

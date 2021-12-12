@@ -195,6 +195,7 @@ void PacManII::World::initialize ()
 		pyWOv.addSetOfOpenValues (lNE, pyScnOv);
 		
 		// The initialization then takes place...
+
 		QGAMES::World::initializeRuntimeValuesFrom (pyWOv); 
 	}
 }
@@ -218,7 +219,6 @@ PacManII::Scene::Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Conne
 		const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
 	: QGAMES::Scene (c, m, cn, p, ePL),
 	  _pacman (nullptr),
-	  _inky (nullptr), _blinky (nullptr), _pinky (nullptr), _clyde (nullptr),
 	  _percentageCleaned (__BD 0)
 {
 #ifndef NDEBUG
@@ -290,8 +290,8 @@ void PacManII::Scene::setBallsEatenStatus (const std::string& st)
 void PacManII::Scene::playSiren (bool f)
 { 
 	SirenRate sR = SirenRate::_NORMAL;
-	if (_percentageCleaned > 30 && _percentageCleaned < 60) sR = SirenRate::_FAST;
-	if (_percentageCleaned > 60) sR = SirenRate::_VERYFAST;
+	if (_percentageCleaned > 0.30 && _percentageCleaned < 0.60) sR = SirenRate::_FAST;
+	if (_percentageCleaned > 0.60) sR = SirenRate::_VERYFAST;
 	if (sR != _sirenRate || f)
 	{
 		_sirenRate = sR;
@@ -309,50 +309,40 @@ void PacManII::Scene::stopSiren ()
 // ---
 void PacManII::Scene::initialize ()
 {
-	// This is the common scene and it is made of 4 characters
-	// In other scenes more evolutionated, the scene can be made of many more monsters
-
-	// Load and add the characters to the scene...
+	// Loads the pacman...
 	addCharacter (_pacman = dynamic_cast <PacManII::PacMan*> (game () -> character (__PACMANII_PACMANBASEENTITYID__)));
-	addCharacter (_inky = dynamic_cast <PacManII::Inky*> (game () -> character (__PACMANII_INKYBASEENTITYID__)));
-	addCharacter (_blinky = dynamic_cast <PacManII::Blinky*> (game () -> character (__PACMANII_BLINKYBASEENTITYID__)));
-	addCharacter (_pinky = dynamic_cast <PacManII::Pinky*> (game () -> character (__PACMANII_PINKYBASEENTITYID__)));
-	addCharacter (_clyde = dynamic_cast <PacManII::Clyde*> (game () -> character (__PACMANII_CLYDEBASEENTITYID__)));
-	assert (_pacman != nullptr && 
-			_inky != nullptr && _blinky != nullptr && _pinky != nullptr && _clyde != nullptr); // It shouldn't but just in case...
+	assert (_pacman != nullptr);
 
 	_pacman -> setMap (activeMap ());
-	_inky -> setMap (activeMap ());
-	_blinky -> setMap (activeMap ());
-	_pinky -> setMap (activeMap ());
-	_clyde -> setMap (activeMap ());
 
 	// The scene has to be initialized just after characters are added...
 	QGAMES::Scene::initialize ();
 
-	// Set the initial state for each
-	// Byt the internal status will stay "_ATHOME"
 	_pacman -> setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__);
-	_inky -> setCurrentState (__PACMANII_INKYSTATEATHOMELOOKINGUP__);
-	_blinky -> setCurrentState (__PACMANII_BLINKYSTATEATHOMELOOKINGDOWN__);
-	_pinky -> setCurrentState (__PACMANII_PINKYSTATEATHOMELOOKINGUP__);
-	_clyde -> setCurrentState (__PACMANII_CLYDESTATEATHOMELOOKINGDOWN__);
 
-	// Set the characters in the right position of the map...
 	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (activeMap ());
 	assert (aM != nullptr);
 	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0 /** It can be more. */)) - 
 		QGAMES::Vector (__BD (_pacman -> visualLength () >> 1), __BD (_pacman -> visualHeight () >> 1), __BD 0));
-	_inky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Inky::_NUMBER)) - 
-		QGAMES::Vector (__BD (_inky -> visualLength ()), __BD (_inky -> visualHeight () >> 1), __BD 0));
-	_blinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Blinky::_NUMBER)) - 
-		QGAMES::Vector (__BD (_blinky -> visualLength ()), __BD (_blinky -> visualHeight () >> 1), __BD 0));
-	_pinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Pinky::_NUMBER)) - 
-		QGAMES::Vector (__BD (_pinky -> visualLength ()), __BD (_pinky -> visualHeight () >> 1), __BD 0));
-	_clyde -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Clyde::_NUMBER)) - 
-		QGAMES::Vector (__BD (_clyde -> visualLength ()), __BD (_clyde -> visualHeight () >> 1), __BD 0));
 
 	_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
+
+	reStartAllCounters ();
+	reStartAllOnOffSwitches ();
+}
+
+// ---
+void PacManII::Scene::updatePositions ()
+{
+	QGAMES::Scene::updatePositions ();
+
+	if (onOffSwitch (_SWITCHCHASING) -> isOn () &&
+		counter (_COUNTERSCHASING) -> isEnd ())
+	{
+		onOffSwitch (_SWITCHCHASING) -> set (false);
+
+		_pacman -> setChasing (false);
+	}
 }
 
 // ---
@@ -361,22 +351,10 @@ void PacManII::Scene::finalize ()
 	QGAMES::Scene::finalize ();
 
 	_pacman -> setMap (nullptr);
-	_inky -> setMap (nullptr);
-	_blinky -> setMap (nullptr);
-	_pinky -> setMap (nullptr);
-	_clyde -> setMap (nullptr);
 
 	removeCharacter (_pacman);
-	removeCharacter (_inky);
-	removeCharacter (_blinky);
-	removeCharacter (_pinky);
-	removeCharacter (_clyde);
 
 	_pacman = nullptr;
-	_inky = nullptr; 
-	_blinky = nullptr;
-	_pinky = nullptr;
-	_clyde = nullptr;
 }
 
 // ---
@@ -384,12 +362,113 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_BALLEATEN__)
 	{
-		game () -> sound (__PACMANII_SOUNDCHOMP__) -> play (-1); // Chomp...
+		assert (evnt.data () != nullptr); // It shouldn't but just in case...
+		if (static_cast <PacManII::TilePath*> (evnt.data ()) -> hasPower ()) // Take care with this instruction...
+		{
+			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+			assert (g != nullptr);
 
-		_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
+			onOffSwitch (_SWITCHCHASING) -> set (true);
+
+			counter (_COUNTERSCHASING) -> initialize  
+				((int) (g -> levelDefinition ().secondsChasing () * __BD g -> currentLoopsPerSecond ()), 0, true, false);
+		}
+
+		playSiren (); // The sound of the siren can change...
+
+		if ((_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ()) == __BD 1)
+			notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, _pacman));
 	}
 	else
 		notify (QGAMES::Event (evnt.code (), this, evnt.values ()));
+
+	QGAMES::Scene::processEvent (evnt);
+}
+
+// ---
+__IMPLEMENTCOUNTERS__ (PacManII::Scene::Counters)
+{
+	addCounter (new QGAMES::Counter (_COUNTERSCHASING, 1 /** Initialized later. */, 0, true, true));
+}
+
+// ---
+__IMPLEMENTONOFFSWITCHES__ (PacManII::Scene::OnOffSwitches)
+{
+	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHCHASING, false));
+}
+
+// ---
+void PacManII::StandardScene::initialize ()
+{
+	// Load the bad guys...
+	addCharacter (_inky = dynamic_cast <PacManII::Inky*> (game () -> character (__PACMANII_INKYBASEENTITYID__)));
+	addCharacter (_blinky = dynamic_cast <PacManII::Blinky*> (game () -> character (__PACMANII_BLINKYBASEENTITYID__)));
+	addCharacter (_pinky = dynamic_cast <PacManII::Pinky*> (game () -> character (__PACMANII_PINKYBASEENTITYID__)));
+	addCharacter (_clyde = dynamic_cast <PacManII::Clyde*> (game () -> character (__PACMANII_CLYDEBASEENTITYID__)));
+	assert (_inky != nullptr && _blinky != nullptr && _pinky != nullptr && _clyde != nullptr); // It shouldn't but just in case...
+
+	_inky -> setMap (activeMap ());
+	_blinky -> setMap (activeMap ());
+	_pinky -> setMap (activeMap ());
+	_clyde -> setMap (activeMap ());
+
+	// Pacman is loaded here...
+	PacManII::Scene::initialize ();
+
+	// Set the initial state for each
+	// Byt the internal status will stay "_ATHOME"
+	_inky -> setCurrentState (__PACMANII_INKYSTATEATHOMELOOKINGUP__);
+	_blinky -> setCurrentState (__PACMANII_BLINKYSTATEATHOMELOOKINGDOWN__);
+	_pinky -> setCurrentState (__PACMANII_PINKYSTATEATHOMELOOKINGUP__);
+	_clyde -> setCurrentState (__PACMANII_CLYDESTATEATHOMELOOKINGDOWN__);
+
+	// Set the characters in the right position of the map...
+	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (activeMap ());
+	assert (aM != nullptr);
+	_inky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Inky::_NUMBER)) - 
+		QGAMES::Vector (__BD (_inky -> visualLength ()), __BD (_inky -> visualHeight () >> 1), __BD 0));
+	_blinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Blinky::_NUMBER)) - 
+		QGAMES::Vector (__BD (_blinky -> visualLength ()), __BD (_blinky -> visualHeight () >> 1), __BD 0));
+	_pinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Pinky::_NUMBER)) - 
+		QGAMES::Vector (__BD (_pinky -> visualLength ()), __BD (_pinky -> visualHeight () >> 1), __BD 0));
+	_clyde -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Clyde::_NUMBER)) - 
+		QGAMES::Vector (__BD (_clyde -> visualLength ()), __BD (_clyde -> visualHeight () >> 1), __BD 0));
+}
+
+// ---
+void PacManII::StandardScene::finalize ()
+{
+	PacManII::Scene::finalize ();
+
+	_inky -> setMap (nullptr);
+	_blinky -> setMap (nullptr);
+	_pinky -> setMap (nullptr);
+	_clyde -> setMap (nullptr);
+
+	removeCharacter (_inky);
+	removeCharacter (_blinky);
+	removeCharacter (_pinky);
+	removeCharacter (_clyde);
+
+	_inky = nullptr; 
+	_blinky = nullptr;
+	_pinky = nullptr;
+	_clyde = nullptr;
+}
+
+// ---
+void PacManII::StandardScene::processEvent (const QGAMES::Event& evnt)
+{
+	if (evnt.code () == __PACMANII_BALLEATEN__)
+	{
+		assert (evnt.data () != nullptr);
+		if (static_cast <PacManII::TilePath*> (evnt.data ()) -> hasPower ()) // Take care with this instruction...
+		{
+			// TODO...
+		}
+	}
+
+	PacManII::Scene::processEvent (evnt);
 }
 
 // ---
@@ -444,6 +523,31 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 
 	// Generates the map...
 	_maze = PacManII::Maze::generateMazeFrom (w, h, this);
+}
+
+// ---
+QGAMES::SetOfOpenValues PacManII::Map::runtimeValues () const
+{
+	QGAMES::SetOfOpenValues result = QGAMES::TiledMap::runtimeValues ();
+
+	int lE = result.lastOpenValueId ();
+	result.addOpenValue (lE + 1, QGAMES::OpenValue (ballsEatenStatus ()));
+
+	return (result);
+}
+
+// ---
+void PacManII::Map::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
+{
+	int lE = cfg.lastOpenValueId ();
+
+	assert (cfg.existOpenValue (lE));
+
+	QGAMES::SetOfOpenValues cCfg = cfg;
+	setBallsEatenStatus (cCfg.openValue (lE).strValue ());
+	cCfg.removeOpenValue (lE);
+
+	QGAMES::TiledMap::initializeRuntimeValuesFrom (cCfg);
 }
 
 // ---
@@ -536,6 +640,12 @@ void PacManII::Map::setBallsEatenStatus (const std::string& st)
 		return;
 
 	_mazeLayer -> setBallsEatenStatus (st);
+}
+
+// ---
+void PacManII::Map::initialize ()
+{
+	_mazeLayer -> setBallsEatenStatus (std::string (__NULL_STRING__));
 }
 
 // ---
@@ -770,7 +880,7 @@ std::string PacManII::MazeLayer::ballsEatenStatus () const
 	for (auto i : tiles ())
 	{
 		const PacManII::TilePath* tl = dynamic_cast <const PacManII::TilePath*> (i);
-		result += std::to_string ((int) tl -> type ());
+		result += (tl == nullptr) ? std::string ("_") : std::to_string ((tl -> alreadyEaten () ? 0 : 1));
 	}
 
 	return (result);
@@ -779,7 +889,35 @@ std::string PacManII::MazeLayer::ballsEatenStatus () const
 // ---
 void PacManII::MazeLayer::setBallsEatenStatus (const std::string& st)
 {
-	// TODO
+	if (st == std::string (__NULL_STRING__))
+	{
+		for (auto i : tiles ())
+		{
+			PacManII::TilePath* tP = dynamic_cast <PacManII::TilePath*> (i);
+			if (tP != nullptr)
+				tP -> eaten (false);
+		}
+	}
+	else
+	{
+		int j = 0;
+		for (auto i : tiles ())
+		{
+			if (st [j] == '_')
+			{
+				// Just to be sure that the status requiered represents the map...
+				assert (dynamic_cast <PacManII::TilePath*> (i) == nullptr);
+			}
+			else
+			{
+				PacManII::TilePath* tP = dynamic_cast <PacManII::TilePath*> (i);
+				assert (tP != nullptr);
+				tP -> eaten (st [j] == '1' ? false : true);
+			}
+
+			j++;
+		}
+	}
 }
 
 // ---
@@ -796,22 +934,31 @@ void PacManII::TileLimit::setBright (bool b)
 }
 
 // ---
-bool PacManII::TilePath::eaten ()
+bool PacManII::TilePath::eaten (bool s)
 { 
 	bool result = false;
 
-	if (canBeEaten () && 
-		_type != PacManII::TilePath::Type::_EMPTY) // Only if it is possible...
+	if (canBeEaten ())
 	{
 		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 		assert (g != nullptr); // It can only be made within a PacManII game, that it should be the case...
 		PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
 		assert (mB != nullptr); // Just in case...
 
-		_type = PacManII::TilePath::Type::_EMPTY; // No more
-		setForm (form (), mB -> frameForEmptyPath ());
+		if (s && _type != PacManII::TilePath::Type::_EMPTY)
+		{
+			_type = PacManII::TilePath::Type::_EMPTY; // No more
 
-		notify (QGAMES::Event (__PACMANII_BALLEATEN__, this));
+			setForm (form (), mB -> frameForEmptyPath ());
+
+			notify (QGAMES::Event (__PACMANII_BALLEATEN__, this));
+		}
+		else
+		{
+			_type = _originalType;
+
+			setForm (form (), _originalFrame);
+		}
 
 		result = true;
 	}

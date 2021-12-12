@@ -89,13 +89,6 @@ namespace PacManII
 			void setTriesOnLevel (int nP, int nL, int nT)
 							{ assert (nP > 0 && nP <= (int) _triesOnLevel.size ());
 							  _triesOnLevel [nP - 1][nL] = nT; }
-			std::string levelBallsEaten (int nP, int nL) const // ...necessary to know which balls have already been aeaten in this level
-							{ assert (nP > 0 && nP <= (int) _levelBallsEaten.size ());
-							  std::map <int, std::string>::const_iterator i = _levelBallsEaten [nP - 1].find (nL);
-							  return ((i != _levelBallsEaten [nP - 1].end ()) ? (*i).second : std::string (__NULL_STRING__)); }
-			void setLevelBallsEaten (int nP, int nL, const std::string& st)
-							{ assert (nP > 0 && nP <= (int) _levelBallsEaten.size ());
-							  _levelBallsEaten [nP - 1][nL] = st; }
 
 			/** To change the hall of fame. */
 			void actualizeHallOfFame ();
@@ -115,7 +108,6 @@ namespace PacManII
 			std::vector <int> _level;
 			std::vector <std::map <int, bool>> _levelCompleted;
 			std::vector <std::map <int, int>> _triesOnLevel;
-			std::vector <std::map <int, std::string>> _levelBallsEaten;
 		};
 
 		Game (const DataGame& dt)
@@ -195,15 +187,6 @@ namespace PacManII
 		void setTriesOnLevel (int nL, int nT, int nP = -1)
 							{ ((Conf*) configuration ()) -> 
 								setTriesOnLevel ((nP == -1) ? currentPlayer () : nP, nL, nT); }
-
-		/** Managing the ball status per level.
-				In this string the cell (number) with a ball already eaten will appear! */
-		std::string levelBallsEaten (int nL, int nP = -1) const
-							{ return (((Conf*) configuration ()) -> 
-								levelBallsEaten ((nP == -1) ? currentPlayer () : nP, nL)); }
-		void setLevelBallsEaten (int nL, const std::string& st, int nP = -1)
-							{ ((Conf*) configuration ()) -> 
-								setLevelBallsEaten ((nP == -1) ? currentPlayer () : nP, nL, st); }
 
 		/** Actualize the hall of fame, with the last results. */
 		void actualizeHallOfFame ()

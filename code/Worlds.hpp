@@ -51,6 +51,10 @@ namespace PacManII
 		virtual void initialize () override;
 		virtual void finalize () override;
 
+		/** The events comming from the scene observed are transmitted up. */ 
+		virtual void processEvent (const QGAMES::Event& evnt) override
+							{ notify (QGAMES::Event (evnt.code (), evnt.data (), evnt.values ())); }
+
 		protected:
 		/** 
 		  * The structure of the runtimeValues hasn't take into account many players. 
@@ -94,21 +98,51 @@ namespace PacManII
 		void stopSiren ();
 
 		virtual void initialize () override;
+		virtual void updatePositions () override;
 		virtual void finalize () override;
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		protected:
+		__DECLARECOUNTERS__ (Counters);
+		virtual QGAMES::Counters* createCounters () override
+							{ return (new Counters); }
+		__DECLAREONOFFSWITCHES__ (OnOffSwitches)
+		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
+							{ return (new OnOffSwitches); }
+
+		protected:
 		PacMan* _pacman;
-		Inky* _inky;
-		Blinky* _blinky;
-		Pinky* _pinky;
-		Clyde* _clyde;
+
+		static const int _COUNTERSCHASING = 0;
+		static const int _SWITCHCHASING = 0;
 
 		// Implementation
 		/** The percentage of the maze cleaned. */
 		QGAMES::bdata _percentageCleaned;
 		enum class SirenRate { _NORMAL = 0, _FAST = 1, _VERYFAST = 2 } _sirenRate;
+	};
+
+	/** The standard scene only plays with the usual monsters and the pacman. */
+	class StandardScene final : public Scene
+	{
+		public:
+		StandardScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
+			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
+			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ())
+			: Scene (c, m, cn, p, ePL)
+							{ }
+
+		virtual void initialize () override;
+		virtual void finalize () override;
+
+		virtual void processEvent (const QGAMES::Event& evnt) override;
+
+		private:
+		Inky* _inky;
+		Blinky* _blinky;
+		Pinky* _pinky;
+		Clyde* _clyde;
 	};
 
 	/** Basic map of the game. 
@@ -124,10 +158,17 @@ namespace PacManII
 		Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW, int tH, int tD,
 			 const QGAMES::MapProperties& p = QGAMES::MapProperties ());
 
+		virtual QGAMES::SetOfOpenValues runtimeValues () const override;
+		virtual void initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg) override;
+
 		const BackgroundLayer* backgroundLayer () const
 							{ return (_backgroundLayer); }
 		BackgroundLayer* backgroundLayer ()
 							{ return (_backgroundLayer); }
+		const MazeLayer* mazeLayer () const
+							{ return (_mazeLayer); }
+		MazeLayer* mazeLayer () 
+							{ return (_mazeLayer); }
 		const LocationsLayer* locationsLayer () const
 							{ return (_locationsLayer); }
 		LocationsLayer* locationsLayer () 
@@ -175,9 +216,11 @@ namespace PacManII
 		inline std::string ballsEatenStatus () const;
 		void setBallsEatenStatus (const std::string& st);
 
+		virtual void initialize () override;
+
 		/** The events comming from the layers observed are transmitted up. */ 
 		virtual void processEvent (const QGAMES::Event& evnt) override
-							{ notify (QGAMES::Event (evnt.code (), this, evnt.values ())); }
+							{ notify (QGAMES::Event (evnt.code (), evnt.data (), evnt.values ())); }
 
 		protected:
 		/** A representation of the maze, 
@@ -302,7 +345,7 @@ namespace PacManII
 
 		/** The events comming from the tiles observed are transmitted up. */ 
 		virtual void processEvent (const QGAMES::Event& evnt) override
-							{ notify (QGAMES::Event (evnt.code (), this, evnt.values ())); }
+							{ notify (QGAMES::Event (evnt.code (), evnt.data (), evnt.values ())); }
 	};
 
 	/** Representing the limit tile. */
@@ -326,7 +369,8 @@ namespace PacManII
 		TilePath (int id, QGAMES::Form* f, int nf, Type t, const QGAMES::TileProperties& p = QGAMES::TileProperties ())
 			: QGAMES::Tile (id, f, nf, t, p),
 			  _type (t),
-			  _originalType (t)
+			  _originalType (t),
+			  _originalFrame (nf)
 							{ }
 
 		/** To know and change th type. */
@@ -336,13 +380,16 @@ namespace PacManII
 							{ return (canBeEaten () && _type == _EMPTY); } 
 		bool canBeEaten () const
 							{ return (_originalType == _BALL || _originalType == _POWERBALL); }
-		bool eaten ();
+		bool hasPower () const
+							{ return (_originalType == _POWERBALL); }
+		bool eaten (bool s);
 
 		protected:
 		Type _type;
 
 		// Implementation
 		Type _originalType;
+		int _originalFrame;
 	};
 }
 

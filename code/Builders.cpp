@@ -489,14 +489,14 @@ QGAMES::World* PacManII::WorldBuilder::createWorldObject (int no, const QGAMES::
 QGAMES::Scene* PacManII::WorldBuilder::createSceneObject (int ns, const QGAMES::Maps& m, 
 	const QGAMES::Scene::Connections& cn, const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
 {
-	return (new PacManII::Scene (ns, m, cn, p, ePL));
+	return (new PacManII::StandardScene (ns, m, cn, p, ePL));
 }
 
 // ---
 QGAMES::SceneActionBlock* PacManII::WorldBuilder::createSceneActionBlockObject (int nAB, 
 	const QGAMES::SceneActionBlockProperties& prps)
 {
-	return (nullptr);
+	// Not needed...
 
-	// TODO
+	return (nullptr);
 }
