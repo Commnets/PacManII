@@ -572,4 +572,175 @@
 		</States>
 	</SetOfEntities>
 
+	<!-- The fruit -->
+	<SetOfEntities fromId="50050" number="10">
+		<Forms>
+			<Form id="50022"/>
+		</Forms>
+		<MovementsBase>
+			<!-- Just staying -->
+			<Movement id="550050"/>
+		</MovementsBase>
+		<Animations>
+			<!-- Fruit 1 -->
+			<Animation id="0" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="0"/>
+					<Attribute id="FINALASPECT" value="1"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 2 -->
+			<Animation id="1" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="1"/>
+					<Attribute id="FINALASPECT" value="1"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 3 -->
+			<Animation id="2" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="2"/>
+					<Attribute id="FINALASPECT" value="2"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 4 -->
+			<Animation id="3" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="3"/>
+					<Attribute id="FINALASPECT" value="3"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 5 -->
+			<Animation id="4" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="4"/>
+					<Attribute id="FINALASPECT" value="4"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 6 -->
+			<Animation id="5" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="5"/>
+					<Attribute id="FINALASPECT" value="5"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 7 -->
+			<Animation id="6" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="6"/>
+					<Attribute id="FINALASPECT" value="6"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 8 -->
+			<Animation id="7" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="7"/>
+					<Attribute id="FINALASPECT" value="7"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 9 -->
+			<Animation id="8" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="8"/>
+					<Attribute id="FINALASPECT" value="8"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 10 -->
+			<Animation id="9" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="9"/>
+					<Attribute id="FINALASPECT" value="9"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 11 -->
+			<Animation id="10" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="10"/>
+					<Attribute id="FINALASPECT" value="10"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+			<!-- Fruit 12 -->
+			<Animation id="11" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50022"/>
+					<Attribute id="INITIALASPECT" value="11"/>
+					<Attribute id="FINALASPECT" value="11"/>
+					<Attribute id="FRACTIONTOCHANGE" value="0"/>
+					<Attribute id="LOOP" value="0"/> <!-- No loop -->
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
+		</Animations>
+		<States>
+			<!-- Fruit 1 staying -->
+			<State id="0" animation="0" movementBase="550050"/>
+			<!-- Fruit 2 staying -->
+			<State id="1" animation="0" movementBase="550050"/>
+			<!-- Fruit 3 staying -->
+			<State id="2" animation="0" movementBase="550050"/>
+			<!-- Fruit 4 staying -->
+			<State id="3" animation="0" movementBase="550050"/>
+			<!-- Fruit 5 staying -->
+			<State id="4" animation="0" movementBase="550050"/>
+			<!-- Fruit 6 staying -->
+			<State id="5" animation="0" movementBase="550050"/>
+			<!-- Fruit 7 staying -->
+			<State id="6" animation="0" movementBase="550050"/>
+			<!-- Fruit 8 staying -->
+			<State id="7" animation="0" movementBase="550050"/>
+			<!-- Fruit 9 staying -->
+			<State id="8" animation="0" movementBase="550050"/>
+			<!-- Fruit 10 staying -->
+			<State id="9" animation="0" movementBase="550050"/>
+			<!-- Fruit 11 staying -->
+			<State id="10" animation="0" movementBase="550050"/>
+			<!-- Fruit 12 staying -->
+			<State id="11" animation="0" movementBase="550050"/>
+		</States>
+	</SetOfEntities>
+
 </Entities>

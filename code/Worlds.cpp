@@ -1,5 +1,6 @@
 #include "Worlds.hpp"
 #include "Game.hpp"
+#include "SceneActionBlocks.hpp"
 
 // ---
 PacManII::World::World (int c, const QGAMES::Scenes& s, const QGAMES::WorldProperties& p)
@@ -218,7 +219,6 @@ void PacManII::World::finalize ()
 PacManII::Scene::Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn, 
 		const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
 	: QGAMES::Scene (c, m, cn, p, ePL),
-	  _pacman (nullptr),
 	  _percentageCleaned (__BD 0)
 {
 #ifndef NDEBUG
@@ -309,21 +309,8 @@ void PacManII::Scene::stopSiren ()
 // ---
 void PacManII::Scene::initialize ()
 {
-	// Loads the pacman...
-	addCharacter (_pacman = dynamic_cast <PacManII::PacMan*> (game () -> character (__PACMANII_PACMANBASEENTITYID__)));
-	assert (_pacman != nullptr);
-
-	_pacman -> setMap (activeMap ());
-
 	// The scene has to be initialized just after characters are added...
 	QGAMES::Scene::initialize ();
-
-	_pacman -> setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__);
-
-	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (activeMap ());
-	assert (aM != nullptr);
-	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0 /** It can be more. */)) - 
-		QGAMES::Vector (__BD (_pacman -> visualLength () >> 1), __BD (_pacman -> visualHeight () >> 1), __BD 0));
 
 	_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
 
@@ -336,25 +323,11 @@ void PacManII::Scene::updatePositions ()
 {
 	QGAMES::Scene::updatePositions ();
 
+	// If chasing is active, and the time is over...
 	if (onOffSwitch (_SWITCHCHASING) -> isOn () &&
-		counter (_COUNTERSCHASING) -> isEnd ())
-	{
+		counter (_COUNTERCHASING) -> isEnd ())
+		// ..swicth it off...
 		onOffSwitch (_SWITCHCHASING) -> set (false);
-
-		_pacman -> setChasing (false);
-	}
-}
-
-// ---
-void PacManII::Scene::finalize ()
-{
-	QGAMES::Scene::finalize ();
-
-	_pacman -> setMap (nullptr);
-
-	removeCharacter (_pacman);
-
-	_pacman = nullptr;
 }
 
 // ---
@@ -370,14 +343,13 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 
 			onOffSwitch (_SWITCHCHASING) -> set (true);
 
-			counter (_COUNTERSCHASING) -> initialize  
+			counter (_COUNTERCHASING) -> initialize  
 				((int) (g -> levelDefinition ().secondsChasing () * __BD g -> currentLoopsPerSecond ()), 0, true, false);
 		}
 
-		playSiren (); // The sound of the siren can change...
+		_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
 
-		if ((_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ()) == __BD 1)
-			notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, _pacman));
+		playSiren (); // The sound of the siren can change...
 	}
 	else
 		notify (QGAMES::Event (evnt.code (), this, evnt.values ()));
@@ -388,7 +360,7 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 // ---
 __IMPLEMENTCOUNTERS__ (PacManII::Scene::Counters)
 {
-	addCounter (new QGAMES::Counter (_COUNTERSCHASING, 1 /** Initialized later. */, 0, true, true));
+	addCounter (new QGAMES::Counter (_COUNTERCHASING, 1 /** Initialized later. */, 0, true, true));
 }
 
 // ---
@@ -400,39 +372,51 @@ __IMPLEMENTONOFFSWITCHES__ (PacManII::Scene::OnOffSwitches)
 // ---
 void PacManII::StandardScene::initialize ()
 {
-	// Load the bad guys...
-	addCharacter (_inky = dynamic_cast <PacManII::Inky*> (game () -> character (__PACMANII_INKYBASEENTITYID__)));
-	addCharacter (_blinky = dynamic_cast <PacManII::Blinky*> (game () -> character (__PACMANII_BLINKYBASEENTITYID__)));
-	addCharacter (_pinky = dynamic_cast <PacManII::Pinky*> (game () -> character (__PACMANII_PINKYBASEENTITYID__)));
-	addCharacter (_clyde = dynamic_cast <PacManII::Clyde*> (game () -> character (__PACMANII_CLYDEBASEENTITYID__)));
-	assert (_inky != nullptr && _blinky != nullptr && _pinky != nullptr && _clyde != nullptr); // It shouldn't but just in case...
+	// Action blocks to control the monsters...
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(0, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, 0.5)));
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(1, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, 0.5)));
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(2, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, 0.5)));
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(3, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, 0.5)));
 
-	_inky -> setMap (activeMap ());
-	_blinky -> setMap (activeMap ());
-	_pinky -> setMap (activeMap ());
-	_clyde -> setMap (activeMap ());
+	// Action blocks to control the fruit...
+	PacManII::Game* g = dynamic_cast< PacManII::Game*> (game ());
+	assert (g);
+	addActionBlock (new PacManII::FruitSceneActionBlock 
+		(4, PacManII::FruitSceneActionBlock::Properties (__PACMANII_FRUITBASEENTITYID__, 
+			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToAppear (), 
+			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToDisappear ())));
 
-	// Pacman is loaded here...
+	// Loads the pacman...
+	addCharacter (_pacman = dynamic_cast <PacManII::PacMan*> (game () -> character (__PACMANII_PACMANBASEENTITYID__)));
+	_pacman -> setMap (activeMap ());
+
 	PacManII::Scene::initialize ();
 
-	// Set the initial state for each
-	// Byt the internal status will stay "_ATHOME"
-	_inky -> setCurrentState (__PACMANII_INKYSTATEATHOMELOOKINGUP__);
-	_blinky -> setCurrentState (__PACMANII_BLINKYSTATEATHOMELOOKINGDOWN__);
-	_pinky -> setCurrentState (__PACMANII_PINKYSTATEATHOMELOOKINGUP__);
-	_clyde -> setCurrentState (__PACMANII_CLYDESTATEATHOMELOOKINGDOWN__);
+	_pacman -> setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__);
 
-	// Set the characters in the right position of the map...
+	_pacman -> setVisible (true);
+
 	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (activeMap ());
 	assert (aM != nullptr);
-	_inky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Inky::_NUMBER)) - 
-		QGAMES::Vector (__BD (_inky -> visualLength ()), __BD (_inky -> visualHeight () >> 1), __BD 0));
-	_blinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Blinky::_NUMBER)) - 
-		QGAMES::Vector (__BD (_blinky -> visualLength ()), __BD (_blinky -> visualHeight () >> 1), __BD 0));
-	_pinky -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Pinky::_NUMBER)) - 
-		QGAMES::Vector (__BD (_pinky -> visualLength ()), __BD (_pinky -> visualHeight () >> 1), __BD 0));
-	_clyde -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (PacManII::Clyde::_NUMBER)) - 
-		QGAMES::Vector (__BD (_clyde -> visualLength ()), __BD (_clyde -> visualHeight () >> 1), __BD 0));
+	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0 /** It can be more. */)) - 
+		QGAMES::Vector (__BD (_pacman -> visualLength () >> 1), __BD (_pacman -> visualHeight () >> 1), __BD 0));
+}
+
+// ---
+void PacManII::StandardScene::updatePositions ()
+{
+	PacManII::Scene::updatePositions ();
+
+	// Regarding the status of the map...
+	if (_percentageCleaned == __BD 1)
+		notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, _pacman));
+
+	// Regarding the status for chaising or not
+	_pacman -> setChasing (onOffSwitch (_SWITCHCHASING) -> isOn ());
 }
 
 // ---
@@ -440,20 +424,11 @@ void PacManII::StandardScene::finalize ()
 {
 	PacManII::Scene::finalize ();
 
-	_inky -> setMap (nullptr);
-	_blinky -> setMap (nullptr);
-	_pinky -> setMap (nullptr);
-	_clyde -> setMap (nullptr);
+	_pacman -> setMap (nullptr);
 
-	removeCharacter (_inky);
-	removeCharacter (_blinky);
-	removeCharacter (_pinky);
-	removeCharacter (_clyde);
+	removeCharacter (_pacman);
 
-	_inky = nullptr; 
-	_blinky = nullptr;
-	_pinky = nullptr;
-	_clyde = nullptr;
+	_pacman = nullptr;
 }
 
 // ---
@@ -483,7 +458,8 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 	  _pacmanInitialPositions (), 
 	  _monsterInitialPositions (), 
 	  _monsterRunAwayPositions (),
-	  _monsterExitingHomePosition (QGAMES::MazeModel::_noPosition)
+	  _monsterExitingHomePosition (QGAMES::MazeModel::_noPosition),
+	  _fruitPosition (QGAMES::MazeModel::_noPosition)
 { 
 	for (auto i : layers ())
 	{
@@ -595,6 +571,17 @@ QGAMES::MazeModel::PositionInMaze PacManII::Map::monsterExitingHomePosition () c
 		return (_monsterExitingHomePosition);
 
 	return (_monsterExitingHomePosition = mapPositionToMazePosition (_locationsLayer -> monsterExitingHomePosition ()));
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Map::fruitPosition () const
+{
+	assert (_locationsLayer != nullptr);
+
+	if (_fruitPosition != QGAMES::MazeModel::_noPosition)
+		return (_fruitPosition);
+
+	return (_fruitPosition = mapPositionToMazePosition (_locationsLayer -> fruitPosition ()));
 }
 
 // ---
@@ -746,6 +733,25 @@ QGAMES::Position PacManII::LocationsLayer::monsterExitingHomePosition () const
 			_monsterExitingHomePosition = tilePosition ((*i));
 
 	return (_monsterExitingHomePosition);
+}
+
+// ---
+QGAMES::Position PacManII::LocationsLayer::fruitPosition () const
+{
+	if (_fruitPosition != QGAMES::Position::_noPoint)
+		return (_fruitPosition);
+
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB);
+
+	for (QGAMES::Tiles::const_iterator i = tiles ().begin (); 
+		i != tiles ().end () && _fruitPosition == QGAMES::Position::_noPoint; i++)
+		if ((*i) -> numberFrame () == mB -> fruitPositionFrame ())
+			_fruitPosition = tilePosition ((*i));
+
+	return (_fruitPosition);
 }
 
 // ---

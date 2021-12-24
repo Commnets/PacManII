@@ -45,4 +45,7 @@
 	<!-- Clide's at-home movements -->
 	<SetOfMovements fromId="580040" number="10"/>
 
+	<!-- Fruits movements -->
+	<SetOfMovements fromId="550050" number="10"/>
+
 </Movements>

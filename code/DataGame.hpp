@@ -60,24 +60,26 @@ namespace PacManII
 			LevelDefinition ()
 				: _worldTypeId (__PACMANII_WORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
 				  _pointsBall (50), _pointsPowerBall (200), _secondsChasing (1.0f),
-				  _bonusSymbolId (0), _bonusPoints (100),
+				  _bonusSymbolId (0), _bonusPoints (100), _secondsBonusToAppear (10.0f), _secondsBonusToDisappear (10.0f),
 				  _scatterChaseCycles ({ ScatterChaseCycle () }),
 				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
 						_pacmanSpeedWhenFrighting (1.0f), _pacmanSpeedWhenEatingFrightingDots (1.0f),
-				  _ghostSpeeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
+				  _ghostSpeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
 						_ghostSpeedWhenCrossingTunnel (1.0f)
 							{ }
 
-			LevelDefinition (int wT, int sT, int mT, int pB, int pPB, double mSC, 
-					int bS, int bP, const ScatterChaseCycles& sC, 
+			LevelDefinition (int wT, int sT, int mT, 
+					int pB, int pPB, double mSC, 
+					int bS, int bP, double sBA, double sBD, 
+					const ScatterChaseCycles& sC, 
 					double pS, double pED, double pWF, double pWEFD, double gS, double gWF, double gWT)
 				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
 				  _pointsBall (pB), _pointsPowerBall (pPB), _secondsChasing (mSC),
-				  _bonusSymbolId (bS), _bonusPoints (bP),
+				  _bonusSymbolId (bS), _bonusPoints (bP), _secondsBonusToAppear (sBA), _secondsBonusToDisappear (sBD),
 				  _scatterChaseCycles (sC),
 				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
 						_pacmanSpeedWhenFrighting (pWF), _pacmanSpeedWhenEatingFrightingDots (pWEFD),
-				  _ghostSpeeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
+				  _ghostSpeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
 						_ghostSpeedWhenCrossingTunnel (gWT)
 							{ assert (_scatterChaseCycles.size () != 0); }
 
@@ -101,6 +103,10 @@ namespace PacManII
 							{ return (_bonusSymbolId); }
 			int bonusPoints () const 
 							{ return (_bonusPoints); }
+			double secondsBonusSymbolToAppear () const
+							{ return (_secondsBonusToAppear); }
+			double secondsBonusSymbolToDisappear () const
+							{ return (_secondsBonusToDisappear); }
 			const ScatterChaseCycle& scatterChaseCycle (unsigned int n) const 
 							{ return (n > _scatterChaseCycles.size () 
 								? _scatterChaseCycles [_scatterChaseCycles.size () - 1] : _scatterChaseCycles [n]); }
@@ -112,8 +118,8 @@ namespace PacManII
 							{ return (_pacmanSpeedWhenFrighting); }
 			double pacmanSpeedWhenEatingFrightingDots () const 
 							{ return (_pacmanSpeedWhenEatingFrightingDots); } 
-			double ghostSpeeed () const 
-							{ return (_ghostSpeeed); }
+			double ghostSpeed () const 
+							{ return (_ghostSpeed); }
 			double ghostSpeedWhenBeingFrighten () const 
 							{ return (_ghostSpeedWhenBeingFrighten); }
 			double ghostSpeedWhenCrossingTunnel () const 
@@ -134,6 +140,10 @@ namespace PacManII
 			const int _bonusSymbolId;
 			/** How many point will eating it give you? */
 			const int _bonusPoints;
+			/** The number of seconds before the bonus symbol to appear. */
+			const double _secondsBonusToAppear;
+			/** The number of senconds the bonus symbol is maintained in the screen. */
+			const double _secondsBonusToDisappear;
 			/** The cycles beetween scatting and chaseing */
 			const ScatterChaseCycles _scatterChaseCycles;
 			// Proportion eover the maximum possible...
@@ -146,7 +156,7 @@ namespace PacManII
 			/** Pacman's sped when bot eating and cheasing happens at the same time. */
 			const double _pacmanSpeedWhenEatingFrightingDots;
 			/** Usual Monster speed. */
-			const double _ghostSpeeed;
+			const double _ghostSpeed;
 			/** Monster's speed when are frighten because Pacman has eaten a power dot. */
 			const double _ghostSpeedWhenBeingFrighten;
 			/** Monster's speed when they are facind the tunnel. */

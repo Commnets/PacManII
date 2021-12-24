@@ -37,5 +37,8 @@
 	<!-- Giant Pacman (used in relax states of the game) -->
 	<Form id="50021" name="GiantPacMan" file="forms/giantpacman.png" width="256" height="256"
 		fSpacing="0" fMargin="0" fWidth="128" fHeight="128" aColor="255" nFrames="4"/>
+	<!-- The fruit -->
+	<Form id="50022" name="Fruit" file="forms/fruits.png" width="128" height="96"
+		fSpacing="0" fMargin="0" fWidth="32" fHeight="32" aColor="255" nFrames="12"/>
 
 </Forms>

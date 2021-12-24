@@ -70,10 +70,11 @@ namespace PacManII
 		mutable QGAMES::SetOfOpenValues _fullConfPerPlayer;
 	};
 
-	/** Basic Scene of the game. 
-		Maps can be only PacManII ones. 
-		The Scene has a siren in the background.
-		The rate of the siren goes up as the pacman has less ball to eat. 
+	/** Basic Scene of the game. \n
+		Maps can be only PacManII ones. \n
+		The Scene has a siren in the background. \n
+		The rate of the siren goes up as map has less balls to eat. \n
+		When the a power ball is eaten the scene turns into a chaising state. What to do depends on the definitions later.
 		The game can be extended in terms of scenes. */
 	class Scene : public QGAMES::Scene
 	{
@@ -99,7 +100,6 @@ namespace PacManII
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;
-		virtual void finalize () override;
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
@@ -112,14 +112,15 @@ namespace PacManII
 							{ return (new OnOffSwitches); }
 
 		protected:
-		PacMan* _pacman;
-
-		static const int _COUNTERSCHASING = 0;
+		/** The counters and the switches. */
+		static const int _COUNTERCHASING = 0;
 		static const int _SWITCHCHASING = 0;
 
 		// Implementation
 		/** The percentage of the maze cleaned. */
 		QGAMES::bdata _percentageCleaned;
+
+		/** Used to play the siren. */
 		enum class SirenRate { _NORMAL = 0, _FAST = 1, _VERYFAST = 2 } _sirenRate;
 	};
 
@@ -130,19 +131,18 @@ namespace PacManII
 		StandardScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
 			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
 			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ())
-			: Scene (c, m, cn, p, ePL)
-							{ }
+				: Scene (c, m, cn, p, ePL),
+				  _pacman (nullptr)
+							{  }
 
 		virtual void initialize () override;
+		virtual void updatePositions () override;
 		virtual void finalize () override;
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		private:
-		Inky* _inky;
-		Blinky* _blinky;
-		Pinky* _pinky;
-		Clyde* _clyde;
+		PacMan* _pacman;
 	};
 
 	/** Basic map of the game. 
@@ -184,6 +184,7 @@ namespace PacManII
 		QGAMES::MazeModel::PositionInMaze monsterInitialPosition (int nM) const;
 		QGAMES::MazeModel::PositionInMaze monsterRunAwayPosition (int nM) const;
 		QGAMES::MazeModel::PositionInMaze monsterExitingHomePosition () const;
+		QGAMES::MazeModel::PositionInMaze fruitPosition () const;
 
 		/** To convert any position in the maze in a position in the map. 
 			What is returned is always the central position. */
@@ -239,6 +240,7 @@ namespace PacManII
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterRunAwayPositions;
 		mutable QGAMES::MazeModel::PositionInMaze _monsterExitingHomePosition;
+		mutable QGAMES::MazeModel::PositionInMaze _fruitPosition;
 	};
 
 	/** Representing the background layer. */
@@ -261,7 +263,8 @@ namespace PacManII
 			  _pacmanInitialPositions (), 
 			  _monsterInitialPositions (), 
 			  _monsterRunAwayPositions (),
-			  _monsterExitingHomePosition (QGAMES::Position::_noPoint)
+			  _monsterExitingHomePosition (QGAMES::Position::_noPoint),
+			  _fruitPosition (QGAMES::Position::_noPoint)
 							{ setVisible (false); /* Always */ }
 
 		/** To know important positions kept in this layer. 
@@ -270,6 +273,7 @@ namespace PacManII
 		QGAMES::Position monsterInitialPosition (int nM) const;
 		QGAMES::Position monsterRunAwayPosition (int nM) const;
 		QGAMES::Position monsterExitingHomePosition () const;
+		QGAMES::Position fruitPosition () const;
 
 		protected:
 		/** To acclerate how positions are calculated (per number of artist). */
@@ -277,6 +281,7 @@ namespace PacManII
 		mutable std::map <int, QGAMES::Position> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::Position> _monsterRunAwayPositions;
 		mutable QGAMES::Position _monsterExitingHomePosition;
+		mutable QGAMES::Position _fruitPosition;
 	};
 
 	/** Representing the maze description layer. */

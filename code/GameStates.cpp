@@ -65,10 +65,10 @@ void PacManII::MonsterMovingGameState::onEnter ()
 
 	// All of them are set in the state running to the right...
 	_artists [0] -> setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__);
-	_artists [1] -> setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGRIGHT__);
-	_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGRIGHT__);
-	_artists [3] -> setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGRIGHT__);
-	_artists [4] -> setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [1] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [2] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [3] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
+	_artists [4] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
 
 	reStartAllCounters ();
 	counter (_COUNTERITERATIONS) -> initialize 
@@ -114,10 +114,10 @@ void PacManII::MonsterMovingGameState::updatePositions ()
 		{
 			_artists [0] -> setCurrentState (_properties._bigPacman 
 				? __PACMANII_BIGPACMANSTATEEATINGLOOKINGLEFT__ : __PACMANII_PACMANSTATEEATINGLOOKINGLEFT__);
-			_artists [1] -> setCurrentState (__PACMANII_INKYSTATERUNNINGAWAY__);
-			_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATERUNNINGAWAY__);
-			_artists [3] -> setCurrentState (__PACMANII_PINKYSTATERUNNINGAWAY__);
-			_artists [4] -> setCurrentState (__PACMANII_CLYDESTATERUNNINGAWAY__);
+			_artists [1] -> setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAY__);
+			_artists [2] -> setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAY__);
+			_artists [3] -> setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAY__);
+			_artists [4] -> setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAY__);
 
 			onOffSwitch (_SWITCHRIGHT) -> set (false); 
 
@@ -137,10 +137,10 @@ void PacManII::MonsterMovingGameState::updatePositions ()
 			else
 			{
 				_artists [0] -> setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__);
-				_artists [1] -> setCurrentState (__PACMANII_INKYSTATEMOVINGANDLOOKINGRIGHT__);
-				_artists [2] -> setCurrentState (__PACMANII_BLINKYSTATEMOVINGANDLOOKINGRIGHT__);
-				_artists [3] -> setCurrentState (__PACMANII_PINKYSTATEMOVINGANDLOOKINGRIGHT__);
-				_artists [4] -> setCurrentState (__PACMANII_CLYDESTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [1] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [2] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [3] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
+				_artists [4] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
 
 				onOffSwitch (_SWITCHRIGHT) -> set (true); 
 
@@ -527,6 +527,9 @@ void PacManII::PlayingGameState::onEnter ()
 
 	// The world is also observed, among other things to detect when it has been empty up!
 	observe (w);
+
+	// Collisions are allowed...
+	g -> setDetectCollisions (true);
 }
 
 // ---
@@ -551,6 +554,8 @@ void PacManII::PlayingGameState::onExit ()
 	w -> stopSiren ();
 
 	unObserve (w);
+
+	g -> setDetectCollisions (false);
 }
 
 // ---

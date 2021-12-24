@@ -249,6 +249,8 @@ namespace PacManII
 							{ return (_TILEEXITINGHOMEMONSTERS); }
 		int tunnelPathEntryExitFrame () const
 							{ return (_TILEDEFININGTUNNELPATH); }
+		int fruitPositionFrame () const
+							{ return (_TILEDEFININGFRUITPOSITION); }
 		const std::vector <int>& connectionFrames () const
 							{ return (_TILESCONNECTION); }
 
@@ -288,6 +290,8 @@ namespace PacManII
 		/** The tile used to define when the tunnel path starts. 
 			It means e.g. that the monsters slow down. */
 		int _TILEDEFININGTUNNELPATH;
+		/** The tile to indicate the position where the fruit appears. */
+		int _TILEDEFININGFRUITPOSITION;
 		/** The equivalent between tiles to mark direection and the direction itself.
 			Th order of the second veector is LEFT/RIGHT/UP/DOWN. */
 		std::map <int, std::vector <bool>> _TILESDIRECTIONMAZE;
