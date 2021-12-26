@@ -114,6 +114,39 @@ namespace PacManII
 		/** The font used. */
 		int _font;
 	};
+
+	/** The fruits eaten by pacman. */
+	class FruitsEaten final : public QGAMES::ScoreObject
+	{
+		public:
+		FruitsEaten (int lF = __PACMANII_PACMANFRUITSFORM__);
+
+		virtual Entity* clone () const override
+							{ return (new FruitsEaten (_fruitsForm)); }
+
+		/** To set the fruits carried by pacman. */
+		void setFruitsEaten (const std::vector <int>& fE)
+							{ _fruitsEaten = fE; }
+		void setFruitsEaten (const std::string& fE);
+		/** To know the fruits carried by pacman. */
+		const std::vector <int>& fruitsEaten () const
+							{ return (_fruitsEaten); }
+
+		virtual void initialize () override;
+		virtual void drawOn (QGAMES::Screen* s, 
+			const QGAMES::Position& p = QGAMES::Position::_noPoint) override;
+
+		/** @see parent. */
+		virtual void processEvent (const QGAMES::Event& evnt) override;
+
+		private:
+		/** The form used to represent the fruits. */
+		int _fruitsForm;
+
+		// Implementation
+		/** The type of fruits carried. */
+		std::vector <int> _fruitsEaten;
+	};
 }
 
 #endif

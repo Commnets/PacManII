@@ -12,7 +12,8 @@ PacManII::Game::Conf::Conf (int nP, int mL, int dL)
 	  _playerSeconds (),
 	  _level (),
 	  _levelCompleted (),
-	  _triesOnLevel ()
+	  _triesOnLevel (),
+	  _fruitsEaten ()
 { 
 	assert (_numberPlayers > 0);
 	assert (_maxLives > 1);
@@ -49,6 +50,7 @@ void PacManII::Game::Conf::adjustToPlayers (int nP)
 	_level = std::vector <int> (nP, _defaultLevel); 
 	_levelCompleted = std::vector <std::map <int, bool>> (nP, std::map <int, bool> ());
 	_triesOnLevel = std::vector <std::map <int, int>> (nP, std::map <int, int> ());
+	_fruitsEaten = std::vector <std::map <int, bool>> (nP, std::map <int, bool> ());
 	// no ball in none level eaten so far
 
 	// When the players are adjusted, the information kept in the worlds have to be deleted to...
@@ -89,6 +91,14 @@ void PacManII::Game::Conf::cfgToStream (std::ostringstream& oS)
 		oS << _triesOnLevel [i].size () << std::endl;
 		for (std::map <int, int>::const_iterator j = _triesOnLevel [i].begin (); 
 				j != _triesOnLevel [i].end (); j++)
+			oS << (*j).first << std::endl << (*j).second << std::endl;
+	}
+	
+	for (int i = 0; i < _numberPlayers; i++)
+	{
+		oS << _fruitsEaten [i].size () << std::endl;
+		for (std::map <int, bool>::const_iterator j = _fruitsEaten [i].begin (); 
+				j != _fruitsEaten [i].end (); j++)
 			oS << (*j).first << std::endl << (*j).second << std::endl;
 	}
 }
@@ -132,6 +142,18 @@ void PacManII::Game::Conf::cfgFromStream (std::istringstream& iS)
 		{
 			iS >> nSC; iS >> nT;
 			_triesOnLevel [i][nSC] = nT;
+		}
+	}
+	
+	_fruitsEaten.resize (_numberPlayers);
+	bool fE;
+	for (int i = 0; i < _numberPlayers; i++)
+	{
+		iS >> nE;
+		for (int j = 0; j < nE; j++)
+		{
+			iS >> nSC; iS >> fE;
+			_fruitsEaten [i][nSC] = fE;
 		}
 	}
 }
@@ -180,9 +202,6 @@ void PacManII::Game::setShowFPS (bool s)
 // ---
 void PacManII::Game::addScoreObjects ()
 {
-	// It is done one by one, 
-	// because depending on the final game implementation different score objects could be avoided
-
 	if (!_lives) 
 	{
 		addScoreObject (_lives = new PacManII::Lives ()); 
@@ -224,6 +243,15 @@ void PacManII::Game::addScoreObjects ()
 			__BD 0));
 		_playerName -> setAlphaLevel (100); // A little bit faded, because it is on the playing zone!
 	}
+
+	if (!_fruitsEaten)
+	{
+		addScoreObject (_fruitsEaten = new PacManII::FruitsEaten ());
+		_fruitsEaten -> setFruitsEaten (std::vector <int> ()); // Nothing
+		_fruitsEaten -> setPosition (_lives -> position () + QGAMES::Vector (__BD 250, __BD 0, __BD 0));
+
+		_fruitsEaten -> observe (pacman ()); // Only for the one playing
+	}
 }
 
 // ---
@@ -232,19 +260,16 @@ void PacManII::Game::removeScoreObjects ()
 	PacManII::PacMan* pc = pacman ();
 	assert (pc != nullptr); // It has to exist at this point...
 
-	// It is done one by one, 
-	// because depending on the final game different score objects could be avoided
-
-	if (_lives) 
+	if (_lives != nullptr)
 	{
 		assert (_lives -> isObserving (pc));
 		_lives -> unObserve (pc); 
 		delete (_lives); _lives = nullptr; 
 	}
 	
-	delete (_timeCounter); _timeCounter = NULL;
+	delete (_timeCounter); _timeCounter = nullptr;
 	
-	if (_scoreCounter) 
+	if (_scoreCounter != nullptr)
 	{
 		assert (_scoreCounter -> isObserving (pc));
 		_scoreCounter -> unObserve (pc); 
@@ -252,6 +277,13 @@ void PacManII::Game::removeScoreObjects ()
 	}
 
 	delete (_playerName); _playerName = nullptr;
+
+	if (_fruitsEaten != nullptr)
+	{
+		assert (_fruitsEaten -> isObserving (pc));
+		_fruitsEaten -> unObserve (pc); 
+		delete (_fruitsEaten); _fruitsEaten = nullptr; 
+	}
 
 	QGAMES::AdvancedArcadeGame::removeScoreObjects ();
 }
@@ -277,11 +309,22 @@ void PacManII::Game::continueGame ()
 // ---
 void PacManII::Game::processEvent (const QGAMES::Event& evnt)
 {
+	// To switch on / off the frames per second...
 	if (evnt.code () == __QGAMES_KEYBOARDEVENT__)
 	{
 		QGAMES::KeyBoardEventData* dt = (QGAMES::KeyBoardEventData*) evnt.data ();
 		if (dt -> _internalCode == QGAMES::KeyCode::QGAMES_F1 && !dt -> _on)
 			setShowFPS (!_showFPS); 
+	}
+	else
+	// When a significant number of points have been reached, a new live is added...
+	if (evnt.code () == __PACMANII_PACMANPOINTSHIGHLIGHTREACHED__)
+	{
+		setLives (lives () + 1);
+
+		_lives -> setLives (lives ());
+
+		sound (__PACMANII_SOUNDEXTRAPAC__) -> play (-1);
 	}
 
 	QGAMES::AdvancedArcadeGame::processEvent (evnt);

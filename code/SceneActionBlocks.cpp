@@ -4,9 +4,19 @@
 
 // ---
 PacManII::MonsterSceneActionBlock::Properties::Properties (const QGAMES::SceneActionBlockProperties& prps)
-	: _entityId (0), _numberInMap (0), _offsetXInInitPosition (__BD 0)
+	: _entityId (0), _numberInMap (0), 
+	  _offsetXInitPosition (__BD 0), _offsetYInitPosition (__BD 0)
 {
-	PacManII::MonsterSceneActionBlock::Properties (_entityId, _numberInMap, _offsetXInInitPosition);
+	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKENTITYIDATTR__)) != prps.end ())
+		_entityId = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKENTITYIDATTR__))).second.c_str ());
+	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKNUMBEERMONSTERATTR__)) != prps.end ())
+		_numberInMap = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKNUMBEERMONSTERATTR__))).second.c_str ());
+	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__)) != prps.end ())
+		_offsetXInitPosition = __BD (std::atof ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__))).second.c_str ()));
+	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__)) != prps.end ())
+		_offsetYInitPosition = __BD (std::atof ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__))).second.c_str ()));
+
+	PacManII::MonsterSceneActionBlock::Properties (_entityId, _numberInMap, _offsetXInitPosition, _offsetYInitPosition);
 }
 
 // ---
@@ -23,14 +33,17 @@ void PacManII::MonsterSceneActionBlock::initialize ()
 	assert (aM != nullptr);
 	_monster -> setMap (aM);
 
+	_monster -> initialize ();
+
 	_monster -> setOrientation (QGAMES::Vector (__BD 0, __BD -1, __BD 0));
-	_monster -> setStatus (PacManII::Monster::Status::_ATHOME);
+	_monster -> toStand ();
 
 	_monster -> setVisible (true);
 
 	_monster -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (_properties._numberInMap)) - 
-		QGAMES::Vector (__BD (_monster -> visualHeight () >> 1), __BD (_monster -> visualHeight () >> 1), __BD 0) -
-		QGAMES::Vector (__BD (_monster -> visualLength () * _properties._offsetXInInitPosition), __BD 0, __BD 0));
+		QGAMES::Vector (__BD (_monster -> visualHeight () >> 1), __BD (_monster -> visualHeight () >> 1), __BD 0) +
+		QGAMES::Vector (__BD (_monster -> visualLength () * _properties._offsetXInitPosition), 
+						__BD (_monster -> visualLength () * _properties._offsetYInitPosition), __BD 0));
 }
 
 // ---
@@ -58,6 +71,13 @@ PacManII::FruitSceneActionBlock::Properties::Properties (const QGAMES::SceneActi
 	: _entityId (0),
 	  _secondsToAppear (__BD 7), _secondsToDisappear (__BD 7)
 {
+	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKENTITYIDATTR__)) != prps.end ())
+		_entityId = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKENTITYIDATTR__))).second.c_str ());
+	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__)) != prps.end ())
+		_secondsToAppear = __BD (std::atof ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__))).second.c_str ()));
+	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__)) != prps.end ())
+		_secondsToDisappear = __BD (std::atof ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__))).second.c_str ()));
+
 	PacManII::FruitSceneActionBlock::Properties (_entityId, _secondsToAppear, _secondsToDisappear);
 }
 
@@ -74,6 +94,8 @@ void PacManII::FruitSceneActionBlock::initialize ()
 	PacManII::Map* aM = dynamic_cast <PacManII::Map*> (scene () -> activeMap ());
 	assert (aM != nullptr);
 	_fruit -> setMap (aM);
+
+	_fruit -> initialize ();
 
 	_fruit -> setStatus (PacManII::Fruit::Status::_NOTDEFINED);
 

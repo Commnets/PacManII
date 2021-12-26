@@ -141,6 +141,10 @@ namespace PacManII
 		// It is not needed to redefine the methods to save / recover the status of the artist 
 		// As the gane always start with them in the same position...
 
+		/** The very basic actions in an artist */
+		virtual void toStand () = 0;
+		virtual void toMove (const QGAMES::Vector& d) = 0;
+
 		/** To get the last maze position of the artist. */
 		const QGAMES::MazeModel::PositionInMaze lastMazePosition () const
 							{ return (_lastMazePosition); }
@@ -165,6 +169,7 @@ namespace PacManII
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;
+		virtual void drawOn (QGAMES::Screen* scr, const QGAMES::Position& p = QGAMES::Position::_noPoint) override;
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
@@ -175,17 +180,17 @@ namespace PacManII
 		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const = 0;
 
 		// To control the aspect and what to do when stopping and moving
-		/** To change the state of the artist to stand looking to a direction. */
-		virtual void setStateToStandLookingTo (const QGAMES::Vector& d) = 0;
-		/** To change the state of the artist to move looking to a direction. */
-		virtual void setStateToMoveTo (const QGAMES::Vector& d) = 0;
 		/** What to do when the end of the plan path is reached. */
-		virtual void whatToDoWhenStopIsRequested () = 0;
+		virtual void whatToDoWhenStopStatusIsRequested (const QGAMES::Vector&) = 0;
 		/** What to do when it is the beginning of a new requested movement. */
-		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) = 0;
+		virtual void whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector&) = 0;
 		/** What to do when artists is on a specific position in the maze.
 			What it is beneath the artist should modify actually the behaviour. \n */
 		virtual void whatToDoOnCurrentPosition () = 0;
+		/** To change the state of the artist to stand looking to a direction. */
+		virtual void setStateToStandLookingTo (const QGAMES::Vector&) = 0;
+		/** To change the state of the artist to move looking to a direction. */
+		virtual void setStateToMoveTo (const QGAMES::Vector&) = 0;
 
 		/** Define a buoy to stop within the inEveryLoop method. */
 		class ToStopBuoy : public QGAMES::Buoy
@@ -227,17 +232,31 @@ namespace PacManII
 	class PacMan final : public Artist
 	{
 		public:
+		enum class Status 
+			{ _NOTDEFINED = 0, _STOPPED = 1, _MOVING = 2, _CHASING = 3 };
+
 		PacMan (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
 				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
 			: Artist (cId, f, d),
 			  _alive (true),
-			  _chasing (false),
+			  _score (0),
+			  _status (Status::_NOTDEFINED),
 			  _hasEaten (false),
-			  _score (0)
+			  _lastMulScoreNotified (0)
 							{ }
 
 		virtual Entity* clone () const override
 							{ return (new PacMan (id (), forms (), data ())); }
+
+		virtual void toStand () override;
+		virtual void toMove (const QGAMES::Vector& d) override;
+
+		// Additional behaviour of pacman...
+		void toChase (bool c);
+
+		// To know the internal status...
+		Status status () const
+							{ return (_status); }
 
 		virtual bool isEnemy (const PacmanElement* elmnt) const override;
 
@@ -245,25 +264,20 @@ namespace PacManII
 							{ return (_alive); }
 		void setAlive (bool a)
 							{ _alive = a; }
-		virtual bool isStanding () const override;
-		virtual bool isMoving () const override;
-
-		// To manage when it has "power" to fight the monsters
-		// In this situations, e.g. the speed of the movement could be different...
-		bool isChasing () const
-							{ return (_chasing); }
-		void setChasing (bool c);
-		// To manage when it has eaten a ball
-		bool hasEaten () const
-							{ return (_hasEaten); }
-		void setEaten (bool e);
+		virtual bool isStanding () const override
+							{ return (_status == Status::_NOTDEFINED || _status == Status::_STOPPED); }
+		virtual bool isMoving () const override
+							{ return (_status == Status::_MOVING || _status == Status::_CHASING); }
 
 		int score () const
 							{ return (_score); }
 		void setScore (int s); 
 
-		// The movements of the pacman
-		void toShoot (int f, const QGAMES::Vector& d);
+		const std::map <int, bool> fruitsEaten () const
+							{ return (_fruitsEaten); }
+		void setFruitsEaten (const std::map <int, bool>& fE);
+		void addFruitEaten (int fE)
+							{ _fruitsEaten [fE] = true; setFruitsEaten (_fruitsEaten); }
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;
@@ -272,16 +286,19 @@ namespace PacManII
 		virtual void whenCollisionWith (QGAMES::Entity* e) override;
 
 		protected:
+		void setStatus (const Status& st);
+
 		/** The target position is the limit of the maze in the current direction of the movement. */
 		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
 
+		virtual void whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d) override;
+		virtual void whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d) override;
+		virtual void whatToDoOnCurrentPosition () override;
 		virtual void setStateToStandLookingTo (const QGAMES::Vector& d) override;
 		virtual void setStateToMoveTo (const QGAMES::Vector& d) override;
-		virtual void whatToDoWhenStopIsRequested () override;
-		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) override;
-		virtual void whatToDoOnCurrentPosition () override;
 
 		// Implementation
+		/** To adapt the speed of the pacman when moving. */
 		void adaptSpeed ();
 		/** It is a little bit different that the standard on as the movements made by the player 
 			in the joystick or keyboard have to be taken into account. */
@@ -290,12 +307,18 @@ namespace PacManII
 		private:
 		/** To indicate whether the pacman is alive. */
 		bool _alive;
-		/** To indicate whether the pacman in o no chasing monsters. */
-		bool _chasing;
-		/** To indicate whether the pacman has eaten or not something. */
-		bool _hasEaten;
 		/** The score of the pacman. It is get and put back into the game. */
 		int _score;
+		/** The fruits eaten. */
+		std::map <int, bool> _fruitsEaten;
+		/** The status of the pacman. */
+		Status _status;
+
+		// Implementation
+		/** To indicate whether the pacman has eaten or not something. */
+		bool _hasEaten;
+		/** The last score notified. */
+		int _lastMulScoreNotified;
 	};
 
 	/** What the machine controls. */
@@ -321,8 +344,10 @@ namespace PacManII
 		int monsterNumber () const
 							{ return (_monsterNumber); }
 
-		// To know and change the status...
-		void setStatus (const Status& st);
+		virtual void toStand () override;
+		virtual void toMove (const QGAMES::Vector& d) override;
+
+		// To know the status...
 		Status status () const
 							{ return (_status); }
 
@@ -345,8 +370,10 @@ namespace PacManII
 		virtual void finalize () override;
 
 		protected:
-		virtual void whatToDoWhenStopIsRequested () override;
-		virtual void whatToDoWhenMovementIsRequested (const QGAMES::Vector& d) override;
+		void setStatus (const Status& st);
+
+		virtual void whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d) override;
+		virtual void whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d) override;
 		virtual void whatToDoOnCurrentPosition () override
 							{ }
 

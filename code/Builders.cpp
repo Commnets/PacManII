@@ -5,6 +5,7 @@
 #include "Movements.hpp"
 #include "GameStates.hpp"
 #include "Worlds.hpp"
+#include "SceneActionBlocks.hpp"
 
 // ---
 PacManII::TextBuilder::TextBuilder ()
@@ -469,7 +470,7 @@ QGAMES::ImageLayer* PacManII::TMXMapBuilder::createImageLayer (int id, const std
 QGAMES::Map* PacManII::TMXMapBuilder::createMapObject (int id, const QGAMES::Layers& l, 
 	int w, int h, int d, int tW, int tH, int tD, const QGAMES::MapProperties& p)
 {
-	// Th only type of map that can be created here...
+	// By default all are the same...
 	return (new PacManII::Map (id, l, w, h, d, tW, tH, tD, p));
 }
 
@@ -492,6 +493,7 @@ int PacManII::TMXMapBuilder::positionInType (int nF, const std::vector <int>& t)
 // ---
 QGAMES::World* PacManII::WorldBuilder::createWorldObject (int no, const QGAMES::Scenes& s, const QGAMES::WorldProperties& p)
 {
+	// By deefault, all are the same...
 	return (new PacManII::World (no, s, p));
 }
 
@@ -499,14 +501,31 @@ QGAMES::World* PacManII::WorldBuilder::createWorldObject (int no, const QGAMES::
 QGAMES::Scene* PacManII::WorldBuilder::createSceneObject (int ns, const QGAMES::Maps& m, 
 	const QGAMES::Scene::Connections& cn, const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
 {
-	return (new PacManII::StandardScene (ns, m, cn, p, ePL));
+	QGAMES::Scene* result = nullptr;
+
+	if (ns == __PACMANII_BASICSCENE__)
+		// The monsters and the fruit are defined in the constructor...
+		result = new PacManII::BasicScene (ns, m, cn, p, ePL);
+	else
+		// The elments to play with have to b defined in the XML file as action blocks...
+		result = new PacManII::StandardScene (ns, m, cn, p, ePL);
+
+	return (result);
 }
 
 // ---
 QGAMES::SceneActionBlock* PacManII::WorldBuilder::createSceneActionBlockObject (int nAB, 
 	const QGAMES::SceneActionBlockProperties& prps)
 {
-	// Not needed...
+	QGAMES::SceneActionBlock* result = nullptr;
 
-	return (nullptr);
+	if (nAB >= __PACMANII_MONSTERSCENEBLOCKBASEID__ && 
+		nAB < (__PACMANII_MONSTERSCENEBLOCKBASEID__ + __PACMANII_MONSTERSCENEBLOCKNUMBER__))
+		result = new PacManII::MonsterSceneActionBlock (nAB, PacManII::MonsterSceneActionBlock::Properties (prps));
+	else
+	if (nAB >= __PACMANII_FRUITSCENEBLOCKBASEID__ && 
+		nAB < (__PACMANII_FRUITSCENEBLOCKBASEID__ + __PACMANII_FRUITSCENEBLOCKNUMBER__))
+		result = new PacManII::FruitSceneActionBlock (nAB, PacManII::FruitSceneActionBlock::Properties (prps));
+
+	return (result);
 }

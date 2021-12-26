@@ -165,8 +165,9 @@ namespace PacManII
 
 		typedef std::vector <LevelDefinition> LevelDefinitions;
 
-		DataGame (const LevelDefinitions& l = { LevelDefinition () })
-			: _levels (l)
+		DataGame (const LevelDefinitions& l = { LevelDefinition () }, int sL = 15000)
+			: _levels (l),
+			  _everyToGetAnExtraLive (sL)
 							{ }
 
 		DataGame (const DataGame& d) = default;
@@ -178,11 +179,15 @@ namespace PacManII
 		const LevelDefinition& levelDefinition (unsigned int lD) const
 							{ return ((lD <= _levels.size ()) ? _levels [lD - 1] : _levels [_levels.size () - 1]); }
 
+		const int everyToGetAnExtraLive () const
+							{ return (_everyToGetAnExtraLive); }
+
 		const unsigned int numberLevelsDefined () const
 							{ return ((unsigned int) _levels.size ()); }
 
 		private:
 		const LevelDefinitions _levels;
+		const int _everyToGetAnExtraLive;
 	};
 }
 

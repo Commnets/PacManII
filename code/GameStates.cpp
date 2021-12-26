@@ -385,6 +385,8 @@ void PacManII::PlayingControlGameState::onEnter ()
 	assert (g != nullptr); // Just in case...
 	_pacman = g -> pacman ();
 	assert (_pacman != nullptr);
+	_pacman -> setOrientation (QGAMES::Vector (__BD 1, __BD 0, __BD 0)); // Looking by default to the right...
+	_pacman -> toStand ();
 
 	g -> addScoreObjects ();
 
@@ -663,23 +665,13 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD 1, __BD 0));
 			break;
 
-/** 
-	When nothing is pressed, pacman continues moving toward the direction
+		// Doing nothing with the joystick, o keyboard doesn't mean to stop!
+		// Same when pushing fire...
 		case __PACMANII_NOMOVINGEVENT__:
-			_pacman -> changeDirectionWhenPossibleTo (_pacman -> direction ()); // Maintains th last direction...
 			break;
-*/
 
 		case __PACMANII_FIREEVENT__:
-			{
-				PacManII::InputHandlerBehaviour::NotificationData* dt = 
-					(PacManII::InputHandlerBehaviour::NotificationData*) evnt.data ();
-				_pacman -> toShoot (1 + (int) (__BD dt -> _force / __BD 10), QGAMES::Vector (__BD 0, __BD -1, __BD 0));
-			}
-
 			break;
-
-		// Doing nothing with th joystick, doesn't mean to stop!
 		// ---
 
 		// Observing the loop just to add seconds to the time that the player has been playing

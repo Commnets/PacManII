@@ -27,11 +27,13 @@ namespace PacManII
 		struct Properties
 		{
 			Properties ()
-				: _entityId (0), _numberInMap (0), _offsetXInInitPosition (__BD 0)
+				: _entityId (0), _numberInMap (0), 
+				  _offsetXInitPosition (__BD 0), _offsetYInitPosition (__BD 0)
 							{ }
 
-			Properties (int eId, int nM, QGAMES::bdata o)
-				: _entityId (eId), _numberInMap (nM), _offsetXInInitPosition (o)
+			Properties (int eId, int nM, QGAMES::bdata oX, QGAMES::bdata oY)
+				: _entityId (eId), _numberInMap (nM), 
+				  _offsetXInitPosition (oX), _offsetYInitPosition (oY)
 							{ }
 
 			Properties (const QGAMES::SceneActionBlockProperties& prps);
@@ -42,7 +44,8 @@ namespace PacManII
 
 			int _entityId;
 			int _numberInMap;
-			QGAMES::bdata _offsetXInInitPosition;
+			QGAMES::bdata _offsetXInitPosition;
+			QGAMES::bdata _offsetYInitPosition;
 		};
 
 		MonsterSceneActionBlock () = delete;

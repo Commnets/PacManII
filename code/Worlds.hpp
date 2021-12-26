@@ -124,16 +124,17 @@ namespace PacManII
 		enum class SirenRate { _NORMAL = 0, _FAST = 1, _VERYFAST = 2 } _sirenRate;
 	};
 
-	/** The standard scene only plays with the usual monsters and the pacman. */
-	class StandardScene final : public Scene
+	/** The standard scene only considers the single pacman. 
+		The rest of elments would have to define the rest of info as external actionblocks in the XML file. */
+	class StandardScene : public Scene
 	{
 		public:
 		StandardScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
 			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
 			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ())
-				: Scene (c, m, cn, p, ePL),
-				  _pacman (nullptr)
-							{  }
+			: Scene (c, m, cn, p, ePL),
+			  _pacman (nullptr)	
+							{ }
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;
@@ -143,6 +144,19 @@ namespace PacManII
 
 		private:
 		PacMan* _pacman;
+	};
+
+	/** The very basic Scene, is a standard one but defining the monsters and the fruit scenee action blocks
+		in the constrctor of the class, avoinding so their definition in the xml file. */
+	class BasicScene final : public StandardScene
+	{
+		public:
+		BasicScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
+			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
+			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ());
+
+		virtual void initialize () override;
+		virtual void finalize () override;
 	};
 
 	/** Basic map of the game. 

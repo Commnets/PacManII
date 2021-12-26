@@ -46,7 +46,8 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 	// But it can change along the cycle!
 	_lastDirection = art -> direction ();
 
-	for (int i = (int) ((_speed * _CONSTANT) + _qLeft); i > 0; i--)
+	bool stopCycle = false; // to notify only once when stopping...
+	for (int i = (int) ((_speed * _CONSTANT) + _qLeft); i > 0 && !stopCycle; i--)
 	{
 		bool move = true;
 
@@ -97,6 +98,8 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 			// it is time to stop. So, a notification in launched for the owner to execute!
 			else
 			{
+				stopCycle = true;
+
 				_lastDirection = QGAMES::Vector::_cero;
 
 				move = false;
@@ -110,5 +113,6 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 	}
 
 	// Keps the remaining for the next iteration...
-	_qLeft = ((_speed * __BD _CONSTANT) + _qLeft) - __BD ((int) ((_speed * __BD _CONSTANT) + _qLeft));
+	_qLeft = stopCycle 
+		? __BD 0 : ((_speed * __BD _CONSTANT) + _qLeft) - __BD ((int) ((_speed * __BD _CONSTANT) + _qLeft));
 }

@@ -114,7 +114,6 @@ void PacManII::Fruit::setStatus (const PacManII::Fruit::Status& st)
 
 		case PacManII::Fruit::Status::_SHOWN:
 			{
-				assert (_status == PacManII::Fruit::Status::_NOTDEFINED);
 				setPosition (mazePositionToMapPosition (pMap () -> fruitPosition ()) - 
 					QGAMES::Vector (__BD (visualLength () >> 1), __BD (visualHeight () >> 1), __BD 0)); 
 				setVisible (true);
@@ -125,7 +124,7 @@ void PacManII::Fruit::setStatus (const PacManII::Fruit::Status& st)
 
 		case PacManII::Fruit::Status::_EATEN:
 			{
-				assert (_status == PacManII::Fruit::Status::_SHOWN);
+				setVisible (true);
 				onOffSwitch (_SWITCHPOINTSVISIBLE) -> set (true);
 			}
 
@@ -238,12 +237,7 @@ void PacManII::Artist::changeDirectionWhenPossibleTo (const QGAMES::Vector& d)
 	// but it is only executed inmediately when the requested new direction is the opposite to the previous one...
 	// If it is not, the request is written down to be executed later.
 	if (isMoving () && direction () == -d)
-	{
-		setMove (d);
-
-		setStateToMoveTo (d); // It is important to notice that neither the aspect nor the movement
-							  // has to change if the new state doesn't imply so!
-	}
+		toMove (d);
 	else
 		_nextDirectionWhenPossible = d;
 }
@@ -279,6 +273,26 @@ void PacManII::Artist::updatePositions ()
 }
 
 // ---
+void PacManII::Artist::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
+{
+	if (!isVisible ())
+		return;
+
+	PacManII::PacmanElement::drawOn (scr, p);
+
+#ifndef NDEBUG
+	QGAMES::Position posI = mazePositionToMapPosition (currentMazePosition ());
+	if (posI != QGAMES::Position::_noPoint)
+	{
+		QGAMES::Position posT = mazePositionToMapPosition (targetMazePosition ());
+		for (int i = 0; i < 3; i++)
+			scr -> drawCircle (posT, QGAMES::Vector::_zNormal, __BD (16 - i), __BD (16 - i), __QGAMES_REDCOLOR__, false);
+		scr -> drawLine (posI, posT, __QGAMES_REDCOLOR__, 3);
+	}
+#endif
+}
+
+// ---
 void PacManII::Artist::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_MOVEMENTDORIENTATIONCHANGED__)
@@ -286,8 +300,7 @@ void PacManII::Artist::processEvent (const QGAMES::Event& evnt)
 		QGAMES::SetOfOpenValues dC = evnt.values ();
 		assert (dC.existOpenValue (0));
 		QGAMES::Vector o (dC.openValue (0).strValue ());
-		setOrientation (o);
-		setStateToMoveTo (o);
+		toMove (o);
 	}
 	else
 	if (evnt.code () == __PACMANII_LIMITMOVEMENTREACHED__)
@@ -302,7 +315,7 @@ void* PacManII::Artist::ToStopBuoy::treatFor (QGAMES::Element* e)
 	PacManII::Artist* art = dynamic_cast <PacManII::Artist*> (e);
 	assert (art);
 
-	art -> whatToDoWhenStopIsRequested ();
+	art -> toStand ();
 
 	return (this);
 }
@@ -352,62 +365,36 @@ bool PacManII::Artist::hasReferenceArtistsPositionChanged () const
 }
 
 // ---
+void PacManII::PacMan::toStand ()
+{
+	// The orientation is not changed...
+	if (!isStanding ())
+		setStatus (PacManII::PacMan::Status::_STOPPED);
+}
+
+// ---
+void PacManII::PacMan::toMove (const QGAMES::Vector& d)
+{
+	// The orientation is changed always...
+	setOrientation (d);
+
+	if (!isMoving ())
+		setStatus (PacManII::PacMan::Status::_MOVING);
+	else
+		setStatus (status ()); // Keeps the same...
+}
+
+// ---
+void PacManII::PacMan::toChase (bool c)
+{
+	if (isMoving ())
+		setStatus (c ? PacManII::PacMan::Status::_CHASING : PacManII::PacMan::Status::_MOVING);
+}
+
+// ---
 bool PacManII::PacMan::isEnemy (const PacmanElement* elmnt) const
 { 
 	return (dynamic_cast <const PacManII::Monster*> (elmnt) != nullptr); 
-}
-
-// ---
-bool PacManII::PacMan::isStanding () const
-{
-	if (currentState () == nullptr)
-		return (false);
-
-	static std::vector <int> sts 
-		{ __PACMANII_PACMANSTATESTANDLOOKINGRIGHT__,
-		  __PACMANII_PACMANSTATESTANDLOOKINGLEFT__,
-		  __PACMANII_PACMANSTATESTANDLOOKINGUP__,
-		  __PACMANII_PACMANSTATESTANDLOOKINGDOWN__ };
-
-	return (std::find (sts.begin (), sts.end (), currentState () -> id ()) != sts.end ());
-}
-
-// ---
-bool PacManII::PacMan::isMoving () const
-{
-	if (currentState () == nullptr)
-		return (false);
-
-	static std::vector <int> sts 
-		{ __PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__,
-		  __PACMANII_PACMANSTATEEATINGLOOKINGLEFT__,
-		  __PACMANII_PACMANSTATEEATINGLOOKINGUP__,
-		  __PACMANII_PACMANSTATEEATINGLOOKINGDOWN__ };
-
-	return (std::find (sts.begin (), sts.end (), currentState () -> id ()) != sts.end ());
-}
-
-// ---
-void PacManII::PacMan::setChasing (bool c)
-{
-	if (c == _chasing)
-		return;
-
-	_chasing = c;
-
-	// If it was moving, the speed should be adapted...
-	if (isMoving ())
-		adaptSpeed ();
-}
-
-// ---
-void PacManII::PacMan::setEaten (bool e)
-{
-	_hasEaten = e;
-
-	// If it was moving, the speed should be adapted...
-	if (isMoving ())
-		adaptSpeed ();
 }
 
 // ---
@@ -418,12 +405,38 @@ void PacManII::PacMan::setScore (int s)
 	QGAMES::SetOfOpenValues oV;
 	oV.addOpenValue (__PACMANII_SCOREVALUEPARAMETER__, QGAMES::OpenValue (_score));
 	notify (QGAMES::Event (__PACMANII_SCOREACTUALIZED__, this, oV));
+
+	int mS = 0;
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g);
+	if ((mS = _score / g -> dataGame ().everyToGetAnExtraLive ()) > _lastMulScoreNotified) 
+	{
+		_lastMulScoreNotified = mS;
+		notify (QGAMES::Event (__PACMANII_PACMANPOINTSHIGHLIGHTREACHED__, this, oV));
+	}
+
+	g -> setScore (_score); // Keep it...
 }
 
 // ---
-void PacManII::PacMan::toShoot (int f, const QGAMES::Vector& d)
+void PacManII::PacMan::setFruitsEaten (const std::map <int, bool>& fE)
 {
-	// TODO
+	_fruitsEaten = fE;
+
+	std::string dt;
+	for (auto i : _fruitsEaten)
+		if (i.second)
+			dt += std::string (",") + std::to_string (i.first);
+	if (dt.length () > 1)
+		dt = dt.substr (1); // To remove the first element, that it would be a comma...
+
+	QGAMES::SetOfOpenValues oV;
+	oV.addOpenValue (__PACMANII_FRUITSCARRIEDVALUEPARAMETER__, QGAMES::OpenValue (dt));
+	notify (QGAMES::Event (__PACMANII_FRUITSCARRIEDACTUALIZED__, this, oV));
+
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g);
+	g -> setFruitsEaten (_fruitsEaten);
 }
 
 // ---
@@ -431,11 +444,15 @@ void PacManII::PacMan::initialize ()
 {
 	PacManII::Artist::initialize ();
 
-	setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__); 
+	setOrientation (QGAMES::Vector (__BD 1, __BD 0, __BD 0));
+	setStatus (PacManII::PacMan::Status::_NOTDEFINED);
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 	assert (g != nullptr);
-	_score = g -> score ();
+	setScore (g -> score ());
+	setFruitsEaten (g -> fruitsEaten ());
+
+	_lastMulScoreNotified = _score / g -> dataGame ().everyToGetAnExtraLive ();
 }
 
 // ---
@@ -448,7 +465,7 @@ void PacManII::PacMan::updatePositions ()
 		if (isStanding ())
 		{
 			if (_nextDirectionWhenPossible != QGAMES::Vector::_cero)
-				whatToDoWhenMovementIsRequested (_nextDirectionWhenPossible);
+				toMove (_nextDirectionWhenPossible);
 		}
 	}
 
@@ -468,6 +485,7 @@ void PacManII::PacMan::finalize ()
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 	assert (g != nullptr);
 	g -> setScore (_score);
+	g -> setFruitsEaten (_fruitsEaten);
 
 	PacManII::Artist::finalize ();
 }
@@ -493,10 +511,37 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 
 				setScore (score () + g -> levelDefinition (g -> level ()).bonusPoints ());
 
+				addFruitEaten (g -> levelDefinition (g -> level ()).bonusSymbolId ());
+
 				game () -> soundBuilder () -> sound (__PACMANII_SOUNDEATFRUIT__) -> play (-1);
 			}
 		}
 		
+	}
+}
+
+// ---
+void PacManII::PacMan::setStatus (const PacManII::PacMan::Status& st)
+{
+	// In the case of pacman all changes among types of status are allowed
+	// It is not the case in Monster...
+	
+	_status = st;
+	
+	switch (st)
+	{
+		case PacManII::PacMan::Status::_NOTDEFINED:
+		case PacManII::PacMan::Status::_STOPPED:
+			whatToDoWhenStopStatusIsRequested (orientation ());
+			break;
+
+		case PacManII::PacMan::Status::_MOVING:
+		case PacManII::PacMan::Status::_CHASING:
+			whatToDoWhenMovementStatusIsRequested (orientation ());
+			break;
+
+		default:
+			assert (false); // It shouldn't be here, but just in case...
 	}
 }
 
@@ -520,38 +565,9 @@ QGAMES::MazeModel::PositionInMaze PacManII::PacMan::targetMazePosition () const
 }
 
 // ---
-void PacManII::PacMan::setStateToStandLookingTo (const QGAMES::Vector& d)
+void PacManII::PacMan::whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d)
 {
-	if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__);
-	else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGLEFT__);
-	else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGUP__);
-	else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGDOWN__);
-	else
-		assert (false); // No other orientations are possible..
-}
-
-// ---
-void PacManII::PacMan::setStateToMoveTo (const QGAMES::Vector& d)
-{
-	if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__, true);
-	else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGLEFT__, true);
-	else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGUP__, true);
-	else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGDOWN__, true);
-	else
-		assert (false); // No other orientations are possible...
-}
-
-// ---
-void PacManII::PacMan::whatToDoWhenStopIsRequested ()
-{
+	setOrientation (d);
 	setStateToStandLookingTo (orientation ()); // Looking to the last direction...
 	setMove (QGAMES::Vector::_cero); // ...but not moving... 
 	_pathInMaze = { }; // ..and with no path to follow
@@ -559,7 +575,7 @@ void PacManII::PacMan::whatToDoWhenStopIsRequested ()
 }
 
 // ---
-void PacManII::PacMan::whatToDoWhenMovementIsRequested (const QGAMES::Vector& d)
+void PacManII::PacMan::whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d)
 {
 	setOrientation (d); // Look to..
 	setStateToMoveTo (orientation ()); // ..with the right aspect...
@@ -586,10 +602,11 @@ void PacManII::PacMan::whatToDoOnCurrentPosition ()
 
 			game () -> sound (__PACMANII_SOUNDCHOMP__) -> play (__QGAMES_MAINCHARACTERSOUNDCHANNEL__); // Chomp...
 
-			setEaten (true);
+			_hasEaten = true;
+			adaptSpeed ();
 
 			if (t -> hasPower ())
-				setChasing (true);
+				setStatus (PacManII::PacMan::Status::_CHASING);
 
 			setScore (score () + 
 				(t -> hasPower () 
@@ -597,8 +614,41 @@ void PacManII::PacMan::whatToDoOnCurrentPosition ()
 					: g -> dataGame ().levelDefinition (g -> level ()).pointsBall ()));
 		}
 		else
-			setEaten (false);
+		{
+			_hasEaten = false;
+			adaptSpeed ();
+		}
 	}
+}
+
+// ---
+void PacManII::PacMan::setStateToStandLookingTo (const QGAMES::Vector& d)
+{
+	if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGRIGHT__, true);
+	else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGLEFT__, true);
+	else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGUP__, true);
+	else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATESTANDLOOKINGDOWN__, true);
+	else
+		assert (false); // No other orientations are possible..
+}
+
+// ---
+void PacManII::PacMan::setStateToMoveTo (const QGAMES::Vector& d)
+{
+	if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__, true);
+	else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGLEFT__, true);
+	else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGUP__, true);
+	else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
+		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGDOWN__, true);
+	else
+		assert (false); // No other orientations are possible...
 }
 
 // ---
@@ -613,9 +663,9 @@ void PacManII::PacMan::adaptSpeed ()
 	assert (mM != nullptr); // is moving?
 
 	const PacManII::DataGame::LevelDefinition& lD = pG -> dataGame ().levelDefinition (pG -> level ());
-	mM -> setSpeed (isChasing () 
-		? (hasEaten () ? __BD lD.pacmanSpeedWhenEatingFrightingDots () : __BD lD.pacmanSpeedWhenFrighting ()) 
-		: (hasEaten () ? __BD lD.pacmanSpeedWhenEatingDots () : __BD lD.pacmanSpeed ()));
+	mM -> setSpeed (_status == PacManII::PacMan::Status::_CHASING 
+		? (_hasEaten ? __BD lD.pacmanSpeedWhenEatingFrightingDots () : __BD lD.pacmanSpeedWhenFrighting ()) 
+		: (_hasEaten ? __BD lD.pacmanSpeedWhenEatingDots () : __BD lD.pacmanSpeed ()));
 }
 
 // ---
@@ -641,65 +691,48 @@ void PacManII::Monster::setStatus (const PacManII::Monster::Status& st)
 	// In release compilation version all changes are possible,
 	// but under debug mode the right combination is ckecked first!
 
+	_status = st;
+
 	switch (st)
 	{
 		case PacManII::Monster::Status::_NOTDEFINED:
-			_status = st;
-			whatToDoWhenStopIsRequested ();
-			break;
-
 		case PacManII::Monster::Status::_ATHOME:
-			assert (_status == PacManII::Monster::Status::_ATHOME ||
-					_status == PacManII::Monster::Status::_NOTDEFINED ||
-					_status == PacManII::Monster::Status::_BEINGEATEN);
-			_status = st;
-			whatToDoWhenStopIsRequested ();
+			whatToDoWhenStopStatusIsRequested (orientation ());
 			break;
 
 		case PacManII::Monster::Status::_EXITINGHOME:
-			assert (_status == PacManII::Monster::Status::_EXITINGHOME ||
-					_status == PacManII::Monster::Status::_ATHOME);
-			_status = st;
-			whatToDoWhenMovementIsRequested (orientation ());
-			break;
-
 		case PacManII::Monster::Status::_CHASING:
-			assert (_status == PacManII::Monster::Status::_CHASING ||
-					_status == PacManII::Monster::Status::_EXITINGHOME ||
-					_status == PacManII::Monster::Status::_RUNNINGWAY ||
-					_status == PacManII::Monster::Status::_TOBEEATEN);
-			_status = st;
-			whatToDoWhenMovementIsRequested (orientation ());
-			break;
-
 		case PacManII::Monster::Status::_RUNNINGWAY:
-			assert (_status == PacManII::Monster::Status::_RUNNINGWAY ||
-					_status == PacManII::Monster::Status::_EXITINGHOME ||
-					_status == PacManII::Monster::Status::_CHASING ||
-					_status == PacManII::Monster::Status::_TOBEEATEN);
-			_status = st;
-			whatToDoWhenMovementIsRequested (orientation ());
-			break;
-			
 		case PacManII::Monster::Status::_TOBEEATEN:
-			assert (_status == PacManII::Monster::Status::_TOBEEATEN ||
-					_status == PacManII::Monster::Status::_EXITINGHOME ||
-					_status == PacManII::Monster::Status::_CHASING ||
-					_status == PacManII::Monster::Status::_RUNNINGWAY);
-			_status = st;
-			whatToDoWhenMovementIsRequested (orientation ());
-			break;
-
 		case PacManII::Monster::Status::_BEINGEATEN:
-			assert (_status == PacManII::Monster::Status::_BEINGEATEN ||
-					_status == PacManII::Monster::Status::_TOBEEATEN);
-			_status = st;
-			whatToDoWhenMovementIsRequested (orientation ());
+			whatToDoWhenMovementStatusIsRequested (orientation ());
 			break;
 
 		default:
-			assert (false);
+			assert (false); // It shouldn't be heerem but just in case...
 	}
+}
+
+// ---
+void PacManII::Monster::toStand ()
+{
+	// The orientation is not changed ever...
+	if (!isStanding ())
+		setStatus (PacManII::Monster::Status::_ATHOME);
+	else
+		setStatus (status ());
+}
+
+// ---
+void PacManII::Monster::toMove (const QGAMES::Vector& d)
+{
+	// The orientation is changed always...
+	setOrientation (d);
+
+	if (!isMoving ())
+		setStatus (PacManII::Monster::Status::_RUNNINGWAY);
+	else
+		setStatus (status ()); // Keeps the same...
 }
 
 // ---
@@ -730,8 +763,9 @@ void PacManII::Monster::finalize ()
 }
 
 // ---
-void PacManII::Monster::whatToDoWhenStopIsRequested ()
+void PacManII::Monster::whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d)
 {
+	setOrientation (d);
 	setStateToStandLookingTo (orientation ()); // Looking at the last direction...
 	setMove (QGAMES::Vector::_cero); // ...but not moving... 
 	_pathInMaze = { }; // ..and with no path to follow
@@ -739,7 +773,7 @@ void PacManII::Monster::whatToDoWhenStopIsRequested ()
 }
 
 // ---
-void PacManII::Monster::whatToDoWhenMovementIsRequested (const QGAMES::Vector& d)
+void PacManII::Monster::whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d)
 {
 	setOrientation (d); // Look to..
 	setStateToMoveTo (orientation ()); // ..with the right aspect...
@@ -803,8 +837,6 @@ QGAMES::MazeModel::PositionInMaze PacManII::StandardMonster::targetMazePosition 
 }
 
 // ---
-
-// ---
 void PacManII::StandardMonster::setStateToStandLookingTo (const QGAMES::Vector& d)
 {
 	switch (status ())
@@ -813,9 +845,9 @@ void PacManII::StandardMonster::setStateToStandLookingTo (const QGAMES::Vector& 
 		case PacManII::Monster::Status::_ATHOME:
 			{
 				if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
-					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGUP__);
+					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGUP__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
-					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGDOWN__);
+					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGDOWN__, true);
 				else
 					assert (false); // No state possible fot other direction...
 			}
@@ -903,7 +935,11 @@ QGAMES::MazeModel::PositionInMaze PacManII::Inky::targetMazePosition () const
 
 	switch (status ())
 	{
-		case Status::_CHASING:
+		case PacManII::Monster::Status::_NOTDEFINED:
+			result = currentMazePosition ();
+			break;
+
+		case PacManII::Monster::Status::_CHASING:
 			if (_toPursuit != nullptr && _referenceArtists [0] != nullptr)
 				result = QGAMES::MazeModel::PositionInMaze 
 					(2 * (_toPursuit -> nextMazePosition (2).asVector () - _referenceArtists [0] -> currentMazePosition ().asVector ()));
@@ -924,7 +960,11 @@ QGAMES::MazeModel::PositionInMaze PacManII::Blinky::targetMazePosition () const
 
 	switch (status ())
 	{
-		case Status::_CHASING:
+		case PacManII::Monster::Status::_NOTDEFINED:
+			result = currentMazePosition ();
+			break;
+
+		case PacManII::Monster::Status::_CHASING:
 			if (_toPursuit != nullptr)
 				result = _toPursuit -> currentMazePosition ();
 			break;
@@ -944,7 +984,11 @@ QGAMES::MazeModel::PositionInMaze PacManII::Pinky::targetMazePosition () const
 
 	switch (status ())
 	{
-		case Status::_CHASING:
+		case PacManII::Monster::Status::_NOTDEFINED:
+			result = currentMazePosition ();
+			break;
+
+		case PacManII::Monster::Status::_CHASING:
 			if (_toPursuit != nullptr)
 				result = _toPursuit -> nextMazePosition (4);
 			break;
@@ -964,7 +1008,11 @@ QGAMES::MazeModel::PositionInMaze PacManII::Clyde::targetMazePosition () const
 
 	switch (status ())
 	{
-		case Status::_CHASING:
+		case PacManII::Monster::Status::_NOTDEFINED:
+			result = currentMazePosition ();
+			break;
+
+		case PacManII::Monster::Status::_CHASING:
 			if ((_toPursuit -> currentMazePosition ().asVector () - currentMazePosition ().asVector ()).module () > __BD 8)
 				result = _toPursuit -> currentMazePosition ();
 			else

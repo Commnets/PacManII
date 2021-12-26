@@ -89,6 +89,12 @@ namespace PacManII
 			void setTriesOnLevel (int nP, int nL, int nT)
 							{ assert (nP > 0 && nP <= (int) _triesOnLevel.size ());
 							  _triesOnLevel [nP - 1][nL] = nT; }
+			const std::map <int, bool>& fruitsEaten (int nP) const
+							{ assert (nP > 0 && nP <= (int) _fruitsEaten.size ());
+							  return (_fruitsEaten [nP - 1]); }
+			void setFruitsEaten (int nP, const std::map <int, bool>& fE)
+							{ assert (nP > 0 && nP <= (int) _fruitsEaten.size ());
+							  _fruitsEaten [nP - 1] = fE; }
 
 			/** To change the hall of fame. */
 			void actualizeHallOfFame ();
@@ -108,6 +114,7 @@ namespace PacManII
 			std::vector <int> _level;
 			std::vector <std::map <int, bool>> _levelCompleted;
 			std::vector <std::map <int, int>> _triesOnLevel;
+			std::vector <std::map <int, bool>> _fruitsEaten;
 		};
 
 		Game (const DataGame& dt)
@@ -117,6 +124,7 @@ namespace PacManII
 			  _timeCounter (nullptr),
 			  _scoreCounter (nullptr),
 			  _playerName (nullptr),
+			  _fruitsEaten (nullptr),
 			  _showFPS (false), // Not to show by default...
 			  _detectCollisions (false), // Not detected by default...
 			  _tmxAddsOnMapBuilder (nullptr)
@@ -187,6 +195,14 @@ namespace PacManII
 		void setTriesOnLevel (int nL, int nT, int nP = -1)
 							{ ((Conf*) configuration ()) -> 
 								setTriesOnLevel ((nP == -1) ? currentPlayer () : nP, nL, nT); }
+
+		/** Managing the fruits eaten. */
+		const std::map <int, bool>& fruitsEaten (int nP = -1) const
+							{ return (((Conf*) configuration ()) -> 
+								fruitsEaten ((nP == -1) ? currentPlayer () : nP)); }
+		void setFruitsEaten (const std::map <int, bool>& fE, int nP = -1)
+							{ ((Conf*) configuration ()) -> 
+								setFruitsEaten ((nP == -1) ? currentPlayer () : nP, fE); }
 
 		/** Actualize the hall of fame, with the last results. */
 		void actualizeHallOfFame ()
@@ -275,6 +291,7 @@ namespace PacManII
 		TimeCounter* _timeCounter;
 		ScoreCounter* _scoreCounter;
 		FixText* _playerName;
+		FruitsEaten* _fruitsEaten;
 
 		// Implmentation
 		/** To show or not the FPS in the right bottom corner. */

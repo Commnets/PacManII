@@ -372,24 +372,6 @@ __IMPLEMENTONOFFSWITCHES__ (PacManII::Scene::OnOffSwitches)
 // ---
 void PacManII::StandardScene::initialize ()
 {
-	// Action blocks to control the monsters...
-	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(0, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, 0.5)));
-	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(1, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, 0.5)));
-	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(2, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, 0.5)));
-	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(3, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, 0.5)));
-
-	// Action blocks to control the fruit...
-	PacManII::Game* g = dynamic_cast< PacManII::Game*> (game ());
-	assert (g);
-	addActionBlock (new PacManII::FruitSceneActionBlock 
-		(4, PacManII::FruitSceneActionBlock::Properties (__PACMANII_FRUITBASEENTITYID__, 
-			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToAppear (), 
-			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToDisappear ())));
-
 	// Loads the pacman...
 	addCharacter (_pacman = dynamic_cast <PacManII::PacMan*> (game () -> character (__PACMANII_PACMANBASEENTITYID__)));
 	_pacman -> setMap (activeMap ());
@@ -415,8 +397,8 @@ void PacManII::StandardScene::updatePositions ()
 	if (_percentageCleaned == __BD 1)
 		notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, _pacman));
 
-	// Regarding the status for chaising or not
-	_pacman -> setChasing (onOffSwitch (_SWITCHCHASING) -> isOn ());
+	// To chase or not...
+	_pacman -> toChase (onOffSwitch (_SWITCHCHASING) -> isOn ());
 }
 
 // ---
@@ -444,6 +426,46 @@ void PacManII::StandardScene::processEvent (const QGAMES::Event& evnt)
 	}
 
 	PacManII::Scene::processEvent (evnt);
+}
+
+// ---
+PacManII::BasicScene::BasicScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn, 
+		const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
+	: StandardScene (c, m, cn, p, ePL)
+{  
+	// Action blocks to control the monsters...
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(0, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, -0.5, 0.0)), false);
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(1, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, -0.5, 0.0)), false);
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(2, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, -0.5, 0.0)), false);
+	addActionBlock (new PacManII::MonsterSceneActionBlock 
+		(3, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, -0.5, 0.0)), false);
+}
+
+// ---
+void PacManII::BasicScene::initialize ()
+{
+	PacManII::StandardScene::initialize ();
+
+	// Action blocks to control the fruit...
+	// It has to added every time the scene is intialized, becasue aspect and bonus depends on the level...
+	PacManII::Game* g = dynamic_cast< PacManII::Game*> (game ());
+	assert (g);
+	addActionBlock (new PacManII::FruitSceneActionBlock 
+		(4, PacManII::FruitSceneActionBlock::Properties (__PACMANII_FRUITBASEENTITYID__, 
+			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToAppear (), 
+			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToDisappear ())), false);
+}
+
+// ---
+void PacManII::BasicScene::finalize ()
+{
+	PacManII::StandardScene::finalize ();
+
+	// It has to be removed as it's been added when initialize...
+	removeActionBlock (4);
 }
 
 // ---
