@@ -44,7 +44,9 @@ void PacManII::Fruit::setType (int t)
 {
 	assert (t < __PACMANII_NUMBERENTITIES__);
 
-	switch (t)
+	_type = t;
+
+	switch (_type)
 	{
 		case 0:
 			setCurrentState (__PACMANII_FRUIT01STATESTAYING__);
@@ -503,15 +505,16 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 			QGAMES::Event (__PACMANII_PACMANDESTROYED__, this);
 		else
 		{
-			if (dynamic_cast <PacManII::Fruit*> (e) != nullptr &&
-				((centerPosition () - e -> centerPosition ()).module () < __BD (visualLength () >> 1)))
+			PacManII::Fruit* frt = dynamic_cast <PacManII::Fruit*> (e);
+			if (frt != nullptr && 
+				((centerPosition () - frt -> centerPosition ()).module () < __BD (visualLength () >> 1)))
 			{
 				PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 				assert (g != nullptr);
 
-				setScore (score () + g -> levelDefinition (g -> level ()).bonusPoints ());
+				setScore (score () + frt -> points ());
 
-				addFruitEaten (g -> levelDefinition (g -> level ()).bonusSymbolId ());
+				addFruitEaten (frt -> type ());
 
 				game () -> soundBuilder () -> sound (__PACMANII_SOUNDEATFRUIT__) -> play (-1);
 			}

@@ -107,6 +107,8 @@ namespace PacManII
 							{ return (_secondsBonusToAppear); }
 			double secondsBonusSymbolToDisappear () const
 							{ return (_secondsBonusToDisappear); }
+			const ScatterChaseCycles& scatterChaseCycles () const
+							{ return (_scatterChaseCycles); }
 			const ScatterChaseCycle& scatterChaseCycle (unsigned int n) const 
 							{ return (n > _scatterChaseCycles.size () 
 								? _scatterChaseCycles [_scatterChaseCycles.size () - 1] : _scatterChaseCycles [n]); }

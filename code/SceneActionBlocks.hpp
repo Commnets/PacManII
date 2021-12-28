@@ -84,11 +84,13 @@ namespace PacManII
 		{
 			Properties ()
 				: _entityId (0),
+				  _type (0), _points (200),
 				  _secondsToAppear (__BD 7), _secondsToDisappear (__BD 7)
 							{ }
 
-			Properties (int eId, QGAMES::bdata sA, QGAMES::bdata sD)
+			Properties (int eId, int tp, int p, QGAMES::bdata sA, QGAMES::bdata sD)
 				: _entityId (eId),
+				  _type (tp), _points (p),
 				  _secondsToAppear (sA), _secondsToDisappear (sD)
 							{ }
 
@@ -99,6 +101,8 @@ namespace PacManII
 			Properties& operator = (const Properties&) = default;
 
 			int _entityId;
+			int _type;
+			int _points;
 			QGAMES::bdata _secondsToAppear;
 			QGAMES::bdata _secondsToDisappear;
 		};

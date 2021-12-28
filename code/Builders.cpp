@@ -503,7 +503,8 @@ QGAMES::Scene* PacManII::WorldBuilder::createSceneObject (int ns, const QGAMES::
 {
 	QGAMES::Scene* result = nullptr;
 
-	if (ns == __PACMANII_BASICSCENE__)
+	if (ns >= __PACMANII_BASICSCENE__ &&
+		ns < (__PACMANII_BASICSCENE__ + __PACMANII_MAXNUMBERLEVELS__))
 		// The monsters and the fruit are defined in the constructor...
 		result = new PacManII::BasicScene (ns, m, cn, p, ePL);
 	else

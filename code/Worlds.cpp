@@ -435,13 +435,17 @@ PacManII::BasicScene::BasicScene (int c, const QGAMES::Maps& m, const QGAMES::Sc
 {  
 	// Action blocks to control the monsters...
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(0, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, -0.5, 0.0)), false);
+		(0, PacManII::MonsterSceneActionBlock::Properties 
+			(__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, -0.5, 0.0)), false);
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(1, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, -0.5, 0.0)), false);
+		(1, PacManII::MonsterSceneActionBlock::Properties 
+			(__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, -0.5, 0.0)), false);
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(2, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, -0.5, 0.0)), false);
+		(2, PacManII::MonsterSceneActionBlock::Properties 
+			(__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, -0.5, 0.0)), false);
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(3, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, -0.5, 0.0)), false);
+		(3, PacManII::MonsterSceneActionBlock::Properties 
+			(__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, -0.5, 0.0)), false);
 }
 
 // ---
@@ -453,19 +457,23 @@ void PacManII::BasicScene::initialize ()
 	// It has to added every time the scene is intialized, becasue aspect and bonus depends on the level...
 	PacManII::Game* g = dynamic_cast< PacManII::Game*> (game ());
 	assert (g);
+	assert (!existsActionBlock (4));
 	addActionBlock (new PacManII::FruitSceneActionBlock 
-		(4, PacManII::FruitSceneActionBlock::Properties (__PACMANII_FRUITBASEENTITYID__, 
+		(4, PacManII::FruitSceneActionBlock::Properties (
+			__PACMANII_FRUITBASEENTITYID__, 
+			g -> levelDefinition (g -> level ()).bonusSymbolId (),
+			g -> levelDefinition (g -> level ()).bonusPoints (),
 			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToAppear (), 
-			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToDisappear ())), false);
+			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToDisappear ())));
 }
 
 // ---
 void PacManII::BasicScene::finalize ()
 {
-	PacManII::StandardScene::finalize ();
-
 	// It has to be removed as it's been added when initialize...
 	removeActionBlock (4);
+
+	PacManII::StandardScene::finalize ();
 }
 
 // ---
@@ -645,9 +653,6 @@ std::string PacManII::Map::ballsEatenStatus () const
 // ---
 void PacManII::Map::setBallsEatenStatus (const std::string& st)
 {
-	if (st == std::string (__NULL_STRING__))
-		return;
-
 	_mazeLayer -> setBallsEatenStatus (st);
 }
 

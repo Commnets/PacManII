@@ -161,15 +161,14 @@ void PacManII::Game::Conf::cfgFromStream (std::istringstream& iS)
 // ---
 void PacManII::Game::setLevel (int l, int nP)
 {
-	setWorld (dataGame ().levelDefinition (l).worldTypeId ());
-	activeWorld () -> setScene (dataGame ().levelDefinition (l).sceneTypeId ());
-	activeWorld () -> activeScene () -> setMap (dataGame ().levelDefinition (l).mapTypeId ());
+	((PacManII::Game::Conf*) configuration ()) -> setLevel ((nP == -1) ? currentPlayer () : nP, l);
+
+	setWorld (dataGame ().levelDefinition (level (nP)).worldTypeId ());
+	activeWorld () -> setScene (dataGame ().levelDefinition (level (nP)).sceneTypeId ());
+	activeWorld () -> activeScene () -> setMap (dataGame ().levelDefinition (level (nP)).mapTypeId ());
 	activeWorld () -> initialize ();
 
-	// To maintain the coherence with the conf inherited!
-	// Here the configuracion method is invoked instead to avoid recursive!
 	setCurrentWorld (activeWorld () -> id (), nP);
-	((PacManII::Game::Conf*) configuration ()) -> setLevel ((nP == -1) ? currentPlayer () : nP, l);
 }
 
 // ---

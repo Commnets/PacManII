@@ -81,6 +81,7 @@ namespace PacManII
 		Fruit (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
 				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
 			: PacmanElement (cId, f, d),
+			  _type (0), _points (200),
 			  _status (Status::_NOTDEFINED)
 							{ }
 
@@ -96,8 +97,15 @@ namespace PacManII
 		virtual bool isMoving () const override
 							{ return (false); }
 
-		/** To change the type of fruit. */
+		/** To know and change the type of fruit. */
+		int type () const
+							{ return (_type); }
 		void setType (int t);
+		/** To set and know the number of points assigned to this fruit. */
+		int points () const
+							{ return (_points); }
+		void setPoints (int p)
+							{ _points = p; }
 
 		// To know and change the status...
 		void setStatus (const Status& st);
@@ -119,6 +127,8 @@ namespace PacManII
 							{ return (new OnOffSwitches); }
 
 		private:
+		int _type;
+		int _points;
 		Status _status;
 
 		private:

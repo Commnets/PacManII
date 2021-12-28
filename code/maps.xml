@@ -4,6 +4,8 @@
 	<!-- Includes -->
 	<Include file="admaps.xml"/>
 
-  <Map id="50000" type="1" file="maps/map.tmx"/>
+	<SetOfMaps baseId="50000" number="100" type="1" file="maps/map.tmx"/>
+	
+	<Map id="50200" type="1" file="maps/map.tmx"/>
 
 </Maps>

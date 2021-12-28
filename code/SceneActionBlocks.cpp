@@ -69,16 +69,21 @@ void PacManII::MonsterSceneActionBlock::finalize ()
 // ---
 PacManII::FruitSceneActionBlock::Properties::Properties (const QGAMES::SceneActionBlockProperties& prps)
 	: _entityId (0),
+	  _type (0), _points (200),
 	  _secondsToAppear (__BD 7), _secondsToDisappear (__BD 7)
 {
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKENTITYIDATTR__)) != prps.end ())
 		_entityId = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKENTITYIDATTR__))).second.c_str ());
+	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKTYPEATTR__)) != prps.end ())
+		_type = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKTYPEATTR__))).second.c_str ());
+	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKPOINTSATTR__)) != prps.end ())
+		_points = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKPOINTSATTR__))).second.c_str ());
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__)) != prps.end ())
 		_secondsToAppear = __BD (std::atof ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__))).second.c_str ()));
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__)) != prps.end ())
 		_secondsToDisappear = __BD (std::atof ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__))).second.c_str ()));
 
-	PacManII::FruitSceneActionBlock::Properties (_entityId, _secondsToAppear, _secondsToDisappear);
+	PacManII::FruitSceneActionBlock::Properties (_entityId, _type, _points, _secondsToAppear, _secondsToDisappear);
 }
 
 // ---
@@ -96,6 +101,9 @@ void PacManII::FruitSceneActionBlock::initialize ()
 	_fruit -> setMap (aM);
 
 	_fruit -> initialize ();
+
+	_fruit -> setType (_properties._type);
+	_fruit -> setPoints (_properties._points);
 
 	_fruit -> setStatus (PacManII::Fruit::Status::_NOTDEFINED);
 

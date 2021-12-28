@@ -393,7 +393,7 @@ void PacManII::PlayingControlGameState::onEnter ()
 	// This instruction sets the world and the scene accoinding to the level defined in DataGame
 	g -> setLevel (g -> level ());
 
-	// ...and here we increment numbere of times the player tries this level...
+	// ...and here we increment number of times the player tries this level...
 	g -> setTriesOnLevel (g -> level (), g -> triesOnLevel (g -> level ()) + 1);
 
 	g -> setSeconds (0);
@@ -869,7 +869,13 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 							// or stops (a pacman is threaten by a monster) for a while if the level requieres it, or
 							// just moves to the next level possible...
 							result = (g -> stopsAfterCurrentLevel () ? (g -> isCurrentLevelLast () ? 4 : 3) : 1);
+
 							g -> setScore (g -> pacman () -> score ());
+							g -> setFruitsEaten (g -> pacman () -> fruitsEaten ());
+
+							if (g -> activeWorld () != nullptr)
+								g -> activeWorld () -> finalize ();
+
 							g -> setNextLevel ();
 							break;
 

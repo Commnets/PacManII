@@ -587,7 +587,7 @@
 				<Attributes>
 					<Attribute id="FORM" value="50022"/>
 					<Attribute id="INITIALASPECT" value="0"/>
-					<Attribute id="FINALASPECT" value="1"/>
+					<Attribute id="FINALASPECT" value="0"/>
 					<Attribute id="FRACTIONTOCHANGE" value="0"/>
 					<Attribute id="LOOP" value="0"/> <!-- No loop -->
 					<!-- Not linked with anyone -->
@@ -719,27 +719,27 @@
 			<!-- Fruit 1 staying -->
 			<State id="0" animation="0" movementBase="550050"/>
 			<!-- Fruit 2 staying -->
-			<State id="1" animation="0" movementBase="550050"/>
+			<State id="1" animation="1" movementBase="550050"/>
 			<!-- Fruit 3 staying -->
-			<State id="2" animation="0" movementBase="550050"/>
+			<State id="2" animation="2" movementBase="550050"/>
 			<!-- Fruit 4 staying -->
-			<State id="3" animation="0" movementBase="550050"/>
+			<State id="3" animation="3" movementBase="550050"/>
 			<!-- Fruit 5 staying -->
-			<State id="4" animation="0" movementBase="550050"/>
+			<State id="4" animation="4" movementBase="550050"/>
 			<!-- Fruit 6 staying -->
-			<State id="5" animation="0" movementBase="550050"/>
+			<State id="5" animation="5" movementBase="550050"/>
 			<!-- Fruit 7 staying -->
-			<State id="6" animation="0" movementBase="550050"/>
+			<State id="6" animation="6" movementBase="550050"/>
 			<!-- Fruit 8 staying -->
-			<State id="7" animation="0" movementBase="550050"/>
+			<State id="7" animation="7" movementBase="550050"/>
 			<!-- Fruit 9 staying -->
-			<State id="8" animation="0" movementBase="550050"/>
+			<State id="8" animation="8" movementBase="550050"/>
 			<!-- Fruit 10 staying -->
-			<State id="9" animation="0" movementBase="550050"/>
+			<State id="9" animation="9" movementBase="550050"/>
 			<!-- Fruit 11 staying -->
-			<State id="10" animation="0" movementBase="550050"/>
+			<State id="10" animation="10" movementBase="550050"/>
 			<!-- Fruit 12 staying -->
-			<State id="11" animation="0" movementBase="550050"/>
+			<State id="11" animation="11" movementBase="550050"/>
 		</States>
 	</SetOfEntities>
 
