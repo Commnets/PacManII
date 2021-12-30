@@ -58,21 +58,23 @@ namespace PacManII
 			typedef std::vector <ScatterChaseCycle> ScatterChaseCycles;
 
 			LevelDefinition ()
-				: _worldTypeId (__PACMANII_WORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
+				: _worldTypeId (__PACMANII_BASICWORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
 				  _pointsBall (50), _pointsPowerBall (200), _secondsChasing (1.0f),
 				  _bonusSymbolId (0), _bonusPoints (100), _secondsBonusToAppear (10.0f), _secondsBonusToDisappear (10.0f),
 				  _scatterChaseCycles ({ ScatterChaseCycle () }),
 				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
 						_pacmanSpeedWhenFrighting (1.0f), _pacmanSpeedWhenEatingFrightingDots (1.0f),
 				  _ghostSpeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
-						_ghostSpeedWhenCrossingTunnel (1.0f)
+						_ghostSpeedWhenExitingHome (1.0f), _ghostSpeedWhenCrossingTunnel (1.0f),
+				  _secondsMonsterToLeaveHome (1.0f)
 							{ }
 
 			LevelDefinition (int wT, int sT, int mT, 
 					int pB, int pPB, double mSC, 
 					int bS, int bP, double sBA, double sBD, 
 					const ScatterChaseCycles& sC, 
-					double pS, double pED, double pWF, double pWEFD, double gS, double gWF, double gWT)
+					double pS, double pED, double pWF, double pWEFD, 
+					double gS, double gWF, double gWE, double gWT, double sML)
 				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
 				  _pointsBall (pB), _pointsPowerBall (pPB), _secondsChasing (mSC),
 				  _bonusSymbolId (bS), _bonusPoints (bP), _secondsBonusToAppear (sBA), _secondsBonusToDisappear (sBD),
@@ -80,7 +82,8 @@ namespace PacManII
 				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
 						_pacmanSpeedWhenFrighting (pWF), _pacmanSpeedWhenEatingFrightingDots (pWEFD),
 				  _ghostSpeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
-						_ghostSpeedWhenCrossingTunnel (gWT)
+						_ghostSpeedWhenExitingHome (gWE), _ghostSpeedWhenCrossingTunnel (gWT),
+				  _secondsMonsterToLeaveHome (sML)
 							{ assert (_scatterChaseCycles.size () != 0); }
 
 			LevelDefinition (const LevelDefinition&) = default;
@@ -124,8 +127,12 @@ namespace PacManII
 							{ return (_ghostSpeed); }
 			double ghostSpeedWhenBeingFrighten () const 
 							{ return (_ghostSpeedWhenBeingFrighten); }
+			double ghostSpeedWhenExitingHome () const
+							{ return (_ghostSpeedWhenExitingHome); }
 			double ghostSpeedWhenCrossingTunnel () const 
 							{ return (_ghostSpeedWhenCrossingTunnel); }
+			double secondsMonsterToLeaveHome () const
+							{ return (_secondsMonsterToLeaveHome); }
 
 			private:
 			/** The word, the scene and the map of the level. */
@@ -161,11 +168,17 @@ namespace PacManII
 			const double _ghostSpeed;
 			/** Monster's speed when are frighten because Pacman has eaten a power dot. */
 			const double _ghostSpeedWhenBeingFrighten;
+			/** Monster speed whn exiting/entering home */
+			const double _ghostSpeedWhenExitingHome;
 			/** Monster's speed when they are facind the tunnel. */
 			const double _ghostSpeedWhenCrossingTunnel;
+			/** Seconds the monsters take to try to leave home afteer beginning. */
+			const double _secondsMonsterToLeaveHome;
 		};
 
 		typedef std::vector <LevelDefinition> LevelDefinitions;
+
+		static DataGame standardDataGame ();
 
 		DataGame (const LevelDefinitions& l = { LevelDefinition () }, int sL = 15000)
 			: _levels (l),

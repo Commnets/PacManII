@@ -37,11 +37,18 @@ namespace PacManII
 
 		Maze& operator = (const Maze&) = default;
 
+		/** To get the pure grid x next position following a direction.
+			If the position will be out of the maze, the last one possible will be returnd. */
+		QGAMES::MazeModel::PositionInMaze nextXGridPositionFollowing (const QGAMES::MazeModel::PositionInMaze& p,
+			unsigned x, const QGAMES::Vector& d) const;
+
 		/** In this case, because the size of th maze (usually 21 x 24), 
 			the standard methods to calculate the path to go from a position to another
 			will be very slow. \n
 			So, a new one is be defined, but just only to calculate 2 steps. */
 		QGAMES::MazeModel::PathInMaze next2StepsToGoTo (const QGAMES::MazeModel::PositionInMaze& p1, 
+			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d) const;
+		QGAMES::MazeModel::PathInMaze nextXStepsToGoTo (int x, const QGAMES::MazeModel::PositionInMaze& p1, 
 			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d) const;
 
 		/** Those methods are invoked from the PacManII::Map to create a PacManII::Maze. \n

@@ -1,6 +1,8 @@
 #include "SceneActionBlocks.hpp"
 #include "Game.hpp"
 #include "Worlds.hpp"
+#include "Scenes.hpp"
+#include "Maps.hpp"
 
 // ---
 PacManII::MonsterSceneActionBlock::Properties::Properties (const QGAMES::SceneActionBlockProperties& prps)
@@ -11,12 +13,14 @@ PacManII::MonsterSceneActionBlock::Properties::Properties (const QGAMES::SceneAc
 		_entityId = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKENTITYIDATTR__))).second.c_str ());
 	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKNUMBEERMONSTERATTR__)) != prps.end ())
 		_numberInMap = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKNUMBEERMONSTERATTR__))).second.c_str ());
+	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKPOINTSATTR__)) != prps.end ())
+		_points = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKPOINTSATTR__))).second.c_str ());
 	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__)) != prps.end ())
 		_offsetXInitPosition = __BD (std::atof ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__))).second.c_str ()));
 	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__)) != prps.end ())
 		_offsetYInitPosition = __BD (std::atof ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__))).second.c_str ()));
 
-	PacManII::MonsterSceneActionBlock::Properties (_entityId, _numberInMap, _offsetXInitPosition, _offsetYInitPosition);
+	PacManII::MonsterSceneActionBlock::Properties (_entityId, _numberInMap, _points, _offsetXInitPosition, _offsetYInitPosition);
 }
 
 // ---
@@ -25,7 +29,7 @@ void PacManII::MonsterSceneActionBlock::initialize ()
 	QGAMES::SceneActionBlock::initialize ();
 
 	_monster = dynamic_cast <PacManII::Monster*> (game () -> character (_properties._entityId));
-	assert (_monster);
+	assert (_monster != nullptr);
 
 	scene () -> addCharacter (_monster);
 
@@ -34,6 +38,8 @@ void PacManII::MonsterSceneActionBlock::initialize ()
 	_monster -> setMap (aM);
 
 	_monster -> initialize ();
+
+	_monster -> setPoints (_properties._points);
 
 	_monster -> setOrientation (QGAMES::Vector (__BD 0, __BD -1, __BD 0));
 	_monster -> toStand ();
@@ -44,6 +50,14 @@ void PacManII::MonsterSceneActionBlock::initialize ()
 		QGAMES::Vector (__BD (_monster -> visualHeight () >> 1), __BD (_monster -> visualHeight () >> 1), __BD 0) +
 		QGAMES::Vector (__BD (_monster -> visualLength () * _properties._offsetXInitPosition), 
 						__BD (_monster -> visualLength () * _properties._offsetYInitPosition), __BD 0));
+
+	reStartAllCounters ();
+	reStartAllOnOffSwitches ();
+
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+	counter (_COUNTERTOEXITHOME) -> initialize 
+		((int) (g -> levelDefinition (g -> level ()).secondsMonsterToLeaveHome () * __BD g -> framesPerSecond ()), 0, true, true);
 }
 
 // ---
@@ -51,7 +65,28 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 {
 	QGAMES::SceneActionBlock::updatePositions ();
 
-	// TODO
+	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
+	if (!scn -> clapperBoard ())
+		return;
+
+	assert (_monster != nullptr);
+
+	if (onOffSwitch (_SWITCHMOVING) -> isOn ())
+	{
+		if (_monster -> status () == PacManII::Monster::Status::_ATHOME)
+			onOffSwitch (_SWITCHMOVING) -> set (false);
+	}
+	else
+	{
+		if (counter (_COUNTERTOEXITHOME) -> isEnd ())
+		{
+			onOffSwitch (_SWITCHMOVING) -> set (true);
+
+			PacManII::Map* mp = dynamic_cast <PacManII::Map*> (scn -> activeMap ());
+			assert (mp != nullptr);
+			_monster -> toMove (mp -> directorToStartMonsterMovement (_monster -> monsterNumber ())); // To exit home...
+		}
+	}
 }
 
 //
@@ -64,6 +99,19 @@ void PacManII::MonsterSceneActionBlock::finalize ()
 	scene () -> removeCharacter (_monster);
 
 	_monster = nullptr; 
+}
+
+// ---
+__IMPLEMENTCOUNTERS__ (PacManII::MonsterSceneActionBlock::Counters)
+{
+	addCounter (new QGAMES::Counter 
+		(PacManII::MonsterSceneActionBlock::_COUNTERTOEXITHOME, 1 /** Initialized later better. */, 0, true, true));
+}
+
+// ---
+__IMPLEMENTONOFFSWITCHES__ (PacManII::MonsterSceneActionBlock::OnOffSwitches)
+{
+	addOnOffSwitch (new QGAMES::OnOffSwitch (PacManII::MonsterSceneActionBlock::_SWITCHMOVING, false));
 }
 
 // ---
@@ -92,7 +140,7 @@ void PacManII::FruitSceneActionBlock::initialize ()
 	QGAMES::SceneActionBlock::initialize ();
 
 	_fruit = dynamic_cast <PacManII::Fruit*> (game () -> character (_properties._entityId));
-	assert (_fruit);
+	assert (_fruit != nullptr);
 
 	scene () -> addCharacter (_fruit);
 
@@ -122,6 +170,10 @@ void PacManII::FruitSceneActionBlock::initialize ()
 void PacManII::FruitSceneActionBlock::updatePositions ()
 {
 	QGAMES::SceneActionBlock::updatePositions ();
+
+	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
+	if (!scn -> clapperBoard ())
+		return;
 
 	if (onOffSwitch (_SWITCHFRUITSHOWN) -> isOn ())
 		return; // Nothing else to do one the fruit has been shown...

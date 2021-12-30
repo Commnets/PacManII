@@ -40,6 +40,7 @@ namespace PacManII
 			This method makes only sense when map has been set. */
 		QGAMES::MazeModel::PositionInMaze currentMazePosition () const
 							{ return (mapPositionToMazePosition (position ())); }
+		QGAMES::MazeModel::PositionInMaze nextXGridPosition (int x) const;
 
 		/** To know whether anotheer Pacman Element is or not my enemy. */
 		virtual bool isEnemy (const PacmanElement* elmnt) const = 0;
@@ -70,72 +71,6 @@ namespace PacManII
 		bool doesPositionMatchesTile (const QGAMES::Position& p) const;
 	};
 
-	/** The fuits in the maze. */
-	class Fruit : public PacmanElement
-	{
-		public:
-		// The different status a monster cab ne in...
-		enum class Status 
-			{ _NOTDEFINED = 0, _SHOWN = 1, _EATEN = 2 };
-
-		Fruit (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: PacmanElement (cId, f, d),
-			  _type (0), _points (200),
-			  _status (Status::_NOTDEFINED)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new Fruit (id (), forms (), data ())); }
-
-		virtual bool isEnemy (const PacmanElement* elmnt) const override
-							{ return (false); }
-		virtual bool isAlive () const override
-							{ return (_status == Status::_SHOWN); }
-		virtual bool isStanding () const override
-							{ return (true); }
-		virtual bool isMoving () const override
-							{ return (false); }
-
-		/** To know and change the type of fruit. */
-		int type () const
-							{ return (_type); }
-		void setType (int t);
-		/** To set and know the number of points assigned to this fruit. */
-		int points () const
-							{ return (_points); }
-		void setPoints (int p)
-							{ _points = p; }
-
-		// To know and change the status...
-		void setStatus (const Status& st);
-		Status status () const
-							{ return (_status); }
-
-		virtual void initialize () override;
-		virtual void updatePositions () override;
-		virtual void drawOn (QGAMES::Screen* scr, const QGAMES::Position& p = QGAMES::Position::_noPoint) override;
-
-		virtual void whenCollisionWith (QGAMES::Entity* e) override;
-
-		private:
-		__DECLARECOUNTERS__ (Counters);
-		virtual QGAMES::Counters* createCounters () override
-							{ return (new Counters); }
-		__DECLAREONOFFSWITCHES__ (OnOffSwitches)
-		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
-							{ return (new OnOffSwitches); }
-
-		private:
-		int _type;
-		int _points;
-		Status _status;
-
-		private:
-		static const int _COUNTERPOINTSVISIBLE = 0;
-		static const int _SWITCHPOINTSVISIBLE = 0;
-	};
-
 	/** All artists in pacman moves in the same way. 
 		The center of any artist always move from the center to a tile to the center of the next
 		following the direction of the movement. \n 
@@ -160,9 +95,9 @@ namespace PacManII
 							{ return (_lastMazePosition); }
 
 		/** To load other artists taken as a reference for this. */
-		const std::vector <const Artist*>& referenceArtists () const
+		const std::vector <Artist*>& referenceArtists () const
 							{ return (_referenceArtists); }
-		virtual void setReferenceArtists (const std::vector <const Artist*>& r)
+		virtual void setReferenceArtists (const std::vector <Artist*>& r)
 							{ _referenceArtists = r; }
 
 		virtual bool canMove (const QGAMES::Vector& d, const QGAMES::Vector& a) override;
@@ -203,14 +138,14 @@ namespace PacManII
 		virtual void setStateToMoveTo (const QGAMES::Vector&) = 0;
 
 		/** Define a buoy to stop within the inEveryLoop method. */
-		class ToStopBuoy : public QGAMES::Buoy
+		class ToStopBuoy final : public QGAMES::Buoy
 		{
 			public:
 			ToStopBuoy ()
 				: QGAMES::Buoy (__PACMANII_TOSTOPBUOYID__, (QGAMES::bdata) 0)
 							{ /** Nothing else to do. */ }
 
-			virtual void* treatFor (QGAMES::Element* e);
+			virtual void* treatFor (QGAMES::Element* e) override;
 		};
 
 		/** The method to stop deferred. */
@@ -218,7 +153,7 @@ namespace PacManII
 
 		// Implementation
 		// Used many times inside...
-		/** To reacalculate the path to follow (usually 2 steps more) from the current position. \n
+		/** To recalculate the path to follow (usually 2 steps more) from the current position. \n
 			It doesn't matter whether it is aligned with the maze position, but usually it is invoked in that situation. */
 		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d);
 		/** To know whether the current situation in the path implies entering or not a tunnel. \n
@@ -231,287 +166,17 @@ namespace PacManII
 		protected:
 		QGAMES::MazeModel::PositionInMaze _lastMazePosition;
 		std::vector <QGAMES::MazeModel::PositionInMaze> _pathInMaze;
-		std::vector <const Artist*> _referenceArtists;
+		std::vector <Artist*> _referenceArtists;
 
 		// Implementation
 		QGAMES::Vector _nextDirectionWhenPossible;
 		std::map <int, QGAMES::MazeModel::PositionInMaze> _referenceArtistLastMazePositions;
 	};
-
-	/** What the player controls. */
-	class PacMan final : public Artist
-	{
-		public:
-		enum class Status 
-			{ _NOTDEFINED = 0, _STOPPED = 1, _MOVING = 2, _CHASING = 3 };
-
-		PacMan (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: Artist (cId, f, d),
-			  _alive (true),
-			  _score (0),
-			  _status (Status::_NOTDEFINED),
-			  _hasEaten (false),
-			  _lastMulScoreNotified (0)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new PacMan (id (), forms (), data ())); }
-
-		virtual void toStand () override;
-		virtual void toMove (const QGAMES::Vector& d) override;
-
-		// Additional behaviour of pacman...
-		void toChase (bool c);
-
-		// To know the internal status...
-		Status status () const
-							{ return (_status); }
-
-		virtual bool isEnemy (const PacmanElement* elmnt) const override;
-
-		virtual bool isAlive () const override
-							{ return (_alive); }
-		void setAlive (bool a)
-							{ _alive = a; }
-		virtual bool isStanding () const override
-							{ return (_status == Status::_NOTDEFINED || _status == Status::_STOPPED); }
-		virtual bool isMoving () const override
-							{ return (_status == Status::_MOVING || _status == Status::_CHASING); }
-
-		int score () const
-							{ return (_score); }
-		void setScore (int s); 
-
-		const std::map <int, bool> fruitsEaten () const
-							{ return (_fruitsEaten); }
-		void setFruitsEaten (const std::map <int, bool>& fE);
-		void addFruitEaten (int fE)
-							{ _fruitsEaten [fE] = true; setFruitsEaten (_fruitsEaten); }
-
-		virtual void initialize () override;
-		virtual void updatePositions () override;
-		virtual void finalize () override;
-
-		virtual void whenCollisionWith (QGAMES::Entity* e) override;
-
-		protected:
-		void setStatus (const Status& st);
-
-		/** The target position is the limit of the maze in the current direction of the movement. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-
-		virtual void whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d) override;
-		virtual void whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d) override;
-		virtual void whatToDoOnCurrentPosition () override;
-		virtual void setStateToStandLookingTo (const QGAMES::Vector& d) override;
-		virtual void setStateToMoveTo (const QGAMES::Vector& d) override;
-
-		// Implementation
-		/** To adapt the speed of the pacman when moving. */
-		void adaptSpeed ();
-		/** It is a little bit different that the standard on as the movements made by the player 
-			in the joystick or keyboard have to be taken into account. */
-		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d) override;
-
-		private:
-		/** To indicate whether the pacman is alive. */
-		bool _alive;
-		/** The score of the pacman. It is get and put back into the game. */
-		int _score;
-		/** The fruits eaten. */
-		std::map <int, bool> _fruitsEaten;
-		/** The status of the pacman. */
-		Status _status;
-
-		// Implementation
-		/** To indicate whether the pacman has eaten or not something. */
-		bool _hasEaten;
-		/** The last score notified. */
-		int _lastMulScoreNotified;
-	};
-
-	/** What the machine controls. */
-	class Monster : public Artist
-	{
-		public:
-		// The different status a monster cab ne in...
-		enum class Status 
-			{ _NOTDEFINED = 0, _ATHOME = 1, _EXITINGHOME = 2, _CHASING = 3, _RUNNINGWAY = 4, _TOBEEATEN = 5, _BEINGEATEN = 6 };
-
-		Monster (int cId, int mN, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: Artist (cId, f, d),
-			  _monsterNumber (mN),
-			  _toPursuit (nullptr),
-			  _status (Status::_NOTDEFINED)
-							{ assert (_monsterNumber >= 0); }
-
-		virtual bool isEnemy (const PacmanElement* elmnt) const override
-							{ return (dynamic_cast <const PacMan*> (elmnt) != nullptr); }
-
-		/** The number of the monster. */
-		int monsterNumber () const
-							{ return (_monsterNumber); }
-
-		virtual void toStand () override;
-		virtual void toMove (const QGAMES::Vector& d) override;
-
-		// To know the status...
-		Status status () const
-							{ return (_status); }
-
-		virtual bool isAlive () const override
-							{ return (_status != Status::_BEINGEATEN); }
-		virtual bool isStanding () const override
-							{ return (_status == Status::_NOTDEFINED || _status == Status::_ATHOME); }
-		virtual bool isMoving () const override
-							{ return (!isStanding ()); }
-
-		/** To set the the artist to pursuit. Usually it is a pacman, but... \n
-			It is null when none is pursuited. */
-		virtual void toPursuit (const Artist* a)
-							{ _toPursuit = a; }
-		const Artist* pursuit () const
-							{ return (_toPursuit); }
-
-		virtual void initialize () override;
-		virtual void updatePositions () override;
-		virtual void finalize () override;
-
-		protected:
-		void setStatus (const Status& st);
-
-		virtual void whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d) override;
-		virtual void whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d) override;
-		virtual void whatToDoOnCurrentPosition () override
-							{ }
-
-		// Implementation
-		inline QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;
-
-		virtual void adaptSpeed () = 0;
-
-		protected:
-		/** The number of the monster. */
-		int _monsterNumber;
-		/** A reference to the artist being pursuited. */
-		const Artist* _toPursuit;
-		/** The status of the monster. */
-		Status _status;
-	};
-
-	/** The standard monster always pursuit a pacman. */
-	class StandardMonster : public Monster
-	{
-		public:
-		StandardMonster (int cId, int mN, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: Monster (cId, mN, f, d)
-							{ }
-
-		/** It has to be pacman always. */
-		virtual void toPursuit (const Artist* a) final override;
-
-		/** The tager position in a standard monster for most of the internal status except chasing is calculated in the same way. \
-			Just only the target position when chasing will depend on the specific monster. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-
-		protected:
-		virtual void setStateToStandLookingTo (const QGAMES::Vector& d) override;
-		virtual void setStateToMoveTo (const QGAMES::Vector& d) override;
-
-		// Implementation
-		virtual void adaptSpeed () override;
-	};
-
-	/** Inky, the blue/cyan monster. Bashful. */
-	class Inky final : public StandardMonster
-	{
-		public:
-		static const int _NUMBER = 0;
-
-		Inky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-			const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: StandardMonster (cId, _NUMBER, f, d)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new Inky (id (), forms (), data ())); }
-
-		/** Inky has blinky as reference. 
-			(and also pacman, but pacman is the one to pursuit. */
-		virtual void setReferenceArtists (const std::vector <const Artist*>& r) override;
-
-		protected:
-		/** When chasing Inky's target position is twice the distance between the 2 next positions of pacman and blinky's 
-			In other circunstance is the run away position. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-	};
-
-	/** Blinky, the red monster. Your shadow. */
-	class Blinky final : public StandardMonster
-	{
-		public:
-		static const int _NUMBER = 1;
-
-		Blinky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-			const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: StandardMonster (cId, _NUMBER, f, d)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new Blinky (id (), forms (), data ())); }
-
-		// Blinky has no other reference than pacman...
-
-		protected:
-		/** When chasing Blinky's target position is the position where pacman is,
-			in other cicunstances is the run away position. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-	};
-
-	/** Pinky, the pink monster. Pure speed. */
-	class Pinky final : public StandardMonster
-	{
-		public:
-		static const int _NUMBER = 2;
-
-		Pinky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: StandardMonster (cId, _NUMBER, f, d)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new Pinky (id (), forms (), data ())); }
-
-		protected:
-		/** When chasing Pinky's target position is 4 positions ahead pacman's,
-			otherwise if the run away position in the maze. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-	};
-
-	/** Clyde, the orange monster. Just the opposite: pokey*/
-	class Clyde final : public StandardMonster
-	{
-		public:
-		static const int _NUMBER = 3;
-
-		Clyde (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: StandardMonster (cId, _NUMBER, f, d)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new Clyde (id (), forms (), data ())); }
-
-		protected:
-		/** When chasing, Clyde's target depends on the distance to Pacman:
-			If it is 8 positions or greater, then goes for Pacman, otherwhise it is the run away position.
-			When no chaing the targt position is the run away. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-	};
 }
+
+#include "PacMan.hpp"
+#include "Fruit.hpp"
+#include "Monsters.hpp"
 
 #endif
   

@@ -15,6 +15,7 @@
 	<Sound id="50007" type="1" loop="-1" file="sounds/pacman_siren.wav"/>
 	<Sound id="50008" type="1" loop="-1" file="sounds/pacman_siren_fast.wav"/>
 	<Sound id="50009" type="1" loop="-1" file="sounds/pacman_siren_veryfast.wav"/>
+	<Sound id="50010" type="1" loop="-1" file="sounds/pacman_threatening.wav"/>
 	
 	<!-- Backgrounds sounds -->
 	<Sound id="50010" type="1" loop="-1" file="sounds/pacmanIIgameoverbackground.wav"/>

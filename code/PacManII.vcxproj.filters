@@ -43,8 +43,26 @@
     <ClCompile Include="Maze.cpp">
       <Filter>Archivos de código fuente</Filter>
     </ClCompile>
-    <ClCompile Include="SceneActionBlocks.cpp">
+    <ClCompile Include="Fruit.cpp">
+      <Filter>Archivos de código fuente\Artists</Filter>
+    </ClCompile>
+    <ClCompile Include="Monsters.cpp">
+      <Filter>Archivos de código fuente\Artists</Filter>
+    </ClCompile>
+    <ClCompile Include="PacMan.cpp">
+      <Filter>Archivos de código fuente\Artists</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardScenes.cpp">
+      <Filter>Archivos de código fuente\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="Maps.cpp">
       <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="Scenes.cpp">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneActionBlocks.cpp">
+      <Filter>Archivos de código fuente\Action Blocks</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -99,8 +117,26 @@
     <ClInclude Include="Maze.hpp">
       <Filter>Archivos de encabezado</Filter>
     </ClInclude>
-    <ClInclude Include="SceneActionBlocks.hpp">
+    <ClInclude Include="Fruit.hpp">
+      <Filter>Archivos de encabezado\Artists</Filter>
+    </ClInclude>
+    <ClInclude Include="Monsters.hpp">
+      <Filter>Archivos de encabezado\Artists</Filter>
+    </ClInclude>
+    <ClInclude Include="PacMan.hpp">
+      <Filter>Archivos de encabezado\Artists</Filter>
+    </ClInclude>
+    <ClInclude Include="Maps.hpp">
       <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes.hpp">
+      <Filter>Archivos de encabezado</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardScenes.hpp">
+      <Filter>Archivos de encabezado\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneActionBlocks.hpp">
+      <Filter>Archivos de encabezado\Action Blocks</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +148,24 @@
     </Filter>
     <Filter Include="Archivos de recursos">
       <UniqueIdentifier>{993c945d-64c9-4f86-ae2a-6aaff3420072}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de código fuente\Artists">
+      <UniqueIdentifier>{543d5569-c774-4c21-a0db-f36b8868dc32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Artists">
+      <UniqueIdentifier>{2216b5ef-812f-4008-a4a7-3effbbff66c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de código fuente\Scenes">
+      <UniqueIdentifier>{2754589e-460b-412f-aecb-29124d9fe096}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Scenes">
+      <UniqueIdentifier>{99a0abd8-d471-4a42-8603-723485b5a5fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de código fuente\Action Blocks">
+      <UniqueIdentifier>{0b58018f-8f20-4992-ab4f-92fd56f8c972}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Archivos de encabezado\Action Blocks">
+      <UniqueIdentifier>{b578c702-32a9-4129-adef-1682879521e4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

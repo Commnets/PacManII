@@ -58,7 +58,7 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 		//	   it will be also taken into account ehen calculating the path again.	
 		if (art -> doesPositionMatchesTile (art -> position ()))
 		{
-			art -> recalculatePathInMazeAvoiding (std::vector <QGAMES::Vector> { -direction () });
+			art -> recalculatePathInMazeAvoiding ({ -direction () });
 			art -> changeDirectionWhenPossibleTo (QGAMES::Vector::_cero); // If any, it was taken into account before...
 
 			// If there is a next position to go to...
@@ -72,7 +72,7 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 					art -> setPosition 
 						(art -> mazePositionToMapPosition (art -> nextMazePosition (1)) - 
 							QGAMES::Vector (__BD (art -> visualLength () >> 1), __BD (art -> visualHeight () >> 1), __BD 0));
-					art -> recalculatePathInMazeAvoiding ({ }); // After being moveed, the path hast to be calculated...
+					art -> recalculatePathInMazeAvoiding ({ -direction () }); // After being moved, the path hast to be calculated...
 				}
 
 				// Depeding on the type of artist things can happen when it is on a new position...

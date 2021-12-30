@@ -4,7 +4,10 @@
 	<!-- Includes -->
 	<Include file="admaps.xml"/>
 
-	<SetOfMaps baseId="50000" number="100" type="1" file="maps/map.tmx"/>
+	<SetOfMaps baseId="50000" number="25" type="1" file="maps/normalmap_blue.tmx"/>
+	<SetOfMaps baseId="50025" number="25" type="1" file="maps/normalmap_red.tmx"/>
+	<SetOfMaps baseId="50050" number="25" type="1" file="maps/normalmap_green.tmx"/>
+	<SetOfMaps baseId="50075" number="25" type="1" file="maps/normalmap_yellow.tmx"/>
 	
 	<Map id="50200" type="1" file="maps/map.tmx"/>
 

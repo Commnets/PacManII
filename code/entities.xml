@@ -511,8 +511,8 @@
 			<Animation id="2" type="0">
 				<Attributes>
 					<Attribute id="FORM" value="50020"/>
-					<Attribute id="INITIALASPECT" value="34"/>
-					<Attribute id="FINALASPECT" value="36"/>
+					<Attribute id="INITIALASPECT" value="44"/>
+					<Attribute id="FINALASPECT" value="46"/>
 					<Attribute id="FRACTIONTOCHANGE" value="6"/>
 					<Attribute id="LOOP" value="1"/>
 					<!-- Not linked with anyone -->

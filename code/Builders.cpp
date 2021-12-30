@@ -5,6 +5,8 @@
 #include "Movements.hpp"
 #include "GameStates.hpp"
 #include "Worlds.hpp"
+#include "Scenes.hpp"
+#include "Maps.hpp"
 #include "SceneActionBlocks.hpp"
 
 // ---
@@ -271,7 +273,7 @@ QGAMES::Movement* PacManII::MovementBuilder::createMovement
 		 def._id < (__PACMANII_PINKYCHASINGMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)) ||		
 		(def._id >= __PACMANII_CLYDECHASINGMOVEMENTBASEID__ &&
 		 def._id < (__PACMANII_CLYDECHASINGMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)))		
-		result = new QGAMES::NoMovement (def._id, def._variables);
+		result = new PacManII::MazeMovement (def._id, def._variables);
 	else
 	// Monsters' running away movements
 	if ((def._id >= __PACMANII_INKYRUNNINGAWAYMOVEMENTBASEID__ &&
@@ -282,7 +284,7 @@ QGAMES::Movement* PacManII::MovementBuilder::createMovement
 		 def._id < (__PACMANII_PINKYRUNNINGAWAYMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)) ||		
 		(def._id >= __PACMANII_CLYDERUNNINGAWAYMOVEMENTBASEID__ &&
 		 def._id < (__PACMANII_CLYDERUNNINGAWAYMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)))		
-		result = new QGAMES::NoMovement (def._id, def._variables);
+		result = new PacManII::MazeMovement (def._id, def._variables);
 	else
 	// Monsters' going-back-movements movements to home after being eaten
 	if ((def._id >= __PACMANII_INKYAFTEREATENMOVEMENTBASEID__ &&
@@ -293,7 +295,7 @@ QGAMES::Movement* PacManII::MovementBuilder::createMovement
 		 def._id < (__PACMANII_PINKYAFTEREATENMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)) ||		
 		(def._id >= __PACMANII_CLYDEAFTEREATENMOVEMENTBASEID__ &&
 		 def._id < (__PACMANII_CLYDEAFTEREATENMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)))		
-		result = new QGAMES::NoMovement (def._id, def._variables);
+		result = new PacManII::MazeMovement (def._id, def._variables);
 	else
 	// Monsters' at-home movements
 	if ((def._id >= __PACMANII_INKYATHOMEMOVEMENTBASEID__ &&
@@ -306,7 +308,7 @@ QGAMES::Movement* PacManII::MovementBuilder::createMovement
 		 def._id < (__PACMANII_CLYDEATHOMEMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__)))		
 		result = new QGAMES::NoMovement (def._id, def._variables);
 	else
-	// Fruit's ataying movement
+	// Fruit's staying movement
 	if (def._id >= __PACMANII_FRUITSTAYINGMOVEMENTBASEID__ &&
 		 def._id < (__PACMANII_FRUITSTAYINGMOVEMENTBASEID__ + __PACMANII_NUMBERENTITIES__))
 		result = new QGAMES::NoMovement (def._id, def._variables);

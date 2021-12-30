@@ -525,6 +525,7 @@ void PacManII::PlayingGameState::onEnter ()
 	// Starts to play the siren...
 	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
 	assert (w != nullptr);
+	w -> setClapperBoard (true);
 	w -> playSiren (true /** forced */);
 
 	// The world is also observed, among other things to detect when it has been empty up!
@@ -553,6 +554,7 @@ void PacManII::PlayingGameState::onExit ()
 	// No more siren...
 	PacManII::World* w = dynamic_cast <PacManII::World*> (g -> activeWorld ());
 	assert (w != nullptr);
+	w -> setClapperBoard (false);
 	w -> stopSiren ();
 
 	unObserve (w);

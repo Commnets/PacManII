@@ -1,6 +1,27 @@
 #include "Maze.hpp"
-#include "Worlds.hpp"
 #include "Game.hpp"
+#include "Worlds.hpp"
+#include "Scenes.hpp"
+#include "Maps.hpp"
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Maze::nextXGridPositionFollowing 
+	(const QGAMES::MazeModel::PositionInMaze& p, unsigned x, const QGAMES::Vector& d) const
+{
+	assert (verifyDirections ({ d }));
+
+	QGAMES::MazeModel::PositionInMaze result = p;
+	bool out = false;
+	for (unsigned i = 0; i < x && !out; i++)
+	{
+		if (isInMaze (p + d))
+			result = p + d;
+		else
+			out = true;
+	}
+
+	return (result);
+}
 
 // ---
 std::vector <QGAMES::Vector> PacManII::Maze::allPossibleDirectionsAt (const PositionInMaze& p) const
@@ -109,7 +130,7 @@ QGAMES::MazeModel::PathInMaze PacManII::Maze::next2StepsToGoTo (const QGAMES::Ma
 			QGAMES::bdata pD;
 			if ((pD = nP.asVector ().distanceTo (p2.asVector ())) < mD)
 			{
-				pA = p1 + i;
+				pA = nP;
 				mD = pD;
 			}
 		}
@@ -117,6 +138,34 @@ QGAMES::MazeModel::PathInMaze PacManII::Maze::next2StepsToGoTo (const QGAMES::Ma
 
 	if (pA != QGAMES::MazeModel::_noPosition)
 		result.push_back (pA);
+
+	return (result);
+}
+
+// ---
+QGAMES::MazeModel::PathInMaze PacManII::Maze::nextXStepsToGoTo (int x, const QGAMES::MazeModel::PositionInMaze& p1, 
+			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d) const
+{
+	QGAMES::MazeModel::PathInMaze result = next2StepsToGoTo (p1, p2, d);
+	if (result.size () == 2 && result [1] != p2)
+	{
+		bool tE = false;
+		do
+		{
+			QGAMES::Vector lD = 
+				result [result.size () - 1].asVector () - result [result.size () - 2].asVector ();
+			QGAMES::MazeModel::PathInMaze pR = next2StepsToGoTo (result [result.size () - 1], p2, { lD });
+			if (pR.size () == 2)
+			{
+				if (std::find (result.begin (), result.end (), pR [1]) != result.end ())
+					result.push_back (pR [1]);
+				else
+					tE = true; // step repeated...
+			}
+			else
+				tE = true; // final point found...
+		} while (!tE);
+	}
 
 	return (result);
 }

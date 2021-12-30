@@ -6,10 +6,11 @@
 
 	<World id="50000">
 		<SetOfScenes>
-			<!-- The standard scene
+			<!-- The standards scene
 				 It is not needed to define neithr monster action blocks nor fruit ones
 				 They are included in the constructor of the scene -->
-			<SceneTemplate baseId="50000" number="100"> 
+			<!-- The blue ones -->
+			<SceneTemplate baseId="50000" number="25"> 
 				<Actions>
 				</Actions>
 				
@@ -20,7 +21,79 @@
 				</Conexions>
 
 				<Maps>
-					<Map id="50000" file="maps/map.tmx"/>
+					<Map id="50000" file="maps/normalmap_blue.tmx"/>
+				</Maps>
+
+				<Entities>  
+					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
+				</Entities>
+			</SceneTemplate>
+
+			<!-- The red ones -->
+			<SceneTemplate baseId="50025" number="25"> 
+				<Actions>
+				</Actions>
+				
+				<Attributes>
+				</Attributes>
+
+				<Conexions>
+				</Conexions>
+
+				<Maps>
+					<Map id="50025" file="maps/normalmap_red.tmx"/>
+				</Maps>
+
+				<Entities>  
+					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
+				</Entities>
+			</SceneTemplate>
+
+			<!-- The green ones -->
+			<SceneTemplate baseId="50050" number="25"> 
+				<Actions>
+				</Actions>
+				
+				<Attributes>
+				</Attributes>
+
+				<Conexions>
+				</Conexions>
+
+				<Maps>
+					<Map id="50050" file="maps/normalmap_green.tmx"/>
+				</Maps>
+
+				<Entities>  
+					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
+				</Entities>
+			</SceneTemplate>
+
+			<!-- The yellow ones -->
+			<SceneTemplate baseId="50075" number="25"> 
+				<Actions>
+				</Actions>
+				
+				<Attributes>
+				</Attributes>
+
+				<Conexions>
+				</Conexions>
+
+				<Maps>
+					<Map id="50075" file="maps/normalmap_yellow.tmx"/>
 				</Maps>
 
 				<Entities>  
@@ -44,6 +117,7 @@
 						<Attributes>
 							<Attribute id="ENTITYID" value="50010"/> 
 							<Attribute id="MONSTERNUMBER" value="0"/> 
+							<Attribute id="POINTS" value="100"/> 
 							<Attribute id="XOFFSET" value="-0.5"/> 
 							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
@@ -53,6 +127,7 @@
 						<Attributes>
 							<Attribute id="ENTITYID" value="50020"/> 
 							<Attribute id="MONSTERNUMBER" value="1"/> 
+							<Attribute id="POINTS" value="100"/> 
 							<Attribute id="XOFFSET" value="-0.5"/> 
 							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
@@ -62,6 +137,7 @@
 						<Attributes>
 							<Attribute id="ENTITYID" value="50030"/> 
 							<Attribute id="MONSTERNUMBER" value="2"/> 
+							<Attribute id="POINTS" value="100"/> 
 							<Attribute id="XOFFSET" value="-0.5"/> 
 							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
@@ -71,6 +147,7 @@
 						<Attributes>
 							<Attribute id="ENTITYID" value="50040"/> 
 							<Attribute id="MONSTERNUMBER" value="3"/> 
+							<Attribute id="POINTS" value="100"/> 
 							<Attribute id="XOFFSET" value="-0.5"/> 
 							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>

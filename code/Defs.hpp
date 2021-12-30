@@ -39,8 +39,9 @@
 #define __PACMANII_SOUNDEXTRAPAC__									50005
 #define __PACMANII_SOUNDINTERMISSION__								50006
 #define __PACMANII_SOUNDSIREN__										50007
-#define __PACMANII_SOUNDSIRENFAST__									50007
-#define __PACMANII_SOUNDSIRENVERYFAST__								50007
+#define __PACMANII_SOUNDSIRENFAST__									50008
+#define __PACMANII_SOUNDSIRENVERYFAST__								50009
+#define __PACMANII_SOUNDTHREATING__									50010
 
 // Letters
 #define __PACMANII_NEWTOURLETTERS__									60000
@@ -189,6 +190,7 @@
 #define __PACMANII_MONSTERSCENEBLOCKNUMBER__						1000
 #define __PACMANII_MONSTERSCENEBLOCKENTITYIDATTR__					"ENTITYID"
 #define __PACMANII_MONSTERSCENEBLOCKNUMBEERMONSTERATTR__			"MONSTERNUMBER"
+#define __PACMANII_MONSTERSCENEBLOCKPOINTSATTR__					"POINTS"
 #define __PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__					"XOFFSET"
 #define __PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__					"YOFFSET"
 #define __PACMANII_FRUITSCENEBLOCKBASEID__							11000
@@ -224,6 +226,8 @@
 // Related with the situation of the pacman...
 #define __PACMANII_PACMANDESTROYED__								50100
 #define __PACMANII_PACMANREACHEDGOAL__								50101
+#define __PACMANII_PACMANEATMONSTER__								50102
+#define __PACMANII_PACMANEATFRUIT__									50103
 // A ball has been eaten...
 #define __PACMANII_BALLEATEN__										50200
 // And the scene has been completed...
@@ -233,7 +237,7 @@
 #define __PACMANII_MOVEMENTDORIENTATIONCHANGED__					50203
 
 // The World and Scenes used for the game
-#define __PACMANII_WORLD__											50000
+#define __PACMANII_BASICWORLD__										50000
 #define __PACMANII_BASICSCENE__										50000
 #define __PACMANII_BASICMAP__										50000
 // Name of the standard layers every defined map has to content minimum
@@ -249,6 +253,7 @@
 
 // Buouy to stop the movement of the character
 #define __PACMANII_TOSTOPBUOYID__									0
+#define __PACMANII_TOCHASEBUOYID__									1
 
 #endif
   

@@ -27,12 +27,12 @@ namespace PacManII
 		struct Properties
 		{
 			Properties ()
-				: _entityId (0), _numberInMap (0), 
+				: _entityId (0), _numberInMap (0), _points (0),
 				  _offsetXInitPosition (__BD 0), _offsetYInitPosition (__BD 0)
 							{ }
 
-			Properties (int eId, int nM, QGAMES::bdata oX, QGAMES::bdata oY)
-				: _entityId (eId), _numberInMap (nM), 
+			Properties (int eId, int nM, int p, QGAMES::bdata oX, QGAMES::bdata oY)
+				: _entityId (eId), _numberInMap (nM), _points (p),
 				  _offsetXInitPosition (oX), _offsetYInitPosition (oY)
 							{ }
 
@@ -44,6 +44,7 @@ namespace PacManII
 
 			int _entityId;
 			int _numberInMap;
+			int _points;
 			QGAMES::bdata _offsetXInitPosition;
 			QGAMES::bdata _offsetYInitPosition;
 		};
@@ -68,10 +69,21 @@ namespace PacManII
 		virtual void finalize () override;
 
 		private:
+		__DECLARECOUNTERS__ (Counters);
+		virtual QGAMES::Counters* createCounters () override
+							{ return (new Counters); }
+		__DECLAREONOFFSWITCHES__ (OnOffSwitches)
+		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
+							{ return (new OnOffSwitches); }
+
+		private:
 		/** The properties of the action block. */
 		Properties _properties;
 
-		private:
+		/** The counters and the switches. */
+		static const int _COUNTERTOEXITHOME = 0;
+		static const int _SWITCHMOVING = 0;
+
 		// Implementation
 		Monster* _monster;
 	};
