@@ -29,14 +29,48 @@ namespace PacManII
 		class LevelDefinition final
 		{
 			public:
+			class LeaveHomeConditions final
+			{
+				public:
+				LeaveHomeConditions () 
+					: _maxSecondsToLeave (__BD 3),
+					  _dotsToLeavePerRoundAndMonster ({ {}, { 0, 0, 30, 60 } })
+							{ }
+
+				LeaveHomeConditions (QGAMES::bdata sL, const std::vector <std::vector <int>>& dL)
+					: _maxSecondsToLeave (sL),
+					  _dotsToLeavePerRoundAndMonster (dL)
+							{ }	
+
+				LeaveHomeConditions (const LeaveHomeConditions&) = default;
+
+				LeaveHomeConditions& operator = (const LeaveHomeConditions&) = default;
+
+				QGAMES::bdata maxSecondsToLeave () const
+							{ return (_maxSecondsToLeave); }
+				int dotsToLeaveFor (int nM, bool fR) const
+							{ return 
+								(fR 
+									? (nM >= (int) _dotsToLeavePerRoundAndMonster [0].size ()) 
+										? _dotsToLeavePerRoundAndMonster [0][(int) _dotsToLeavePerRoundAndMonster.size () - 1] 
+										: _dotsToLeavePerRoundAndMonster [0][nM]
+									: (nM >= (int) _dotsToLeavePerRoundAndMonster [1].size ()) 
+										? _dotsToLeavePerRoundAndMonster [1][(int) _dotsToLeavePerRoundAndMonster.size () - 1] 
+										: _dotsToLeavePerRoundAndMonster [1][nM]); }
+
+				private:
+				const QGAMES::bdata _maxSecondsToLeave;
+				const std::vector <std::vector <int>> _dotsToLeavePerRoundAndMonster;
+			};
+
 			class ScatterChaseCycle final
 			{
 				public:
 				ScatterChaseCycle ()
-					: _secondsScatter (7), _secondsChase (20)
+					: _secondsScatter (__BD 7), _secondsChase (__BD 20)
 							{ }
 
-				ScatterChaseCycle (unsigned int sS, unsigned int sC)
+				ScatterChaseCycle (QGAMES::bdata sS, QGAMES::bdata sC)
 					: _secondsScatter(sS), _secondsChase (sC)
 							{ }
 
@@ -44,15 +78,15 @@ namespace PacManII
 
 				ScatterChaseCycle& operator = (const ScatterChaseCycle&) = default;
 
-				int secondsScatter () const
+				QGAMES::bdata secondsScatter () const
 							{ return (_secondsScatter); }
-				int secondsChase () const
+				QGAMES::bdata secondsChase () const
 							{ return (_secondsChase); }
 
 				private:
 				/** Seconds running away from pacman to home,
 					and seconds chasing pacman. */
-				const unsigned int _secondsScatter, _secondsChase;
+				const QGAMES::bdata _secondsScatter, _secondsChase;
 			};
 
 			typedef std::vector <ScatterChaseCycle> ScatterChaseCycles;
@@ -61,29 +95,27 @@ namespace PacManII
 				: _worldTypeId (__PACMANII_BASICWORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
 				  _pointsBall (50), _pointsPowerBall (200), _secondsChasing (1.0f),
 				  _bonusSymbolId (0), _bonusPoints (100), _secondsBonusToAppear (10.0f), _secondsBonusToDisappear (10.0f),
-				  _scatterChaseCycles ({ ScatterChaseCycle () }),
+				  _scatterChaseCycles ({ ScatterChaseCycle () }), _leaveHomeConditions (),
 				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
 						_pacmanSpeedWhenFrighting (1.0f), _pacmanSpeedWhenEatingFrightingDots (1.0f),
 				  _ghostSpeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
-						_ghostSpeedWhenExitingHome (1.0f), _ghostSpeedWhenCrossingTunnel (1.0f),
-				  _secondsMonsterToLeaveHome (1.0f)
+						_ghostSpeedWhenExitingHome (1.0f), _ghostSpeedWhenCrossingTunnel (1.0f)
 							{ }
 
 			LevelDefinition (int wT, int sT, int mT, 
 					int pB, int pPB, double mSC, 
 					int bS, int bP, double sBA, double sBD, 
-					const ScatterChaseCycles& sC, 
+					const ScatterChaseCycles& sC, const LeaveHomeConditions& lHC,
 					double pS, double pED, double pWF, double pWEFD, 
-					double gS, double gWF, double gWE, double gWT, double sML)
+					double gS, double gWF, double gWE, double gWT)
 				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
 				  _pointsBall (pB), _pointsPowerBall (pPB), _secondsChasing (mSC),
 				  _bonusSymbolId (bS), _bonusPoints (bP), _secondsBonusToAppear (sBA), _secondsBonusToDisappear (sBD),
-				  _scatterChaseCycles (sC),
+				  _scatterChaseCycles (sC), _leaveHomeConditions (lHC),
 				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
 						_pacmanSpeedWhenFrighting (pWF), _pacmanSpeedWhenEatingFrightingDots (pWEFD),
 				  _ghostSpeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
-						_ghostSpeedWhenExitingHome (gWE), _ghostSpeedWhenCrossingTunnel (gWT),
-				  _secondsMonsterToLeaveHome (sML)
+						_ghostSpeedWhenExitingHome (gWE), _ghostSpeedWhenCrossingTunnel (gWT)
 							{ assert (_scatterChaseCycles.size () != 0); }
 
 			LevelDefinition (const LevelDefinition&) = default;
@@ -115,6 +147,8 @@ namespace PacManII
 			const ScatterChaseCycle& scatterChaseCycle (unsigned int n) const 
 							{ return (n > _scatterChaseCycles.size () 
 								? _scatterChaseCycles [_scatterChaseCycles.size () - 1] : _scatterChaseCycles [n]); }
+			const LeaveHomeConditions& leaveHomeConditions () const
+							{ return (_leaveHomeConditions); }
 			double pacmanSpeed () const 
 							{ return (_pacmanSpeed); } 
 			double pacmanSpeedWhenEatingDots () const 
@@ -131,8 +165,6 @@ namespace PacManII
 							{ return (_ghostSpeedWhenExitingHome); }
 			double ghostSpeedWhenCrossingTunnel () const 
 							{ return (_ghostSpeedWhenCrossingTunnel); }
-			double secondsMonsterToLeaveHome () const
-							{ return (_secondsMonsterToLeaveHome); }
 
 			private:
 			/** The word, the scene and the map of the level. */
@@ -155,6 +187,8 @@ namespace PacManII
 			const double _secondsBonusToDisappear;
 			/** The cycles beetween scatting and chaseing */
 			const ScatterChaseCycles _scatterChaseCycles;
+			/** The conditions to manag when th monstrs leave home. */
+			const LeaveHomeConditions _leaveHomeConditions;
 			// Proportion eover the maximum possible...
 			/** Usual Pacman speed. */
 			const double _pacmanSpeed; 
@@ -172,8 +206,6 @@ namespace PacManII
 			const double _ghostSpeedWhenExitingHome;
 			/** Monster's speed when they are facind the tunnel. */
 			const double _ghostSpeedWhenCrossingTunnel;
-			/** Seconds the monsters take to try to leave home afteer beginning. */
-			const double _secondsMonsterToLeaveHome;
 		};
 
 		typedef std::vector <LevelDefinition> LevelDefinitions;

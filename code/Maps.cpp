@@ -6,33 +6,44 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 		const QGAMES::MapProperties& p)
 	: QGAMES::TiledMap (c, l, w, h, d, tW, tH, tD, p),
 	  _maze (PacManII::Maze::generateEmptyMaze (w, h)), // It will be assigned later, in a more complex formula...
-	  _backgroundLayer (nullptr),
-	  _locationsLayer (nullptr),
+	  _artistsLocationsLayer (nullptr),
+	  _mazeLocationsLayer (nullptr),
+	  _mazeZonesLayer (nullptr),
 	  _directionsLayer (nullptr),
 	  _mazeLayer (nullptr),
+	  _backgroundLayer (nullptr),
 	  _pacmanInitialPositions (), 
 	  _monsterInitialPositions (), 
 	  _monsterRunAwayPositions (),
 	  _monsterExitingHomePosition (QGAMES::MazeModel::_noPosition),
-	  _fruitPosition (QGAMES::MazeModel::_noPosition)
+	  _fruitPosition (QGAMES::MazeModel::_noPosition),
+	  _mazeZones ()
 { 
 	for (auto i : layers ())
 	{
-		assert (dynamic_cast <PacManII::BackgroundLayer*> (i) != nullptr ||
-				dynamic_cast <PacManII::LocationsLayer*> (i) != nullptr || 
+		assert (dynamic_cast <PacManII::ArtistsLocationsLayer*> (i) != nullptr || 
+				dynamic_cast <PacManII::MazeLocationsLayer*> (i) != nullptr ||
+				dynamic_cast <PacManII::MazeZonesLayer*> (i) != nullptr ||
 				dynamic_cast <PacManII::DirectionsLayer*> (i) != nullptr || 
-				dynamic_cast <PacManII::MazeLayer*> (i) != nullptr);
+				dynamic_cast <PacManII::MazeLayer*> (i) != nullptr ||
+				dynamic_cast <PacManII::BackgroundLayer*> (i) != nullptr);
 
-		if (dynamic_cast <PacManII::BackgroundLayer*> (i) != nullptr)
+		if (dynamic_cast <PacManII::ArtistsLocationsLayer*> (i) != nullptr)
 		{
-			assert (_backgroundLayer == nullptr); // Only one...
-			_backgroundLayer = dynamic_cast <PacManII::BackgroundLayer*> (i);
+			assert (_artistsLocationsLayer == nullptr); // Only one...
+			_artistsLocationsLayer = dynamic_cast <PacManII::ArtistsLocationsLayer*> (i);
 		}
 		else 
-		if (dynamic_cast <PacManII::LocationsLayer*> (i) != nullptr)
+		if (dynamic_cast <PacManII::MazeLocationsLayer*> (i) != nullptr)
 		{
-			assert (_locationsLayer == nullptr); // Only one...
-			_locationsLayer = dynamic_cast <PacManII::LocationsLayer*> (i);
+			assert (_mazeLocationsLayer == nullptr); // Only one...
+			_mazeLocationsLayer = dynamic_cast <PacManII::MazeLocationsLayer*> (i);
+		}
+		else 
+		if (dynamic_cast <PacManII::MazeZonesLayer*> (i) != nullptr)
+		{
+			assert (_mazeZonesLayer == nullptr); // Only one...
+			_mazeZonesLayer = dynamic_cast <PacManII::MazeZonesLayer*> (i);
 		}
 		else 
 		if (dynamic_cast <PacManII::DirectionsLayer*> (i) != nullptr)
@@ -46,11 +57,21 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 			assert (_mazeLayer == nullptr); // Only one...
 			_mazeLayer = dynamic_cast <PacManII::MazeLayer*> (i);
 		}
+		else
+		if (dynamic_cast <PacManII::BackgroundLayer*> (i) != nullptr)
+		{
+			assert (_backgroundLayer == nullptr); // Only one...
+			_backgroundLayer = dynamic_cast <PacManII::BackgroundLayer*> (i);
+		}
 	}
 
 	// ...and one of each...
-	assert (_backgroundLayer != nullptr && _locationsLayer != nullptr &&
-			_directionsLayer != nullptr && _mazeLayer != nullptr); // There must be one of each minimum...
+	assert (_artistsLocationsLayer != nullptr && 
+			_mazeLocationsLayer != nullptr &&
+			_mazeZonesLayer != nullptr &&
+			_directionsLayer != nullptr && 
+			_mazeLayer != nullptr &&
+			_backgroundLayer != nullptr); // There must be one of each minimum...
 
 	// Generates the map...
 	_maze = PacManII::Maze::generateMazeFrom (w, h, this);
@@ -82,113 +103,61 @@ void PacManII::Map::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& 
 }
 
 // ---
-bool PacManII::Map::isPositionATunnelPathWay (const QGAMES::MazeModel::PositionInMaze& pM) const
-{
-	assert (_locationsLayer != nullptr);
-
-	bool result = false;
-	for (QGAMES::Positions::const_iterator i = _locationsLayer -> enteringExitingTunnelPathPositions ().begin ();
-			i != _locationsLayer -> enteringExitingTunnelPathPositions ().end () && !result; i++)
-		result = mapPositionToMazePosition ((*i)) == pM;
-	return (result);
-}
-
-// ---
-QGAMES::Vector PacManII::Map::directionToEnterMonsterHome (int nM) const
-{
-	assert (_locationsLayer != nullptr &&
-			!_locationsLayer -> monsterInitialPositions ().empty () &&
-			_locationsLayer -> monsterExitingHomePosition () != QGAMES::Position::_noPoint &&
-			_locationsLayer -> monsterInitialPosition (nM) != QGAMES::Position::_noPoint);
-
-	QGAMES::Vector result = QGAMES::Vector::_noPoint;
-
-	QGAMES::MazeModel::PathInMaze way = 
-		_maze.next2StepsToGoTo
-			(mapPositionToMazePosition (_locationsLayer -> monsterExitingHomePosition ()), 
-			 mapPositionToMazePosition (_locationsLayer -> monsterInitialPosition (nM)), { });
-	if (way.size () > 1)
-		result = way [1].asVector () - way [0].asVector ();
-
-	return (result);
-}
-
-// ---
-QGAMES::Vector PacManII::Map::directorToStartMonsterMovement (int nM) const
-{
-	assert (_locationsLayer != nullptr &&
-			!_locationsLayer -> monsterInitialPositions ().empty () &&
-			_locationsLayer -> monsterExitingHomePosition () != QGAMES::Position::_noPoint &&
-			_locationsLayer -> monsterInitialPosition (nM) != QGAMES::Position::_noPoint);
-
-	QGAMES::Vector result = QGAMES::Vector::_noPoint;
-
-	QGAMES::MazeModel::PathInMaze way = 
-		_maze.next2StepsToGoTo
-			(mapPositionToMazePosition (_locationsLayer -> monsterInitialPosition (nM)), 
-			 mapPositionToMazePosition (_locationsLayer -> monsterExitingHomePosition ()), { });
-	if (way.size () > 1)
-		result = way [1].asVector () - way [0].asVector ();
-
-	return (result);
-}
-
-// ---
 const QGAMES::MazeModel::PositionInMaze& PacManII::Map::pacmanInitialPosition (int nP) const
 {
-	assert (_locationsLayer != nullptr);
+	assert (_artistsLocationsLayer != nullptr);
 
 	std::map <int, QGAMES::MazeModel::PositionInMaze>::const_iterator pP;
 	if ((pP = _pacmanInitialPositions.find (nP)) != _pacmanInitialPositions.end ())
 		return ((*pP).second);
 
-	return (_pacmanInitialPositions [nP] = mapPositionToMazePosition (_locationsLayer -> pacmanInitialPosition (nP)));
+	return (_pacmanInitialPositions [nP] = mapPositionToMazePosition (_artistsLocationsLayer -> pacmanInitialPosition (nP)));
 }
 
 // ---
 const QGAMES::MazeModel::PositionInMaze& PacManII::Map::monsterInitialPosition (int nM) const
 {
-	assert (_locationsLayer != nullptr);
+	assert (_artistsLocationsLayer != nullptr);
 
 	std::map <int, QGAMES::MazeModel::PositionInMaze>::const_iterator mP;
 	if ((mP = _monsterInitialPositions.find (nM)) != _monsterInitialPositions.end ())
 		return ((*mP).second);
 
-	return (_monsterInitialPositions [nM] = mapPositionToMazePosition (_locationsLayer -> monsterInitialPosition (nM)));
+	return (_monsterInitialPositions [nM] = mapPositionToMazePosition (_artistsLocationsLayer -> monsterInitialPosition (nM)));
 }
 
 // ---
 const QGAMES::MazeModel::PositionInMaze& PacManII::Map::monsterRunAwayPosition (int nM) const
 {
-	assert (_locationsLayer != nullptr);
+	assert (_artistsLocationsLayer != nullptr);
 
 	std::map <int, QGAMES::MazeModel::PositionInMaze>::const_iterator mP;
 	if ((mP = _monsterRunAwayPositions.find (nM)) != _monsterRunAwayPositions.end ())
 		return ((*mP).second);
 
-	return (_monsterRunAwayPositions [nM] = mapPositionToMazePosition (_locationsLayer -> monsterRunAwayPosition (nM)));
+	return (_monsterRunAwayPositions [nM] = mapPositionToMazePosition (_artistsLocationsLayer -> monsterRunAwayPosition (nM)));
 }
 
 // ---
 const QGAMES::MazeModel::PositionInMaze& PacManII::Map::monsterExitingHomePosition () const
 {
-	assert (_locationsLayer != nullptr);
+	assert (_mazeLocationsLayer != nullptr);
 
 	if (_monsterExitingHomePosition != QGAMES::MazeModel::_noPosition)
 		return (_monsterExitingHomePosition);
 
-	return (_monsterExitingHomePosition = mapPositionToMazePosition (_locationsLayer -> monsterExitingHomePosition ()));
+	return (_monsterExitingHomePosition = mapPositionToMazePosition (_mazeLocationsLayer -> monsterExitingHomePosition ()));
 }
 
 // ---
 const QGAMES::MazeModel::PositionInMaze& PacManII::Map::fruitPosition () const
 {
-	assert (_locationsLayer != nullptr);
+	assert (_artistsLocationsLayer != nullptr);
 
 	if (_fruitPosition != QGAMES::MazeModel::_noPosition)
 		return (_fruitPosition);
 
-	return (_fruitPosition = mapPositionToMazePosition (_locationsLayer -> fruitPosition ()));
+	return (_fruitPosition = mapPositionToMazePosition (_artistsLocationsLayer -> fruitPosition ()));
 }
 
 // ---
@@ -240,7 +209,7 @@ void PacManII::Map::initialize ()
 }
 
 // ---
-const std::map <int, QGAMES::Position>& PacManII::LocationsLayer::pacmanInitialPositions () const
+const std::map <int, QGAMES::Position>& PacManII::ArtistsLocationsLayer::pacmanInitialPositions () const
 {
 	if (!_pacmanInitialPositions.empty ())
 		return (_pacmanInitialPositions);
@@ -256,24 +225,27 @@ const std::map <int, QGAMES::Position>& PacManII::LocationsLayer::pacmanInitialP
 	_pacmanInitialPositions = { };
 	for (auto i : tiles ())
 	{
-		std::vector <int>::const_iterator j = 
-			std::find (mB -> pacmanHomeFrames ().begin (), mB -> pacmanHomeFrames ().end (), i -> numberFrame ());
-		if (j != mB -> pacmanHomeFrames ().end ())
-			_pacmanInitialPositions [((*j) - mB -> pacmanHomeFrames () [0])] = tilePosition (i);
+		if (dynamic_cast <QGAMES::NullTile*> (i) == nullptr)
+		{
+			std::vector <int>::const_iterator j = 
+				std::find (mB -> pacmanHomeFrames ().begin (), mB -> pacmanHomeFrames ().end (), i -> numberFrame ());
+			if (j != mB -> pacmanHomeFrames ().end ())
+				_pacmanInitialPositions [((*j) - mB -> pacmanHomeFrames () [0])] = tilePosition (i);
+		}
 	}
 
 	return (_pacmanInitialPositions);
 }
 
 // ---
-const QGAMES::Position& PacManII::LocationsLayer::pacmanInitialPosition (int nP) const
+const QGAMES::Position& PacManII::ArtistsLocationsLayer::pacmanInitialPosition (int nP) const
 { 
 	std::map <int, QGAMES::Position>::const_iterator i = pacmanInitialPositions ().find (nP);
 	return ((i != pacmanInitialPositions ().end ()) ? (*i).second : QGAMES::Position::_noPoint);
 }
 
 // ---
-const std::map <int, QGAMES::Position>& PacManII::LocationsLayer::monsterInitialPositions () const
+const std::map <int, QGAMES::Position>& PacManII::ArtistsLocationsLayer::monsterInitialPositions () const
 {
 	if (!_monsterInitialPositions.empty ())
 		return (_monsterInitialPositions);
@@ -289,24 +261,27 @@ const std::map <int, QGAMES::Position>& PacManII::LocationsLayer::monsterInitial
 	_monsterInitialPositions = { };
 	for (auto i : tiles ())
 	{
-		std::vector <int>::const_iterator j = 
-			std::find (mB -> monsterHomeFrames ().begin (), mB -> monsterHomeFrames ().end (), i -> numberFrame ());
-		if (j != mB -> monsterHomeFrames ().end ())
-			_monsterInitialPositions [((*j) - mB -> monsterHomeFrames () [0])] = tilePosition (i);
+		if (dynamic_cast <QGAMES::NullTile*> (i) == nullptr)
+		{
+			std::vector <int>::const_iterator j = 
+				std::find (mB -> monsterHomeFrames ().begin (), mB -> monsterHomeFrames ().end (), i -> numberFrame ());
+			if (j != mB -> monsterHomeFrames ().end ())
+				_monsterInitialPositions [((*j) - mB -> monsterHomeFrames () [0])] = tilePosition (i);
+		}
 	}
 
 	return (_monsterInitialPositions);
 }
 
 // ---
-const QGAMES::Position& PacManII::LocationsLayer::monsterInitialPosition (int nM) const
+const QGAMES::Position& PacManII::ArtistsLocationsLayer::monsterInitialPosition (int nM) const
 { 
 	std::map <int, QGAMES::Position>::const_iterator i = monsterInitialPositions ().find (nM);
 	return ((i != monsterInitialPositions ().end ()) ? (*i).second : QGAMES::Position::_noPoint);
 }
 
 // ---
-const std::map <int, QGAMES::Position>& PacManII::LocationsLayer::monsterRunAwayPositions () const
+const std::map <int, QGAMES::Position>& PacManII::ArtistsLocationsLayer::monsterRunAwayPositions () const
 {
 	if (!_monsterRunAwayPositions.empty ())
 		return (_monsterRunAwayPositions);
@@ -322,64 +297,27 @@ const std::map <int, QGAMES::Position>& PacManII::LocationsLayer::monsterRunAway
 	_monsterRunAwayPositions = { };
 	for (auto i : tiles ())
 	{
-		std::vector <int>::const_iterator j = 
-			std::find (mB -> monsterRunAwayFrames ().begin (), mB -> monsterRunAwayFrames ().end (), i -> numberFrame ());
-		if (j != mB -> monsterRunAwayFrames ().end ())
-			_monsterRunAwayPositions [((*j) - mB -> monsterRunAwayFrames () [0])] = tilePosition (i);
+		if (dynamic_cast <QGAMES::NullTile*> (i) == nullptr)
+		{
+			std::vector <int>::const_iterator j = 
+				std::find (mB -> monsterRunAwayFrames ().begin (), mB -> monsterRunAwayFrames ().end (), i -> numberFrame ());
+			if (j != mB -> monsterRunAwayFrames ().end ())
+				_monsterRunAwayPositions [((*j) - mB -> monsterRunAwayFrames () [0])] = tilePosition (i);
+		}
 	}
 
 	return (_monsterRunAwayPositions);
 }
 
 // ---
-const QGAMES::Position& PacManII::LocationsLayer::monsterRunAwayPosition (int nM) const
+const QGAMES::Position& PacManII::ArtistsLocationsLayer::monsterRunAwayPosition (int nM) const
 { 
 	std::map <int, QGAMES::Position>::const_iterator i = monsterRunAwayPositions ().find (nM);
 	return ((i != monsterRunAwayPositions ().end ()) ? (*i).second : QGAMES::Position::_noPoint);
 }
 
 // ---
-const QGAMES::Positions& PacManII::LocationsLayer::enteringExitingTunnelPathPositions () const
-{
-	if (!_enteringExitingTunnelPathPositions.empty ())
-		return (_enteringExitingTunnelPathPositions);
-
-	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
-	assert (g != nullptr);
-	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
-	assert (mB != nullptr);
-
-	_enteringExitingTunnelPathPositions = { };
-	for (auto i : tiles ())
-	{
-		if (i -> numberFrame () == mB -> tunnelPathEntryExitFrame ())
-			_enteringExitingTunnelPathPositions.push_back (tilePosition (i));
-	}
-
-	return (_enteringExitingTunnelPathPositions);
-}
-
-// ---
-const QGAMES::Position& PacManII::LocationsLayer::monsterExitingHomePosition () const
-{
-	if (_monsterExitingHomePosition != QGAMES::Position::_noPoint)
-		return (_monsterExitingHomePosition);
-
-	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
-	assert (g != nullptr);
-	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
-	assert (mB != nullptr);
-
-	for (QGAMES::Tiles::const_iterator i = tiles ().begin (); 
-		i != tiles ().end () && _monsterExitingHomePosition == QGAMES::Position::_noPoint; i++)
-		if ((*i) -> numberFrame () == mB -> monsterExitingHomeFrame ())
-			_monsterExitingHomePosition = tilePosition ((*i));
-
-	return (_monsterExitingHomePosition);
-}
-
-// ---
-const QGAMES::Position& PacManII::LocationsLayer::fruitPosition () const
+const QGAMES::Position& PacManII::ArtistsLocationsLayer::fruitPosition () const
 {
 	if (_fruitPosition != QGAMES::Position::_noPoint)
 		return (_fruitPosition);
@@ -395,6 +333,25 @@ const QGAMES::Position& PacManII::LocationsLayer::fruitPosition () const
 			_fruitPosition = tilePosition ((*i));
 
 	return (_fruitPosition);
+}
+
+// ---
+const QGAMES::Position& PacManII::MazeLocationsLayer::monsterExitingHomePosition () const
+{
+	if (_monsterExitingHomePosition != QGAMES::Position::_noPoint)
+		return (_monsterExitingHomePosition);
+
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g != nullptr);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB != nullptr);
+
+	for (QGAMES::Tiles::const_iterator i = tiles ().begin (); 
+		i != tiles ().end () && _monsterExitingHomePosition == QGAMES::Position::_noPoint; i++)
+		if ((*i) -> numberFrame () == mB -> monsterExitingHomeFrame ())
+			_monsterExitingHomePosition = tilePosition ((*i));
+
+	return (_monsterExitingHomePosition);
 }
 
 // ---

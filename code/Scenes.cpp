@@ -1,4 +1,5 @@
 #include "Scenes.hpp"
+#include "SceneActionBlocks.hpp"
 #include "Maps.hpp"
 #include "Game.hpp"
 
@@ -8,7 +9,13 @@ PacManII::Scene::Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Conne
 	: QGAMES::Scene (c, m, cn, p, ePL),
 	  _clapperBoard (false),
 	  _percentageCleaned (__BD 0),
-	  _firstTimeUpdateMethod (true)
+	  _totalNumberBallsToEat (-1), // initialized later
+	  _totalNumberBallsEaten (-1), // initialized later
+	  _numberBallsEaten (-1), // initialized later
+	  _firstTimeUpdateMethod (true),
+	  _firstRound (true),
+	  _monsterActionBlocks (),
+	  _numberMonstersMoving ()
 {
 #ifndef NDEBUG
 	for (auto i : maps ())
@@ -45,17 +52,23 @@ void PacManII::Scene::stopBlinking ()
 // ---
 int PacManII::Scene::maxNumberBallsToEat () const
 {
+	if (_totalNumberBallsToEat != -1)
+		return (_totalNumberBallsToEat);
+
 	// Only over the actve map if any...
 	const PacManII::Map* mp = dynamic_cast <const PacManII::Map*> (activeMap ());
-	return ((mp != nullptr) ? mp -> maxNumberBallsToEat () : 0);
+	return (_totalNumberBallsToEat = (mp != nullptr) ? mp -> maxNumberBallsToEat () : 0);
 }
 
 // ---
 int PacManII::Scene::numberBallsEaten () const
 {
+	if (_totalNumberBallsEaten != -1)
+		return (_totalNumberBallsEaten);
+
 	// Only over the actve map if any...
 	const PacManII::Map* mp = dynamic_cast <const PacManII::Map*> (activeMap ());
-	return ((mp != nullptr) ? mp -> numberBallsEaten () : 0);
+	return (_totalNumberBallsEaten = (mp != nullptr) ? mp -> numberBallsEaten () : 0);
 }
 
 // ---
@@ -101,17 +114,27 @@ void PacManII::Scene::initialize ()
 	// The scene has to be initialized just after characters are added...
 	QGAMES::Scene::initialize ();
 
-	_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
+	_totalNumberBallsToEat = maxNumberBallsToEat ();
+	_totalNumberBallsEaten = numberBallsEaten ();
+	_numberBallsEaten = 0;
+	_percentageCleaned = __BD _totalNumberBallsEaten / __BD _totalNumberBallsToEat;
+	_firstRound = _totalNumberBallsEaten == 0; // In other circunstances it is not the first round...
 
 	reStartAllCounters ();
 	reStartAllOnOffSwitches ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 	assert (g != nullptr);
+	const PacManII::DataGame::LevelDefinition& lD = g -> levelDefinition (g -> level ());
 	const PacManII::DataGame::LevelDefinition::ScatterChaseCycle& sCC = 
-		g -> levelDefinition (g -> level ()).scatterChaseCycle (counter (_COUNTERMONSTERCHASINGCYCLES) -> value ());
-	counter (_COUNTERMONSTERSCHASING) -> initialize (sCC.secondsChase () * g -> framesPerSecond (), 0, true, false);
-	counter (_COUNTERMONSTERSRUNNINGAWAY) -> initialize (sCC.secondsScatter () * g -> framesPerSecond (), 0, true, false);
+		lD.scatterChaseCycle (counter (_COUNTERMONSTERCHASINGCYCLES) -> value ());
+	const PacManII::DataGame::LevelDefinition::LeaveHomeConditions& lHC = lD.leaveHomeConditions ();
+	counter (_COUNTERMONSTERSCHASING) -> initialize 
+		((int) (sCC.secondsChase () * __BD g -> framesPerSecond ()), 0, true, false);
+	counter (_COUNTERMONSTERSRUNNINGAWAY) -> initialize 
+		((int) (sCC.secondsScatter () * __BD g -> framesPerSecond ()), 0, true, false);
+	counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> initialize 
+		((int) (lHC.maxSecondsToLeave () * __BD g -> framesPerSecond ()), 0, true, true);
 
 	_firstTimeUpdateMethod = true;
 }
@@ -125,16 +148,32 @@ void PacManII::Scene::updatePositions ()
 	{
 		_firstTimeUpdateMethod = false;
 
+		// Transmit to all monsters reference to th others
+		// Some of thm could need those for e.g. calculate the target position
 		std::vector <PacManII::Artist*> rf = { };
 		for (auto i : characters ())
 			if (dynamic_cast <PacManII::Artist*> (i.second) != nullptr)
 				rf.push_back (static_cast <PacManII::Artist*> (i.second));
 		for (auto i : rf) // All are transmited to the rest...and they will decide whether to accept them, part or none...
 			i -> setReferenceArtists (rf);
+
+		_monsterActionBlocks = { };
+		_numberMonstersMoving = { };
+		for (auto i : actionBlocks ())
+			if (dynamic_cast <PacManII::MonsterSceneActionBlock*> (i) != nullptr)
+				_monsterActionBlocks.push_back (static_cast <PacManII::MonsterSceneActionBlock*> (i));
 	}
 
 	if (!_clapperBoard)
 		return; // It is not still working...
+
+	// This piece of code is to control when and who (monster) has to start the movement
+	// There is a general timer
+	// Any time, the timer gets the limit, the next monster is launched
+	// The value of this counter is determined by the level!
+	// When all monsters are moving, then this piece of code is jumped!
+	if (!onOffSwitch (_SWITCHALLMONSTERSMOVING) -> isOn () && counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> isEnd ())
+		onOffSwitch (_SWITCHALLMONSTERSMOVING) -> set (!launchNextMonster ());
 
 	// Deal with the thraten state!
 	if (onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn () &&
@@ -154,16 +193,18 @@ void PacManII::Scene::updatePositions ()
 		{
 			onOffSwitch (_SWITCHMONSTERSCHASING) -> set (false);
 
+			setMonstersChasing (false);
+
 			counter (_COUNTERMONSTERCHASINGCYCLES) -> isEnd (); // To add 1...
 
 			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 			assert (g != nullptr);
 			const PacManII::DataGame::LevelDefinition::ScatterChaseCycle& sCC = 
 				g -> levelDefinition (g -> level ()).scatterChaseCycle (counter (_COUNTERMONSTERCHASINGCYCLES) -> value ());
-			counter (_COUNTERMONSTERSCHASING) -> initialize (sCC.secondsChase () * g -> framesPerSecond (), 0, true, false);
-			counter (_COUNTERMONSTERSRUNNINGAWAY) -> initialize (sCC.secondsScatter () * g -> framesPerSecond (), 0, true, false);
-
-			setMonstersChasing (false);
+			counter (_COUNTERMONSTERSCHASING) -> initialize 
+				((int) (sCC.secondsChase () * __BD g -> framesPerSecond ()), 0, true, false);
+			counter (_COUNTERMONSTERSRUNNINGAWAY) -> initialize 
+				((int) (sCC.secondsScatter () * __BD g -> framesPerSecond ()), 0, true, false);
 		}
 	}
 	else
@@ -191,12 +232,21 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_BALLEATEN__)
 	{
+		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+		assert (g != nullptr);
 		assert (evnt.data () != nullptr); // It shouldn't but just in case...
-		if (static_cast <PacManII::TilePath*> (evnt.data ()) -> hasPower ()) // Take care with this instruction...
-		{
-			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-			assert (g != nullptr);
 
+		counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> initialize (); // Starts back any time a boll is eaten...
+
+		_totalNumberBallsEaten++; 
+		_numberBallsEaten++;
+		_percentageCleaned = __BD _totalNumberBallsEaten / __BD _totalNumberBallsToEat;
+
+		playSiren (); // The sound of the siren can change...
+
+		// If the ball eaten has power, the status of the scsne changes!
+		if (static_cast <PacManII::TilePath*> (evnt.data ()) -> hasPower ()) 
+		{
 			onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> set (true);
 
 			counter (_COUNTERMONSTERSBEINGTHREATEN) -> initialize  
@@ -206,11 +256,10 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 
 			game () -> soundBuilder () -> sound (__PACMANII_SOUNDTHREATING__) -> play (__QGAMES_GAMESOUNDCHANNEL__);
 		}
-
-		_percentageCleaned = __BD numberBallsEaten () / __BD maxNumberBallsToEat ();
-
-		playSiren (); // The sound of the siren can change...
 	}
+	else
+	if (evnt.code () == __PACMANII_MONSTERSTARTEDTOMOVE__)
+		_numberMonstersMoving.push_back (static_cast <PacManII::MonsterSceneActionBlock*> (evnt.data ()) -> monsterNumber ());
 	else
 		notify (QGAMES::Event (evnt.code (), this, evnt.values ()));
 
@@ -225,6 +274,8 @@ __IMPLEMENTCOUNTERS__ (PacManII::Scene::Counters)
 	addCounter (new QGAMES::Counter (_COUNTERMONSTERSRUNNINGAWAY, 1, 0, true, false));
 	addCounter (new QGAMES::Counter (_COUNTERMONSTERCHASINGCYCLES, 999999 /** Almost infinite. */, 0, true, false));
 	addCounter (new QGAMES::Counter (_COUNTERMONSTERSBEINGTHREATEN, 1, 0, true, false));
+	addCounter (new QGAMES::Counter (_COUNTERMONSTERSTIMETOLEAVEHOME, 1, 0, true, false));
+	addCounter (new QGAMES::Counter (_COUNTERMONSTERTOLEAVE, 999999 /** Never ends. */, 0, true, false));
 }
 
 // ---
@@ -232,6 +283,7 @@ __IMPLEMENTONOFFSWITCHES__ (PacManII::Scene::OnOffSwitches)
 {
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHMONSTERSCHASING, false));
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHMONSTERSBEINGTHREATEN, false));
+	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHALLMONSTERSMOVING, false));
 }
 
 // ---
@@ -248,4 +300,21 @@ void PacManII::Scene::setMonstersBeingThreaten (bool o)
 	for (auto i : characters ())
 		if (dynamic_cast <PacManII::Monster*> (i.second) != nullptr)
 			(static_cast <PacManII::Monster*> (i.second)) -> toBeThreaten (o);
+}
+
+// ---
+bool PacManII::Scene::launchNextMonster ()
+{
+	int nMN = -1;
+	do
+	{
+		nMN = counter (_COUNTERMONSTERTOLEAVE) -> value ();
+		counter (_COUNTERMONSTERTOLEAVE) -> isEnd ();
+	} while (std::find (_numberMonstersMoving.begin (), _numberMonstersMoving.end (), nMN) != _numberMonstersMoving.end ());
+
+	bool atLeastOne = false;
+	for (auto i : _monsterActionBlocks)
+		atLeastOne |= i -> timeToStart (nMN /** adds one to the number of monster. */);
+
+	return (atLeastOne);
 }

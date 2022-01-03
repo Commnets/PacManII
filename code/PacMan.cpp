@@ -84,7 +84,7 @@ void PacManII::PacMan::initialize ()
 	PacManII::Artist::initialize ();
 
 	setOrientation (QGAMES::Vector (__BD 1, __BD 0, __BD 0));
-	setStatus (PacManII::PacMan::Status::_NOTDEFINED);
+	toStand ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 	assert (g != nullptr);
@@ -155,7 +155,9 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 			if (mter != nullptr && nearEnough)
 			{
 				if (mter -> isDangerous ())
-					QGAMES::Event (__PACMANII_PACMANDESTROYED__, this);
+				{
+//					QGAMES::Event (__PACMANII_PACMANDESTROYED__, this);
+				}
 				else
 				{
 					PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
@@ -196,6 +198,7 @@ void PacManII::PacMan::setStatus (const PacManII::PacMan::Status& st)
 	// In the case of pacman all changes among types of status are allowed
 	// It is not the case in Monster...
 	
+	_lastStatus = st;
 	_status = st;
 	
 	switch (st)
@@ -239,7 +242,7 @@ void PacManII::PacMan::whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& 
 {
 	setOrientation (d);
 	setStateToStandLookingTo (orientation ()); // Looking to the last direction...
-	setMove (QGAMES::Vector::_cero); // ...but not moving... 
+	setMove (orientation ()); // ...but not moving... (although oriented to the last position)
 	_pathInMaze = { }; // ..and with no path to follow
 	changeDirectionWhenPossibleTo (QGAMES::Vector::_cero); // ...finally it stops!
 }
@@ -250,6 +253,7 @@ void PacManII::PacMan::whatToDoWhenMovementStatusIsRequested (const QGAMES::Vect
 	setOrientation (d); // Look to..
 	setStateToMoveTo (orientation ()); // ..with the right aspect...
 	setMove (orientation ()); // ...and moving also towards there...
+	recalculatePathInMaze (); // ...and with a new path
 	adaptSpeed (); // That depends on many many things...
 }
 
@@ -339,22 +343,33 @@ void PacManII::PacMan::adaptSpeed ()
 }
 
 // ---
-QGAMES::MazeModel::PathInMaze& PacManII::PacMan::recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d)
+QGAMES::MazeModel::PathInMaze& PacManII::PacMan::recalculatePathInMaze (const QGAMES::Vector& mD)
 {
-	// Tak into account that pacman can't enter monster's home
-	// So if it is at monster enter home and the direction selected if just to enter...
-	QGAMES::Vector dirMonstersHome = QGAMES::Vector::_noPoint;
-	bool atEntersMonstersHome = (currentMazePosition () == pMap () -> monsterExitingHomePosition ());
-	if (atEntersMonstersHome)
-		dirMonstersHome = pMap () -> directionToEnterMonsterHome (0); // Whoever
+	// The mandatory direction is not takn into account ever
 
-	// ...the movement won't be allowed!
+	// Calculate whether the pacman is or not at the entry of monster's home
+	// and if it is, what is the direction to enter, because it has to be avoided ever
+	QGAMES::Vector dirMonstersHome = QGAMES::Vector::_noPoint; // By default it doesn't exit!
+	if ((currentMazePosition () == pMap () -> monsterExitingHomePosition ()))
+	{
+		int sz = 0;
+		if ((sz = (int) pMap () -> maze ().positionsForZone (__PACMANII_MAZEMONSTERSHOMEZONE__).size ()) != 0)
+		{
+			QGAMES::MazeModel::PathInMaze pE = pMap () -> maze ().next2StepsToGoTo 
+				(currentMazePosition (), pMap () -> maze ().positionsForZone (__PACMANII_MAZEMONSTERSHOMEZONE__)[sz >> 1], { });
+			if ((int) pE.size () > 1)
+				dirMonstersHome = pE [1].asVector () - pE [0].asVector ();
+		}
+	}
+
 	QGAMES::Vector dir = direction ();
 	if (isMoving () && 
 		_nextDirectionWhenPossible != QGAMES::Vector::_cero &&
-		(!atEntersMonstersHome || (atEntersMonstersHome && _nextDirectionWhenPossible != dirMonstersHome)) &&
+		(dirMonstersHome == QGAMES::Vector::_noPoint || 
+		 (dirMonstersHome != QGAMES::Vector::_noPoint && _nextDirectionWhenPossible != dirMonstersHome)) &&
 		pMap () -> maze ().isPossibleToMoveTo (currentMazePosition (), _nextDirectionWhenPossible))
 		dir = _nextDirectionWhenPossible;
+
 	QGAMES::MazeModel::PathInMaze pth = pMap () -> maze ().limitPathFromFollowing (currentMazePosition (), dir);
 
 	int i = 0;

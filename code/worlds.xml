@@ -118,8 +118,6 @@
 							<Attribute id="ENTITYID" value="50010"/> 
 							<Attribute id="MONSTERNUMBER" value="0"/> 
 							<Attribute id="POINTS" value="100"/> 
-							<Attribute id="XOFFSET" value="-0.5"/> 
-							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
 					</Action>
 					<!-- Blinky -->
@@ -128,8 +126,6 @@
 							<Attribute id="ENTITYID" value="50020"/> 
 							<Attribute id="MONSTERNUMBER" value="1"/> 
 							<Attribute id="POINTS" value="100"/> 
-							<Attribute id="XOFFSET" value="-0.5"/> 
-							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
 					</Action>
 					<!-- Pinky -->
@@ -138,8 +134,6 @@
 							<Attribute id="ENTITYID" value="50030"/> 
 							<Attribute id="MONSTERNUMBER" value="2"/> 
 							<Attribute id="POINTS" value="100"/> 
-							<Attribute id="XOFFSET" value="-0.5"/> 
-							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
 					</Action>
 					<!-- Clyde -->
@@ -148,8 +142,6 @@
 							<Attribute id="ENTITYID" value="50040"/> 
 							<Attribute id="MONSTERNUMBER" value="3"/> 
 							<Attribute id="POINTS" value="100"/> 
-							<Attribute id="XOFFSET" value="-0.5"/> 
-							<Attribute id="YOFFSET" value="0"/> 
 						</Attributes>
 					</Action>
 					

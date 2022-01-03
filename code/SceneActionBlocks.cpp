@@ -6,8 +6,7 @@
 
 // ---
 PacManII::MonsterSceneActionBlock::Properties::Properties (const QGAMES::SceneActionBlockProperties& prps)
-	: _entityId (0), _numberInMap (0), 
-	  _offsetXInitPosition (__BD 0), _offsetYInitPosition (__BD 0)
+	: _entityId (0), _numberInMap (0)
 {
 	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKENTITYIDATTR__)) != prps.end ())
 		_entityId = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKENTITYIDATTR__))).second.c_str ());
@@ -15,12 +14,20 @@ PacManII::MonsterSceneActionBlock::Properties::Properties (const QGAMES::SceneAc
 		_numberInMap = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKNUMBEERMONSTERATTR__))).second.c_str ());
 	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKPOINTSATTR__)) != prps.end ())
 		_points = std::atoi ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKPOINTSATTR__))).second.c_str ());
-	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__)) != prps.end ())
-		_offsetXInitPosition = __BD (std::atof ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKXOFFSETATTR__))).second.c_str ()));
-	if (prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__)) != prps.end ())
-		_offsetYInitPosition = __BD (std::atof ((*prps.find (std::string (__PACMANII_MONSTERSCENEBLOCKYOFFSETATTR__))).second.c_str ()));
 
-	PacManII::MonsterSceneActionBlock::Properties (_entityId, _numberInMap, _points, _offsetXInitPosition, _offsetYInitPosition);
+	PacManII::MonsterSceneActionBlock::Properties (_entityId, _numberInMap, _points);
+}
+
+// ---
+bool PacManII::MonsterSceneActionBlock::timeToStart (int nM)
+{
+	assert (_monster != nullptr);
+
+	bool result = false;
+	if (_monster -> monsterNumber () == nM && !onOffSwitch (_SWITCHTOSTART) -> isOn ())
+		onOffSwitch (_SWITCHTOSTART) -> set (result = true);
+
+	return (result);
 }
 
 // ---
@@ -47,17 +54,14 @@ void PacManII::MonsterSceneActionBlock::initialize ()
 	_monster -> setVisible (true);
 
 	_monster -> setPosition (aM -> mazePositionToMapPosition (aM -> monsterInitialPosition (_properties._numberInMap)) - 
-		QGAMES::Vector (__BD (_monster -> visualHeight () >> 1), __BD (_monster -> visualHeight () >> 1), __BD 0) +
-		QGAMES::Vector (__BD (_monster -> visualLength () * _properties._offsetXInitPosition), 
-						__BD (_monster -> visualLength () * _properties._offsetYInitPosition), __BD 0));
+		QGAMES::Vector (__BD (_monster -> visualHeight () >> 1), __BD (_monster -> visualHeight () >> 1), __BD 0));
 
-	reStartAllCounters ();
+	observe (_monster);
+
 	reStartAllOnOffSwitches ();
 
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 	assert (g != nullptr);
-	counter (_COUNTERTOEXITHOME) -> initialize 
-		((int) (g -> levelDefinition (g -> level ()).secondsMonsterToLeaveHome () * __BD g -> framesPerSecond ()), 0, true, true);
 }
 
 // ---
@@ -66,6 +70,7 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 	QGAMES::SceneActionBlock::updatePositions ();
 
 	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
+	assert (scn != nullptr);
 	if (!scn -> clapperBoard ())
 		return;
 
@@ -78,14 +83,31 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 	}
 	else
 	{
-		if (counter (_COUNTERTOEXITHOME) -> isEnd ())
+		if (_monster -> isAtHome ())
 		{
-			onOffSwitch (_SWITCHMOVING) -> set (true);
+			// There could be intrnal conditions to push monster to start the movement..
+			if (!onOffSwitch (_SWITCHTOSTART) -> isOn () && readyToStart ())
+				onOffSwitch (_SWITCHTOSTART) -> set (true);
 
-			PacManII::Map* mp = dynamic_cast <PacManII::Map*> (scn -> activeMap ());
-			assert (mp != nullptr);
-			_monster -> toMove (mp -> directorToStartMonsterMovement (_monster -> monsterNumber ())); // To exit home...
+			if (onOffSwitch (_SWITCHTOSTART) -> isOn ())
+			{
+				_monster -> toMove (_monster -> directionToStartMovement ()); // Never chase...
+
+				onOffSwitch (_SWITCHMOVING) -> set (true);
+			}
 		}
+		else
+		{
+			_monster -> toMove (_monster -> directionToStartMovement ()); // Never chase...
+			if (scn -> chasingMode () == true)
+				_monster -> toChase (true);
+
+			onOffSwitch (_SWITCHTOSTART) -> set (true);
+			onOffSwitch (_SWITCHMOVING) -> set (true);
+		}
+
+		if (onOffSwitch (_SWITCHMOVING) -> isOn ())
+			notify (QGAMES::Event (__PACMANII_MONSTERSTARTEDTOMOVE__, this));
 	}
 }
 
@@ -93,6 +115,8 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 void PacManII::MonsterSceneActionBlock::finalize ()
 {
 	QGAMES::SceneActionBlock::finalize ();
+
+	unObserve (_monster);
 
 	_monster -> setMap (nullptr);
 
@@ -102,15 +126,37 @@ void PacManII::MonsterSceneActionBlock::finalize ()
 }
 
 // ---
-__IMPLEMENTCOUNTERS__ (PacManII::MonsterSceneActionBlock::Counters)
+void PacManII::MonsterSceneActionBlock::processEvent (const QGAMES::Event& evnt)
 {
-	addCounter (new QGAMES::Counter 
-		(PacManII::MonsterSceneActionBlock::_COUNTERTOEXITHOME, 1 /** Initialized later better. */, 0, true, true));
+	if (evnt.code () == __PACMANII_LIMITMOVEMENTREACHED__)
+	{
+		assert (evnt.data () == static_cast <void*> (_monster));
+
+		PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
+		assert (scn != nullptr);
+
+		_monster -> toChaseDeferred (scn -> chasingMode ());
+	}
+
+	QGAMES::SceneActionBlock::processEvent (evnt);
+}
+
+// ---
+bool PacManII::MonsterSceneActionBlock::readyToStart ()
+{
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
+	assert (scn != nullptr);
+
+	return (scn -> numberBallsEatenRound () >= g -> dataGame ().levelDefinition 
+		(g -> level ()).leaveHomeConditions ().dotsToLeaveFor (_monster -> monsterNumber (), scn -> isFirstRound ()));
 }
 
 // ---
 __IMPLEMENTONOFFSWITCHES__ (PacManII::MonsterSceneActionBlock::OnOffSwitches)
 {
+	addOnOffSwitch (new QGAMES::OnOffSwitch (PacManII::MonsterSceneActionBlock::_SWITCHTOSTART, false));
 	addOnOffSwitch (new QGAMES::OnOffSwitch (PacManII::MonsterSceneActionBlock::_SWITCHMOVING, false));
 }
 

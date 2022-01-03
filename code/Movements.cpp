@@ -42,10 +42,6 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 	if (art -> nextMazePosition (0) == QGAMES::MazeModel::_noPosition)
 		return; // ...makes no sense to progress...
 
-	// The initial direction of the movement is the one the artist have already...
-	// But it can change along the cycle!
-	_lastDirection = art -> direction ();
-
 	bool stopCycle = false; // to notify only once when stopping...
 	for (int i = (int) ((_speed * _CONSTANT) + _qLeft); i > 0 && !stopCycle; i--)
 	{
@@ -58,7 +54,8 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 		//	   it will be also taken into account ehen calculating the path again.	
 		if (art -> doesPositionMatchesTile (art -> position ()))
 		{
-			art -> recalculatePathInMazeAvoiding ({ -direction () });
+			if (art -> nextMazePosition (0) != art -> currentMazePosition ())
+				art -> recalculatePathInMaze ();
 			art -> changeDirectionWhenPossibleTo (QGAMES::Vector::_cero); // If any, it was taken into account before...
 
 			// If there is a next position to go to...
@@ -72,7 +69,7 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 					art -> setPosition 
 						(art -> mazePositionToMapPosition (art -> nextMazePosition (1)) - 
 							QGAMES::Vector (__BD (art -> visualLength () >> 1), __BD (art -> visualHeight () >> 1), __BD 0));
-					art -> recalculatePathInMazeAvoiding ({ -direction () }); // After being moved, the path hast to be calculated...
+					art -> recalculatePathInMaze (); // After being moved, the path hast to be calculated...
 				}
 
 				// Depeding on the type of artist things can happen when it is on a new position...

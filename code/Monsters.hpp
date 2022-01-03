@@ -37,25 +37,39 @@ namespace PacManII
 		int monsterNumber () const
 							{ return (_monsterNumber); }
 
+		/** To define whether there is or not a preferred direction to move to at exiting home. 
+			It gotta be detailed later. */
+		virtual QGAMES::Vector preferredDirectionAtStartingToMove () const = 0;
+
 		/** The points associated to the monster. */
 		int points () const
 						{ return (_points); }
 		void setPoints (int p)
 							{ _points = p; }
 
+		/** To know whether the monster is or not at home. */
+		bool isAtHome () const;
+		/** To know whether the monster is or not in a tunnel. */
+		bool isInATunnelHall () const;
+		/** To know the direction to start any movement. 
+			This is also used when the monsters stops. */
+		QGAMES::Vector directionToStartMovement () const;
+
 		virtual void toStand () override;
 		virtual void toMove (const QGAMES::Vector& d) override;
 		void toChase (bool f);
+		void toChaseDeferred (bool o);
 		void toBeThreaten (bool f);
 
 		virtual bool isAlive () const override
 							{ return (_status != Status::_BEINGEATEN); }
 		virtual bool isStanding () const override
-							{ return (_status == Status::_NOTDEFINED || _status == Status::_ATHOME); }
+							{ return (_status == Status::_ATHOME); }
 		virtual bool isMoving () const override
-							{ return (!isStanding ()); }
+							{ return (!isStanding () && _status != Status::_NOTDEFINED); }
 		bool isDangerous () const
 							{ return (_status == Status::_CHASING || _status == Status::_RUNNINGWAY); }
+		bool canReverseMovement () const;
 
 		// To know the status...
 		Status status () const
@@ -69,6 +83,10 @@ namespace PacManII
 
 		protected:
 		void setStatus (const Status& st);
+
+		/** To know the last status. */
+		Status lastStatus () const
+							{ return (_lastStatus); }
 
 		virtual void whatToDoWhenStopStatusIsRequested (const QGAMES::Vector& d) override;
 		virtual void whatToDoWhenMovementStatusIsRequested (const QGAMES::Vector& d) override;
@@ -92,13 +110,11 @@ namespace PacManII
 			bool _chasing;
 		};
 
-		/** The method to stop deferred. */
-		void toChaseDeferred (bool o);
-
 		// Implementation
 		virtual void adaptSpeed () = 0;
 		/** The monsters can not enter back their home unless they have been eaten!. */
-		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d) override;
+		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMaze 
+			(const QGAMES::Vector& mD = QGAMES::Vector::_noPoint) override;
 		/** Where to run. */
 		inline QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;
 
@@ -109,6 +125,8 @@ namespace PacManII
 		int _points;
 		/** The status of the monster. */
 		Status _status;
+		/** The last status of the monster. */
+		Status _lastStatus;
 	};
 
 	/** The standard monster always pursuit a pacman. */
@@ -119,6 +137,10 @@ namespace PacManII
 				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
 			: Monster (cId, mN, f, d)
 							{ }
+
+		/** Left by default in standard monsters. */
+		virtual QGAMES::Vector preferredDirectionAtStartingToMove () const override
+							{ return (QGAMES::Vector (__BD -1, __BD 0, __BD 0)); }
 
 		/** By default the referenced artist is pacman only */
 		virtual void setReferenceArtists (const std::vector <Artist*>& r) override;
@@ -138,34 +160,11 @@ namespace PacManII
 		virtual void adaptSpeed () override;
 	};
 
-	/** Inky, the blue/cyan monster. Bashful. */
-	class Inky final : public StandardMonster
-	{
-		public:
-		static const int _NUMBER = 0;
-
-		Inky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-			const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: StandardMonster (cId, _NUMBER, f, d)
-							{ }
-
-		virtual Entity* clone () const override
-							{ return (new Inky (id (), forms (), data ())); }
-
-		/** Inky has blinky and pacman as references. */
-		virtual void setReferenceArtists (const std::vector <Artist*>& r) override;
-
-		protected:
-		/** When chasing Inky's target position is twice the distance between the 2 next positions of pacman and blinky's 
-			In other circunstance is the run away position. */
-		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
-	};
-
 	/** Blinky, the red monster. Your shadow. */
 	class Blinky final : public StandardMonster
 	{
 		public:
-		static const int _NUMBER = 1;
+		static const int _NUMBER = 0;
 
 		Blinky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
 			const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
@@ -185,7 +184,7 @@ namespace PacManII
 	class Pinky final : public StandardMonster
 	{
 		public:
-		static const int _NUMBER = 2;
+		static const int _NUMBER = 1;
 
 		Pinky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
 				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
@@ -198,6 +197,29 @@ namespace PacManII
 		protected:
 		/** When chasing Pinky's target position is 4 positions ahead pacman's,
 			otherwise if the run away position in the maze. */
+		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
+	};
+
+	/** Inky, the blue/cyan monster. Bashful. */
+	class Inky final : public StandardMonster
+	{
+		public:
+		static const int _NUMBER = 2;
+
+		Inky (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
+			const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
+			: StandardMonster (cId, _NUMBER, f, d)
+							{ }
+
+		virtual Entity* clone () const override
+							{ return (new Inky (id (), forms (), data ())); }
+
+		/** Inky has blinky and pacman as references. */
+		virtual void setReferenceArtists (const std::vector <Artist*>& r) override;
+
+		protected:
+		/** When chasing Inky's target position is twice the distance between the 2 next positions of pacman and blinky's 
+			In other circunstance is the run away position. */
 		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
 	};
 

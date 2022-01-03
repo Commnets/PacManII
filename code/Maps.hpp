@@ -24,10 +24,13 @@ namespace PacManII
 	/** Basic map of the game. 
 		Layers can be only PacManII ones. 
 		The game can be extended in terms of maps. */
-	class BackgroundLayer;
-	class LocationsLayer;
+	class ArtistsLocationsLayer;
+	class MazeLocationsLayer;
+	class MazeZonesLayer;
 	class DirectionsLayer;
 	class MazeLayer;
+	class BackgroundLayer;
+
 	class Map final : public QGAMES::TiledMap
 	{
 		public:
@@ -37,27 +40,30 @@ namespace PacManII
 		virtual QGAMES::SetOfOpenValues runtimeValues () const override;
 		virtual void initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg) override;
 
-		const BackgroundLayer* backgroundLayer () const
-							{ return (_backgroundLayer); }
-		BackgroundLayer* backgroundLayer ()
-							{ return (_backgroundLayer); }
-		const MazeLayer* mazeLayer () const
-							{ return (_mazeLayer); }
-		MazeLayer* mazeLayer () 
-							{ return (_mazeLayer); }
-		const LocationsLayer* locationsLayer () const
-							{ return (_locationsLayer); }
-		LocationsLayer* locationsLayer () 
-							{ return (_locationsLayer); }
+		const ArtistsLocationsLayer* artistsLocationsLayer () const
+							{ return (_artistsLocationsLayer); }
+		ArtistsLocationsLayer* artistsLocationsLayer () 
+							{ return (_artistsLocationsLayer); }
+		const MazeLocationsLayer* mazeLocationsLayer () const
+							{ return (_mazeLocationsLayer); }
+		MazeLocationsLayer* mazeLocationsLayer () 
+							{ return (_mazeLocationsLayer); }
+		const MazeZonesLayer* mazeZonesLayer () const
+							{ return (_mazeZonesLayer); }
+		MazeZonesLayer* mazeZonesLayer () 
+							{ return (_mazeZonesLayer); }
 		const DirectionsLayer* directionsLayer () const
 							{ return (_directionsLayer); }
 		DirectionsLayer* directionsLayer () 
 							{ return (_directionsLayer); }
-
-		/** To know important things about the map. */
-		bool isPositionATunnelPathWay (const QGAMES::MazeModel::PositionInMaze& pM) const;
-		QGAMES::Vector directionToEnterMonsterHome (int nM) const;
-		QGAMES::Vector directorToStartMonsterMovement (int nM) const;
+		const MazeLayer* mazeLayer () const
+							{ return (_mazeLayer); }
+		MazeLayer* mazeLayer () 
+							{ return (_mazeLayer); }
+		const BackgroundLayer* backgroundLayer () const
+							{ return (_backgroundLayer); }
+		BackgroundLayer* backgroundLayer ()
+							{ return (_backgroundLayer); }
 
 		/** To know important positions of the map. 
 			If nothing is found a position out of the maze should be returned. */
@@ -111,17 +117,22 @@ namespace PacManII
 
 		// Implementation
 		/** To accelerate the access to the different layers. */
-		BackgroundLayer* _backgroundLayer;
-		LocationsLayer* _locationsLayer;
+		ArtistsLocationsLayer* _artistsLocationsLayer;
+		MazeLocationsLayer* _mazeLocationsLayer;
+		MazeZonesLayer* _mazeZonesLayer;
 		DirectionsLayer* _directionsLayer;
 		MazeLayer* _mazeLayer;
+		BackgroundLayer* _backgroundLayer;
 
 		/** To acclerate how positions are calculated (per number of artist). */
+		// Artists positions
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _pacmanInitialPositions;
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterRunAwayPositions;
 		mutable QGAMES::MazeModel::PositionInMaze _monsterExitingHomePosition;
 		mutable QGAMES::MazeModel::PositionInMaze _fruitPosition;
+		// Maze zones
+		mutable std::map <int, std::vector <QGAMES::MazeModel::PositionInMaze>> _mazeZones;
 	};
 
 	/** Representing the background layer. */
@@ -134,18 +145,16 @@ namespace PacManII
 							{ }
 	};
 
-	/** Representing the location layer. */
-	class LocationsLayer final : public QGAMES::TileLayer
+	/** Representing the "ArtistsLocations" layer. */
+	class ArtistsLocationsLayer final : public QGAMES::TileLayer
 	{
 		public:
-		LocationsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+		ArtistsLocationsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
 				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
 			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false),
 			  _pacmanInitialPositions (), 
 			  _monsterInitialPositions (), 
 			  _monsterRunAwayPositions (),
-			  _enteringExitingTunnelPathPositions (),
-			  _monsterExitingHomePosition (QGAMES::Position::_noPoint),
 			  _fruitPosition (QGAMES::Position::_noPoint)
 							{ setVisible (false); /* Always */ }
 
@@ -157,8 +166,6 @@ namespace PacManII
 		const QGAMES::Position& monsterInitialPosition (int nM) const;
 		const std::map <int, QGAMES::Position>& monsterRunAwayPositions () const;
 		const QGAMES::Position& monsterRunAwayPosition (int nM) const;
-		const QGAMES::Positions& enteringExitingTunnelPathPositions () const;
-		const QGAMES::Position& monsterExitingHomePosition () const;
 		const QGAMES::Position& fruitPosition () const;
 
 		protected:
@@ -166,9 +173,38 @@ namespace PacManII
 		mutable std::map <int, QGAMES::Position> _pacmanInitialPositions;
 		mutable std::map <int, QGAMES::Position> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::Position> _monsterRunAwayPositions;
+		mutable QGAMES::Position _fruitPosition;
+	};
+
+	/** Representing the "MazeLocations" layer. */
+	class MazeLocationsLayer final : public QGAMES::TileLayer
+	{
+		public:
+		MazeLocationsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
+			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false),
+			  _enteringExitingTunnelPathPositions (),
+			  _monsterExitingHomePosition (QGAMES::Position::_noPoint)
+							{ setVisible (false); /* Always */ }
+
+		/** To know important positions kept in this layer. 
+			The position of the tile is returned. */
+		const QGAMES::Position& monsterExitingHomePosition () const;
+
+		protected:
+		/** To accelerate how positions are calculated (per number of artist). */
 		mutable QGAMES::Positions _enteringExitingTunnelPathPositions;
 		mutable QGAMES::Position _monsterExitingHomePosition;
-		mutable QGAMES::Position _fruitPosition;
+	};
+
+	/** Representing the "MazeZones" layer. */
+	class MazeZonesLayer final : public QGAMES::TileLayer
+	{
+		public:
+		MazeZonesLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
+				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
+			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false)
+							{ setVisible (false); /* Always */ }
 	};
 
 	/** Representing the maze description layer. */

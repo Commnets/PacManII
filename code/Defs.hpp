@@ -30,6 +30,19 @@
 #define __PACMANII_PACMANLIVESFORM__								50000
 #define __PACMANII_PACMANFRUITSFORM__								50022
 
+// Maze info
+// Important parameters at maze info
+#define __PACMANII_MAZEINFOZONE__									4
+#define __PACMANII_MAZEINFOTUNNELCONNECTION__						5
+#define __PACMANII_MAZEINFODIRZONE__								6
+// Definition of the different areas in the maze
+#define __PACMANII_MAZENUMBERPOSSIBLEZONES__						10
+#define __PACMANII_MAZETUNELLPATHZONE__								0
+#define __PACMANII_MAZEMONSTERSHOMEZONE__							1
+// These two areas are special. The rest will be zones with the movement reduced...
+#define __PACMANII_MAZEHORIZONTALMOVEMENTZONES__					{ 2, 3, 4 }
+#define __PACMANII_MAZEVERTICALMOVEMENTZONES__						{ 5, 6, 7 }
+
 // Sounds
 #define __PACMANII_SOUNDBEGINNING__									50000
 #define __PACMANII_SOUNDCHOMP__										50001
@@ -235,6 +248,8 @@
 // Related with the movement in the maze
 #define __PACMANII_LIMITMOVEMENTREACHED__							50202
 #define __PACMANII_MOVEMENTDORIENTATIONCHANGED__					50203
+// Related with the action blocks...
+#define __PACMANII_MONSTERSTARTEDTOMOVE__							50204
 
 // The World and Scenes used for the game
 #define __PACMANII_BASICWORLD__										50000
@@ -242,7 +257,9 @@
 #define __PACMANII_BASICMAP__										50000
 // Name of the standard layers every defined map has to content minimum
 #define __PACMANII_BACKGROUNDLAYERNAME__							"Background"
-#define __PACMANII_LOCATIONSLAYERNAME__								"Locations"
+#define __PACMANII_ARTISTSLOCATIONSLAYERNAME__						"ArtistsLocations"
+#define __PACMANII_MAZELOCATIONSLAYERNAME__							"MazeLocations"
+#define __PACMANII_MAZEZONESLAYERNAME__								"MazeZones"
 #define __PACMANII_DIRECTIONSLAYERNAME__							"Directions"
 #define __PACMANII_MAZELAYERNAME__									"Maze"
 // Name of the different forms containing the tiles used to draw

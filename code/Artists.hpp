@@ -40,7 +40,10 @@ namespace PacManII
 			This method makes only sense when map has been set. */
 		QGAMES::MazeModel::PositionInMaze currentMazePosition () const
 							{ return (mapPositionToMazePosition (position ())); }
+		/** To know which the next grid position will be (from the current position and following the orientation if any). */
 		QGAMES::MazeModel::PositionInMaze nextXGridPosition (int x) const;
+		/** To know which is th current are ocuppied by the pacman element. */
+		int currentMazeArea () const;
 
 		/** To know whether anotheer Pacman Element is or not my enemy. */
 		virtual bool isEnemy (const PacmanElement* elmnt) const = 0;
@@ -154,8 +157,9 @@ namespace PacManII
 		// Implementation
 		// Used many times inside...
 		/** To recalculate the path to follow (usually 2 steps more) from the current position. \n
-			It doesn't matter whether it is aligned with the maze position, but usually it is invoked in that situation. */
-		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d);
+			It doesn't matter whether it is aligned with the maze position, but usually it is invoked in that situation. 
+			A mandatory direction can be passed. It will be takn into account if possible (by default it is not). */
+		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMaze (const QGAMES::Vector& mD = QGAMES::Vector::_noPoint);
 		/** To know whether the current situation in the path implies entering or not a tunnel. \n
 			It is useful to know e.g whether to move th eposition of the artist. */
 		bool isArtistEnteringATunnel () const;

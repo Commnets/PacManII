@@ -54,17 +54,13 @@ PacManII::BasicScene::BasicScene (int c, const QGAMES::Maps& m, const QGAMES::Sc
 {  
 	// Action blocks to control the monsters...
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(0, PacManII::MonsterSceneActionBlock::Properties 
-			(__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, 100, -0.0, 0.0)), false);
+		(0, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_INKYBASEENTITYID__, PacManII::Inky::_NUMBER, 100)), false);
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(1, PacManII::MonsterSceneActionBlock::Properties 
-			(__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, 100, -0.0, 0.0)), false);
+		(1, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_BLINKYBASEENTITYID__, PacManII::Blinky::_NUMBER, 100)), false);
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(2, PacManII::MonsterSceneActionBlock::Properties 
-			(__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, 100, -0.0, 0.0)), false);
+		(2, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_PINKYBASEENTITYID__, PacManII::Pinky::_NUMBER, 100)), false);
 	addActionBlock (new PacManII::MonsterSceneActionBlock 
-		(3, PacManII::MonsterSceneActionBlock::Properties 
-			(__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, 100, -0.0, 0.0)), false);
+		(3, PacManII::MonsterSceneActionBlock::Properties (__PACMANII_CLYDEBASEENTITYID__, PacManII::Clyde::_NUMBER, 100)), false);
 }
 
 // ---

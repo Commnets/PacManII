@@ -37,19 +37,54 @@ namespace PacManII
 
 		Maze& operator = (const Maze&) = default;
 
+		/** To know which is the area (if any) of a position. */
+		int mazeZoneAt (const QGAMES::MazeModel::PositionInMaze& p) const
+							{ return (isInMaze (p) 
+								? (mazeInfoAt (p).existOpenValue (__PACMANII_MAZEINFOZONE__) 
+									? mazeInfoAt (p).openValue (__PACMANII_MAZEINFOZONE__).intValue () : -1) 
+								: -1); }
+		/** To know the positions a maze zone is made of. 
+			If the parameter were -1, then the positions selectd would be the ones with no area!. */
+		const std::vector <QGAMES::MazeModel::PositionInMaze>& positionsForZone (int n) const;
+
+		/** To know whether the position is or not a tunnel conection. */
+		bool isTunnelConnectionAt (const QGAMES::MazeModel::PositionInMaze& p) const
+							{ return (isInMaze (p) 
+								? mazeInfoAt (p).existOpenValue (__PACMANII_MAZEINFOTUNNELCONNECTION__) : false); }
+		/** ..and as a consequence, which is that connection (no position if there is no). */
+		QGAMES::MazeModel::PositionInMaze tunnelConnectionAt (const QGAMES::MazeModel::PositionInMaze& p) const
+							{ return (isTunnelConnectionAt (p) 
+								? QGAMES::MazeModel::PositionInMaze 
+									(QGAMES::Vector (mazeInfoAt (p).openValue (__PACMANII_MAZEINFOTUNNELCONNECTION__).strValue ())) 
+								: QGAMES::MazeModel::_noPosition); }
+
+		/** To know whether 2 positions are together. */
+		bool arePositionsTogether (const QGAMES::MazeModel::PositionInMaze& p1, const QGAMES::MazeModel::PositionInMaze& p2) const;
+		/** To know whether there are or not restricted movement directions at a position in th maze. */
+		std::vector <QGAMES::Vector> restrictedDirectionsAt (const QGAMES::MazeModel::PositionInMaze& p) const;
+		
 		/** To get the pure grid x next position following a direction.
-			If the position will be out of the maze, the last one possible will be returnd. */
+			If the position will be out of the maze, the last one possible will be returned. 
+			This method tries to simulate one error in PacMan's game logic.
+			When the direction grip position requested is up, the position 
+			is also moved to the left in the same quantity of cells requested to me moved up. */
 		QGAMES::MazeModel::PositionInMaze nextXGridPositionFollowing (const QGAMES::MazeModel::PositionInMaze& p,
-			unsigned x, const QGAMES::Vector& d) const;
+			unsigned x, const QGAMES::Vector& d, bool e = false) const;
 
 		/** In this case, because the size of th maze (usually 21 x 24), 
 			the standard methods to calculate the path to go from a position to another
 			will be very slow. \n
-			So, a new one is be defined, but just only to calculate 2 steps. */
+			So, a new one is be defined, but just only to calculate 2 steps. 
+			The parameters received ar the initial point, the target, the list of directions to avoid
+			and the preferred direction to chose if any. */
 		QGAMES::MazeModel::PathInMaze next2StepsToGoTo (const QGAMES::MazeModel::PositionInMaze& p1, 
-			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d) const;
+			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d, 
+			const QGAMES::Vector& pD = QGAMES::Vector::_noPoint) const;
+		/** In this case, the directions to avoid and the preferred direction to chose ar only for the initial movement...
+			This method never looks back. */
 		QGAMES::MazeModel::PathInMaze nextXStepsToGoTo (int x, const QGAMES::MazeModel::PositionInMaze& p1, 
-			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d) const;
+			const QGAMES::MazeModel::PositionInMaze& p2, const std::vector <QGAMES::Vector>& d,
+			const QGAMES::Vector& pD = QGAMES::Vector::_noPoint) const;
 
 		/** Those methods are invoked from the PacManII::Map to create a PacManII::Maze. \n
 			The methods guarantte that nothing is wrong in the construction. */
@@ -71,8 +106,13 @@ namespace PacManII
 			connected in the opposite direction to the one allowed. 
 			It is declared private to avoid nobody could used out of this class (the static method). */
 		Maze (int sX, int sY, const std::vector <QGAMES::SetOfOpenValues>& mW)
-			: QGAMES::MazeModel (sX, sY, 1 /* 2d maze always */, mW)
+			: QGAMES::MazeModel (sX, sY, 1 /* 2d maze always */, mW),
+			  _positionsPerZone ()
 							{ }
+
+		private:
+		// Implementation
+		mutable std::map <int, std::vector <QGAMES::MazeModel::PositionInMaze>> _positionsPerZone;
 	};
 }
 

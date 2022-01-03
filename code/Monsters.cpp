@@ -8,7 +8,8 @@ PacManII::Monster::Monster (int cId, int mN, const QGAMES::Forms& f, const QGAME
 	: PacManII::Artist (cId, f, d),
 	  _monsterNumber (mN),
 	  _points (100), // By default...
-	  _status (Status::_NOTDEFINED)
+	  _status (PacManII::Monster::Status::_NOTDEFINED),
+	  _lastStatus (PacManII::Monster::Status::_NOTDEFINED)
 { 
 	assert (_monsterNumber >= 0);
 
@@ -22,6 +23,47 @@ PacManII::Monster::Monster (int cId, int mN, const QGAMES::Forms& f, const QGAME
 bool PacManII::Monster::isEnemy (const PacmanElement* elmnt) const
 { 
 	return (dynamic_cast <const PacMan*> (elmnt) != nullptr); 
+}
+
+// ---
+bool PacManII::Monster::isAtHome () const
+{
+	return ((pMap () == nullptr) 
+		? false : pMap () -> maze ().mazeZoneAt (currentMazePosition ()) == __PACMANII_MAZEMONSTERSHOMEZONE__);
+}
+
+// ---
+bool PacManII::Monster::isInATunnelHall () const
+{
+	return ((pMap () == nullptr) 
+		? false : pMap () -> maze ().mazeZoneAt (currentMazePosition ()) == __PACMANII_MAZETUNELLPATHZONE__);
+}
+
+// ---
+QGAMES::Vector PacManII::Monster::directionToStartMovement () const
+{
+	if (pMap () == nullptr)
+		return (QGAMES::Vector::_noPoint);
+
+	QGAMES::MazeModel::PositionInMaze tP = QGAMES::MazeModel::_noPosition;
+	if (isAtHome ())
+	{
+		assert (status () == PacManII::Monster::Status::_ATHOME); // Impossible to be in another ststus...
+
+		tP = pMap () -> monsterExitingHomePosition ();
+	}
+	else
+		tP = (status () == PacManII::Monster::Status::_ATHOME) // Blinky e.g is in this status but "out of home"
+			? runAwayMazePosition () : targetMazePosition ();
+
+	assert (currentMazePosition () != QGAMES::MazeModel::_noPosition && 
+			tP != QGAMES::MazeModel::_noPosition);
+
+	QGAMES::MazeModel::PathInMaze way = pMap () -> maze ().next2StepsToGoTo (currentMazePosition (), tP, { });
+
+	assert (way.size () > 1);
+
+	return (way [1].asVector () - way [0].asVector ());
 }
 
 // ---
@@ -41,7 +83,12 @@ void PacManII::Monster::toMove (const QGAMES::Vector& d)
 	setOrientation (d);
 
 	if (!isMoving ())
-		setStatus (PacManII::Monster::Status::_EXITINGHOME);
+	{
+		if (isAtHome ())
+			setStatus (PacManII::Monster::Status::_EXITINGHOME);
+		else
+			setStatus (PacManII::Monster::Status::_RUNNINGWAY);
+	}
 	else
 		setStatus (status ()); // Keeps the same...
 }
@@ -91,6 +138,26 @@ void PacManII::Monster::toBeThreaten (bool f)
 }
 
 // ---
+bool PacManII::Monster::canReverseMovement () const
+{
+	return (
+		(
+			(_lastStatus != _status) &&
+		    (
+				(_lastStatus == PacManII::Monster::Status::_ATHOME && _status == PacManII::Monster::Status::_EXITINGHOME) ||
+				(_lastStatus == PacManII::Monster::Status::_ATHOME && _status == PacManII::Monster::Status::_RUNNINGWAY) ||
+				(_lastStatus == PacManII::Monster::Status::_ATHOME && _status == PacManII::Monster::Status::_CHASING) ||
+				(_lastStatus == PacManII::Monster::Status::_EXITINGHOME && _status == PacManII::Monster::Status::_RUNNINGWAY) ||
+				(_lastStatus == PacManII::Monster::Status::_EXITINGHOME && _status == PacManII::Monster::Status::_CHASING) ||
+				(_lastStatus == PacManII::Monster::Status::_CHASING && _status == PacManII::Monster::Status::_RUNNINGWAY) ||
+				(_lastStatus == PacManII::Monster::Status::_RUNNINGWAY && _status == PacManII::Monster::Status::_CHASING) ||
+				(_lastStatus == PacManII::Monster::Status::_CHASING && _status == PacManII::Monster::Status::_TOBEEATEN) ||
+				(_lastStatus == PacManII::Monster::Status::_RUNNINGWAY && _status == PacManII::Monster::Status::_TOBEEATEN)
+			)
+		));
+}
+
+// ---
 void PacManII::Monster::initialize ()
 {
 	PacManII::Artist::initialize ();
@@ -114,7 +181,7 @@ void PacManII::Monster::processEvent (const QGAMES::Event& evnt)
 			toStopDeferred ();
 		// At any other circunstance, the movement can't stop, so continue the movement...
 		else
-			toChaseDeferred (false);
+			notify (QGAMES::Event (evnt.code (), this));
 	}
 
 	PacManII::Artist::processEvent (evnt);
@@ -132,6 +199,7 @@ void PacManII::Monster::setStatus (const PacManII::Monster::Status& st)
 	// In release compilation version all changes are possible,
 	// but under debug mode the right combination is ckecked first!
 
+	_lastStatus = _status;
 	_status = st;
 
 	switch (st)
@@ -170,7 +238,11 @@ void PacManII::Monster::whatToDoWhenMovementStatusIsRequested (const QGAMES::Vec
 	setOrientation (d); // Look to..
 	setStateToMoveTo (orientation ()); // ..with the right aspect...
 	setMove (orientation ()); // ...and moving also towards there...
-	recalculatePathInMazeAvoiding ({ }); // ...and with a new path
+	QGAMES::Vector pD = 
+		((isMoving () && _status != PacManII::Monster::Status::_EXITINGHOME) && 
+			(_lastStatus == PacManII::Monster::Status::_EXITINGHOME || _lastStatus == PacManII::Monster::Status::_ATHOME))
+			? preferredDirectionAtStartingToMove () : QGAMES::Vector::_noPoint;
+	recalculatePathInMaze (pD); // ...and with a new path
 	adaptSpeed (); // That depends on many many things...
 }
 
@@ -198,23 +270,45 @@ void PacManII::Monster::toChaseDeferred (bool o)
 }
 
 // ---
-QGAMES::MazeModel::PathInMaze& PacManII::Monster::recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d)
+QGAMES::MazeModel::PathInMaze& PacManII::Monster::recalculatePathInMaze (const QGAMES::Vector& mD)
 {
-	// Calculate whether the monster is or not at the entry of home
-	// and if it is, what is the direction to enter.
-	QGAMES::Vector dirMonstersHome = QGAMES::Vector::_noPoint;
-	bool atEntersMonstersHome = (currentMazePosition () == pMap () -> monsterExitingHomePosition ());
-	if (atEntersMonstersHome)
-		dirMonstersHome = pMap () -> directionToEnterMonsterHome (_monsterNumber);
+	QGAMES::MazeModel::PositionInMaze cMP = currentMazePosition ();
 
-	// The monster can't enter back home only when it has been eaten!
-	std::vector <QGAMES::Vector> fD = { d };
-	if (status () != PacManII::Monster::Status::_BEINGEATEN && 
-		dirMonstersHome != QGAMES::Vector::_noPoint && std::find (d.begin (), d.end (), dirMonstersHome) == d.end ())
-		fD.push_back (dirMonstersHome);
+	// When status changes to reverse th direction can be allowed in certain circunstances
+	std::vector <QGAMES::Vector> fD = { }; 
+	if (!canReverseMovement ()) fD = { -orientation () }; 
+	_lastStatus = _status;
 
-	return (_pathInMaze = 
-		pMap () -> maze ().next2StepsToGoTo (currentMazePosition (), targetMazePosition (), fD)); 
+	// When the monster is alive...
+	if (isAlive ())
+	{
+		// The monster cannot enter back home:
+		// So, calculate whether the monster is or not at the entry of home
+		// and if it is, what is the direction to enter, because it has to be avoided unless it is going back home...
+		QGAMES::Vector dirMonstersHome = QGAMES::Vector::_noPoint; // By default it doesn't exit!
+		if (cMP == pMap () -> monsterExitingHomePosition ())
+		{
+			int sz = 0;
+			if ((sz = (int) pMap () -> maze ().positionsForZone (__PACMANII_MAZEMONSTERSHOMEZONE__).size ()) != 0)
+			{
+				QGAMES::MazeModel::PathInMaze pE = pMap () -> maze ().next2StepsToGoTo 
+					(cMP, pMap () -> maze ().positionsForZone (__PACMANII_MAZEMONSTERSHOMEZONE__)[sz >> 1], { });
+				if ((int) pE.size () > 1)
+					dirMonstersHome = pE [1].asVector () - pE [0].asVector ();
+			}
+
+			if (dirMonstersHome != QGAMES::Vector::_noPoint) 
+				fD.push_back (dirMonstersHome);
+		}
+
+		// ...and also there could be some restricted directions (when passing through an area of these)
+		std::vector <QGAMES::Vector> rD = pMap () -> maze ().restrictedDirectionsAt (cMP);
+		fD.insert (fD.end (), rD.begin (), rD.end ());
+	}
+
+	// There can be duplicate elements in fD...it doesn't matter
+
+	return (_pathInMaze = pMap () -> maze ().next2StepsToGoTo (cMP, targetMazePosition (), fD, mD)); 
 }
 
 // ---
@@ -359,49 +453,6 @@ void PacManII::StandardMonster::adaptSpeed ()
 }
 
 // ---
-void PacManII::Inky::setReferenceArtists (const std::vector <PacManII::Artist*>& r)
-{
-	_referenceArtists = { nullptr /** The pacman. */, nullptr /** Blinky */ }; 
-	for (auto i : r)
-	{
-		if (dynamic_cast <PacManII::PacMan*> (i) != nullptr) _referenceArtists [0] = i;
-		else if (dynamic_cast <PacManII::Blinky*> (i) != nullptr) _referenceArtists [1] = i;
-	}
-
-	assert (_referenceArtists [0] != nullptr && _referenceArtists [1] != nullptr);
-}
-
-// ---
-QGAMES::MazeModel::PositionInMaze PacManII::Inky::targetMazePosition () const
-{
-	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
-
-	switch (status ())
-	{
-		case PacManII::Monster::Status::_NOTDEFINED:
-			result = currentMazePosition ();
-			break;
-
-		case PacManII::Monster::Status::_CHASING:
-			if (_referenceArtists [0] != nullptr && _referenceArtists [1] != nullptr)
-				result = QGAMES::MazeModel::PositionInMaze 
-					(2 * (_referenceArtists [0] -> nextXGridPosition (2).asVector () - 
-						  _referenceArtists [1] -> currentMazePosition ().asVector ()));
-			// When there is no references enough...go home!
-			else
-				result = runAwayMazePosition (); 
-
-			break;
-
-		// The target position for the rest of the status is calculated like the standard one...
-		default:
-			result = PacManII::StandardMonster::targetMazePosition ();
-	}
-
-	return (result);
-}
-
-// ---
 QGAMES::MazeModel::PositionInMaze PacManII::Blinky::targetMazePosition () const
 {
 	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
@@ -445,6 +496,50 @@ QGAMES::MazeModel::PositionInMaze PacManII::Pinky::targetMazePosition () const
 			// When there is no references enough...go home!
 			else
 				result = runAwayMazePosition (); 
+			break;
+
+		// The target position for the rest of the status is calculated like the standard one...
+		default:
+			result = PacManII::StandardMonster::targetMazePosition ();
+	}
+
+	return (result);
+}
+
+// ---
+void PacManII::Inky::setReferenceArtists (const std::vector <PacManII::Artist*>& r)
+{
+	_referenceArtists = { nullptr /** The pacman. */, nullptr /** Blinky */ }; 
+	for (auto i : r)
+	{
+		if (dynamic_cast <PacManII::PacMan*> (i) != nullptr) _referenceArtists [0] = i;
+		else if (dynamic_cast <PacManII::Blinky*> (i) != nullptr) _referenceArtists [1] = i;
+	}
+
+	assert (_referenceArtists [0] != nullptr && _referenceArtists [1] != nullptr);
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Inky::targetMazePosition () const
+{
+	QGAMES::MazeModel::PositionInMaze result = QGAMES::MazeModel::_noPosition;
+
+	switch (status ())
+	{
+		case PacManII::Monster::Status::_NOTDEFINED:
+			result = currentMazePosition ();
+			break;
+
+		case PacManII::Monster::Status::_CHASING:
+			if (_referenceArtists [0] != nullptr && _referenceArtists [1] != nullptr)
+				result = QGAMES::MazeModel::PositionInMaze (
+						_referenceArtists [1] -> currentMazePosition ().asVector () + 
+							(__BD 2 * (_referenceArtists [0] -> nextXGridPosition (2).asVector () -
+								  _referenceArtists [1] -> currentMazePosition ().asVector ())));
+			// When there is no references enough...go home!
+			else
+				result = runAwayMazePosition (); 
+
 			break;
 
 		// The target position for the rest of the status is calculated like the standard one...

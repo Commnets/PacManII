@@ -21,19 +21,17 @@
 namespace PacManII
 {
 	/** The behaviour of a monster. */
-	class MonsterSceneActionBlock final : public QGAMES::SceneActionBlock
+	class MonsterSceneActionBlock : public QGAMES::SceneActionBlock
 	{
 		public:
 		struct Properties
 		{
 			Properties ()
-				: _entityId (0), _numberInMap (0), _points (0),
-				  _offsetXInitPosition (__BD 0), _offsetYInitPosition (__BD 0)
+				: _entityId (0), _numberInMap (0), _points (0)
 							{ }
 
-			Properties (int eId, int nM, int p, QGAMES::bdata oX, QGAMES::bdata oY)
-				: _entityId (eId), _numberInMap (nM), _points (p),
-				  _offsetXInitPosition (oX), _offsetYInitPosition (oY)
+			Properties (int eId, int nM, int p)
+				: _entityId (eId), _numberInMap (nM), _points (p)
 							{ }
 
 			Properties (const QGAMES::SceneActionBlockProperties& prps);
@@ -45,8 +43,6 @@ namespace PacManII
 			int _entityId;
 			int _numberInMap;
 			int _points;
-			QGAMES::bdata _offsetXInitPosition;
-			QGAMES::bdata _offsetYInitPosition;
 		};
 
 		MonsterSceneActionBlock () = delete;
@@ -64,25 +60,40 @@ namespace PacManII
 		const Properties& properties () const
 							{ return (_properties); }
 
+		// To manage the action block from the scene...
+		/** To know the number of monster being managed here. */
+		int monsterNumber () const
+							{ return ((_monster == nullptr) ? -1 : _monster -> monsterNumber ()); }
+		/** To know whether the monster is already moving. */
+		bool isMonsterMoving () const
+							{ return (onOffSwitch (_SWITCHMOVING) -> isOn ()); }
+		/** When te scene determines a monster has to departure, 
+			its number is communicated to all action blocks. 
+			Returns true when the instruction was accepted. */
+		bool timeToStart (int nM);
+
 		virtual void initialize () override;
 		virtual void updatePositions () override;
 		virtual void finalize () override;
 
-		private:
-		__DECLARECOUNTERS__ (Counters);
-		virtual QGAMES::Counters* createCounters () override
-							{ return (new Counters); }
+		virtual void processEvent (const QGAMES::Event& evnt) override;
+
+		protected:
+		/** To determine other potential conditions to start moving. 
+			It could be overloaded later. By default takes into account the number of balls eaten. */
+		virtual bool readyToStart (); 
+
 		__DECLAREONOFFSWITCHES__ (OnOffSwitches)
 		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
 							{ return (new OnOffSwitches); }
 
-		private:
+		protected:
 		/** The properties of the action block. */
 		Properties _properties;
 
-		/** The counters and the switches. */
-		static const int _COUNTERTOEXITHOME = 0;
-		static const int _SWITCHMOVING = 0;
+		/** The switches. */
+		static const int _SWITCHTOSTART = 0;
+		static const int _SWITCHMOVING = 1;
 
 		// Implementation
 		Monster* _monster;

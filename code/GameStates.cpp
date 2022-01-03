@@ -64,6 +64,8 @@ void PacManII::MonsterMovingGameState::onEnter ()
 #endif
 
 	// All of them are set in the state running to the right...
+	for (auto i : _artists)
+		{ i -> setOrientation (QGAMES::Vector (__BD 0, __BD -1, __BD 0) /** The only one accepted for monsters. */); i -> toStand (); }
 	_artists [0] -> setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGRIGHT__);
 	_artists [1] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);
 	_artists [2] -> setCurrentState (__PACMANII_MONSTERSTATEMOVINGANDLOOKINGRIGHT__);

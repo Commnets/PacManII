@@ -366,10 +366,9 @@ PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 	  _TILESHOMEPACMAN				({ 20,21,22,23,24,25,26,27,28,29 }),
 	  _TILESHOMEMONSTERS			({ 10,11,12,13,14,15,16,17,18,19 }),
 	  _TILESRUNAWAYMONSTERS			({ 0,1,2,3,4,5,6,7,8,9 }),
-	  _TILEEXITINGHOMEMONSTERS		(50),
-	  _TILEDEFININGTUNNELPATH		(51),
-	  _TILEDEFININGFRUITPOSITION	(52),
-	  _TILESDIRECTIONMAZE			({	{  0, { false,	true,	false,	true	} }, // LEFT, RIGHT, UP, DOWN
+	  _TILEFRUIT					(30),
+	  _TILEEXITMONSTERSHOME			(50),
+	  _TILESDIRECTIONSMAZE			({	{  0, { false,	true,	false,	true	} }, // LEFT, RIGHT, UP, DOWN
 										{  1, { true,	true,	false,	true	} },
 										{  2, { true,	false,	false,	true	} },
 										{  3, { false,	false,	true,	false	} },
@@ -385,7 +384,8 @@ PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 										{ 13, { true,	false,	true,	false	} },
 										{ 14, { false,	false,	true,	false	} },
 										{ 15, { false,	false,	false,	false	} }}),
-	  _TILESCONNECTION				({ 30,31,32,33,34,35,36,37,38,39 })
+	  _TILESZONES					({ 0, 1, 2, 3, 4, 5, 6, 7 }),
+	  _TILESCONNECTION				({ 51,52,53,54,55,56,57,58,59 })
 {
 	assert (_TILESLIMITBRIGHT.size () == _TILESLIMITDARK.size ());
 	// The have to have the same size to change between them...
@@ -440,14 +440,18 @@ QGAMES::TileLayer* PacManII::TMXMapBuilder::createTileLayer (int id, const std::
 {
 	QGAMES::TileLayer* result = nullptr;
 
-	if (n == std::string (__PACMANII_BACKGROUNDLAYERNAME__))
-		result = new PacManII::BackgroundLayer (id, n, t, m, p);
-	else if (n == std::string (__PACMANII_LOCATIONSLAYERNAME__))
-		result = new PacManII::LocationsLayer (id, n, t, m, p);
+	if (n == std::string (__PACMANII_ARTISTSLOCATIONSLAYERNAME__))
+		result = new PacManII::ArtistsLocationsLayer (id, n, t, m, p);
+	else if (n == std::string (__PACMANII_MAZELOCATIONSLAYERNAME__))
+		result = new PacManII::MazeLocationsLayer (id, n, t, m, p);
+	else if (n == std::string (__PACMANII_MAZEZONESLAYERNAME__))
+		result = new PacManII::MazeZonesLayer (id, n, t, m, p);
 	else if (n == std::string (__PACMANII_DIRECTIONSLAYERNAME__))
 		result = new PacManII::DirectionsLayer (id, n, t, m, p);
 	else if (n == std::string (__PACMANII_MAZELAYERNAME__))
 		result = new PacManII::MazeLayer (id, n, t, m, p);
+	else if (n == std::string (__PACMANII_BACKGROUNDLAYERNAME__))
+		result = new PacManII::BackgroundLayer (id, n, t, m, p);
 
 	// A layer not well defined becomes null...
 

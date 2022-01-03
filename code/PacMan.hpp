@@ -33,6 +33,7 @@ namespace PacManII
 			  _alive (true),
 			  _score (0),
 			  _status (Status::_NOTDEFINED),
+			  _lastStatus (Status::_NOTDEFINED),
 			  _hasEaten (false),
 			  _lastMulScoreNotified (0)
 							{ }
@@ -53,7 +54,7 @@ namespace PacManII
 		void setAlive (bool a)
 							{ _alive = a; }
 		virtual bool isStanding () const override
-							{ return (_status == Status::_NOTDEFINED || _status == Status::_STOPPED); }
+							{ return (_status == Status::_STOPPED); }
 		virtual bool isMoving () const override
 							{ return (_status == Status::_MOVING || _status == Status::_CHASING); }
 
@@ -82,6 +83,10 @@ namespace PacManII
 		protected:
 		void setStatus (const Status& st);
 
+		/** To know the last status. */
+		Status lastStatus () const
+							{ return (_lastStatus); }
+
 		/** The target position is the limit of the maze in the current direction of the movement. */
 		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
 
@@ -96,7 +101,8 @@ namespace PacManII
 		void adaptSpeed ();
 		/** It is a little bit different that the standard on as the movements made by the player 
 			in the joystick or keyboard have to be taken into account. */
-		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d) override;
+		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMaze 
+			(const QGAMES::Vector& mD = QGAMES::Vector::_noPoint) override;
 
 		private:
 		/** To indicate whether the pacman is alive. */
@@ -108,6 +114,8 @@ namespace PacManII
 		/** The number of points associated to this monster. */
 		/** The status of the pacman. */
 		Status _status;
+		/** The last status of pacman. */
+		Status _lastStatus;
 
 		// Implementation
 		/** To indicate whether the pacman has eaten or not something. */

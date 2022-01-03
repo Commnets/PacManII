@@ -243,22 +243,31 @@ namespace PacManII
 		/** To know the tile frames to locate monsters in the map. */
 		const std::vector <int>& monsterHomeFrames () const
 							{ return (_TILESHOMEMONSTERS); }
+		/** To know the tile frames to locate the running away monster's positions. */
 		const std::vector <int>& monsterRunAwayFrames () const
 							{ return (_TILESRUNAWAYMONSTERS); }
-		int monsterExitingHomeFrame () const
-							{ return (_TILEEXITINGHOMEMONSTERS); }
-		int tunnelPathEntryExitFrame () const
-							{ return (_TILEDEFININGTUNNELPATH); }
+		/** To know the tile frame to locate the fruit. */
 		int fruitPositionFrame () const
-							{ return (_TILEDEFININGFRUITPOSITION); }
+							{ return (_TILEFRUIT); }
+
+		/** To know the tile frame defining the exit of monster's home. */
+		int monsterExitingHomeFrame () const
+							{ return (_TILEEXITMONSTERSHOME); }
+		/** To know the tile frame describing when a tunnel starts. */
+		/** To know the file describing connections points, usually the tunnels. */
 		const std::vector <int>& connectionFrames () const
 							{ return (_TILESCONNECTION); }
+
+		/** To know the frames definning zones. 
+			Every tile frame will indicate a number of zone. */
+		const std::vector <int>& tilesZones () const
+							{ return (_TILESZONES); }
 
 		// Managing the tiles of maze description (directions). */ 
 		/** To know the tiles describing a direction a the direction itself. 
 			4 bools: LEFT, RIGHT, UP, DOWN. */
 		const std::map <int, std::vector <bool>>& directionFrames () const
-							{ return (_TILESDIRECTIONMAZE); }
+							{ return (_TILESDIRECTIONSMAZE); }
 
 		protected:
 		virtual QGAMES::Tile* createTile (int id, QGAMES::Form* form, int nf, 
@@ -280,23 +289,29 @@ namespace PacManII
 
 		protected:
 		// Implementation
+		// Tiles located in the "ArtistsLocation" layer
 		/** The tiles used to describe the path. */
 		std::vector <int> _TILESLIMITDARK, _TILESLIMITBRIGHT, 
 			_TILESPOWERBALL, _TILESNORMALBALL, _TILESPATH, _TILESPATHLIMITRIGHT, _TILESPATHLIMITLEFT;
-		/** The tiles used to define the location of monsters. */
+		/** The tiles used to define the location of artists. */
 		std::vector <int> _TILESHOMEPACMAN, _TILESHOMEMONSTERS, _TILESRUNAWAYMONSTERS;
-		/** The tile used to define the home exiting position. */
-		int _TILEEXITINGHOMEMONSTERS;
-		/** The tile used to define when the tunnel path starts. 
-			It means e.g. that the monsters slow down. */
-		int _TILEDEFININGTUNNELPATH;
 		/** The tile to indicate the position where the fruit appears. */
-		int _TILEDEFININGFRUITPOSITION;
+		int _TILEFRUIT;
+
+		// Tiles located in the "MazeLocations" layer
+		/** The tile used to define the home exiting position for monsters */
+		int _TILEEXITMONSTERSHOME;
+		/** Tiles indicating connection points. */
+		std::vector <int> _TILESCONNECTION;
+
+		// Tiles located in the "MazeZones" layer
+		/** Tile frame to indicate different zones. */
+		std::vector <int> _TILESZONES; 
+
+		// Tiles located in the "Directions" layer
 		/** The equivalent between tiles to mark direection and the direction itself.
 			Th order of the second veector is LEFT/RIGHT/UP/DOWN. */
-		std::map <int, std::vector <bool>> _TILESDIRECTIONMAZE;
-		/** Tile indicating the connection points. */
-		std::vector <int> _TILESCONNECTION;
+		std::map <int, std::vector <bool>> _TILESDIRECTIONSMAZE;
 	};
 
 	/** The extension to create worlds. 

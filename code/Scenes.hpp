@@ -21,6 +21,8 @@
 
 namespace PacManII
 {
+	class MonsterSceneActionBlock;
+
 	/** Basic Scene of the game. \n
 		Maps can be only PacManII ones. \n
 		The Scene has a siren in the background. \n
@@ -41,16 +43,24 @@ namespace PacManII
 		bool clapperBoard () const
 							{ return (_clapperBoard); }
 
+		/** To know whether the scene is or not in chasing mode. */
+		bool chasingMode () const
+							{ return (onOffSwitch (_SWITCHMONSTERSCHASING) -> isOn ()); }
+
 		/** To blink. */
 		void startBlinking (QGAMES::bdata bT, int nB);
 		bool isBlinking () const;
 		void stopBlinking ();
 
-		/** To manage the ball status of the scene. */
+		/** To control and manage the ball status of the scene. */
 		int maxNumberBallsToEat () const;
 		int numberBallsEaten () const;
+		int numberBallsEatenRound () const
+							{ return (_numberBallsEaten); }
 		std::string ballsEatenStatus () const;
 		void setBallsEatenStatus (const std::string& st);
+		bool isFirstRound () const
+							{ return (_firstRound); }
 
 		/** The siren will be played when the actual rate changes or when it was force. */
 		void playSiren (bool f = false);
@@ -75,6 +85,9 @@ namespace PacManII
 		void setMonstersChasing (bool c);
 		/** To switch on/off, the threaten status of the monsters. */
 		void setMonstersBeingThreaten (bool o);
+		/** To launch another monster. 
+			Returns true, when at least one monster was launched. */
+		bool launchNextMonster ();
 
 		protected:
 		bool _clapperBoard;
@@ -84,15 +97,27 @@ namespace PacManII
 		static const int _COUNTERMONSTERSRUNNINGAWAY = 1;
 		static const int _COUNTERMONSTERCHASINGCYCLES = 2;
 		static const int _COUNTERMONSTERSBEINGTHREATEN = 3;
+		static const int _COUNTERMONSTERSTIMETOLEAVEHOME = 4;
+		static const int _COUNTERMONSTERTOLEAVE = 5;
 		static const int _SWITCHMONSTERSCHASING = 0;
 		static const int _SWITCHMONSTERSBEINGTHREATEN = 1;
+		static const int _SWITCHALLMONSTERSMOVING = 2;
 
 		// Implementation
 		/** The percentage of the maze cleaned. */
 		QGAMES::bdata _percentageCleaned;
+		/* Number balls to eate, eaten and eaten in this round. */
+		mutable int _totalNumberBallsToEat, _totalNumberBallsEaten, _numberBallsEaten;
 		/** To indicta whether it is the first time to execute the updatePositions method. \n
 			First time that method is executed, it is set who refers to whom. */
 		bool _firstTimeUpdateMethod;
+		/** To indicate whether this round is or not the first. */
+		bool _firstRound;
+		/** A list of the action blocks relatd with monsters.
+			It is usefull later. */
+		std::vector <MonsterSceneActionBlock*> _monsterActionBlocks;
+		/** The list of monster numbers already started. */
+		std::vector <int> _numberMonstersMoving;
 
 		/** Used to play the siren. */
 		enum class SirenRate { _NORMAL = 0, _FAST = 1, _VERYFAST = 2 } _sirenRate;

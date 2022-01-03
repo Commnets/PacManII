@@ -10,7 +10,15 @@ QGAMES::MazeModel::PositionInMaze PacManII::PacmanElement::nextXGridPosition (in
 {
 	return ((pMap () == nullptr) 
 		? QGAMES::MazeModel::_noPosition 
-		: pMap () -> maze ().nextXGridPositionFollowing (currentMazePosition (), x, direction ()));
+		: pMap () -> maze ().nextXGridPositionFollowing (currentMazePosition (), x, orientation (), true));
+	// Notice that the orientation is taken into account 
+	// and not the direction because the element could be already stopped
+}
+
+// ---
+int PacManII::PacmanElement::currentMazeArea () const
+{
+	return ((pMap () == nullptr) ? -1 : pMap () -> maze ().mazeZoneAt (currentMazePosition ()));
 }
 
 // ---
@@ -171,20 +179,17 @@ void PacManII::Artist::toStopDeferred ()
 }
 
 // ---
-QGAMES::MazeModel::PathInMaze& PacManII::Artist::recalculatePathInMazeAvoiding (const std::vector <QGAMES::Vector>& d)
+QGAMES::MazeModel::PathInMaze& PacManII::Artist::recalculatePathInMaze (const QGAMES::Vector& mD)
 { 
 	return (_pathInMaze = 
-		pMap () -> maze ().next2StepsToGoTo (currentMazePosition (), targetMazePosition (), d)); 
+		pMap () -> maze ().next2StepsToGoTo (currentMazePosition (), targetMazePosition (), { })); 
 }
 
 // ---
 bool PacManII::Artist::isArtistEnteringATunnel () const
 {
-	if (_pathInMaze.size () < 2)
-		return (false); // Either it is not moving, or the path has only only step!
-
-	return ((nextMazePosition (1).asVector () - nextMazePosition (0).asVector ()) != 
-			 pMap () -> maze ().directionToGetFromTo (nextMazePosition (1), nextMazePosition (0)));
+	return ((pMap () == nullptr) 
+		? false : pMap () -> maze ().isTunnelConnectionAt (currentMazePosition ()));
 }
 
 // ---
