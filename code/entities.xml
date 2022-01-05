@@ -166,12 +166,8 @@
 			<Form id="50020"/>
 		</Forms>
 		<MovementsBase>
-			<!-- (Chasing/At home) pacman through the maze -->
+			<!-- Moving through the maze -->
 			<Movement id="550010"/>
-			<!-- Running away from pacman through the maze -->
-			<Movement id="560010"/>
-			<!-- After being eaten -->
-			<Movement id="570010"/>
 			<!-- At home -->
 			<Movement id="580010"/>
 		</MovementsBase>
@@ -242,6 +238,17 @@
 					<!-- Not linked with anyone -->
 				</Attributes>
 			</Animation>
+			<!-- Now can be eaten, but in blink status -->
+			<Animation id="6" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50020"/>
+					<Attribute id="INITIALASPECT" value="26"/>
+					<Attribute id="FINALASPECT" value="28"/>
+					<Attribute id="FRACTIONTOCHANGE" value="6"/>
+					<Attribute id="LOOP" value="1"/>
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
 		</Animations>
 		<States>
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
@@ -253,13 +260,15 @@
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550010"/>
 			<!-- Running away from Pacman (they can be eaten) -->
-			<State id="4" animation="4" movementBase="560010"/>
+			<State id="4" animation="4" movementBase="550010"/>
 			<!-- After being eaten going back home -->
-			<State id="5" animation="5" movementBase="570010"/>
+			<State id="5" animation="5" movementBase="550010"/>
 			<!-- Moving at home looking up -->
 			<State id="6" animation="2" movementBase="580010"/>
 			<!-- Moving at home looking down -->
 			<State id="7" animation="3" movementBase="580010"/>
+			<!-- Running away from Pacman (they can be eaten), but blink -->
+			<State id="8" animation="6" movementBase="550010"/>
 		</States>
 	</SetOfEntities>
 
@@ -269,12 +278,8 @@
 			<Form id="50020"/>
 		</Forms>
 		<MovementsBase>
-			<!-- Chasing pacman through the maze -->
+			<!-- Moving through the maze -->
 			<Movement id="550020"/>
-			<!-- Running away from pacman through the maze -->
-			<Movement id="560020"/>
-			<!-- After being eaten -->
-			<Movement id="570020"/>
 			<!-- At home -->
 			<Movement id="580020"/>
 		</MovementsBase>
@@ -345,6 +350,17 @@
 					<!-- Not linked with anyone -->
 				</Attributes>
 			</Animation>
+			<!-- Now can be eaten, but in blink status -->
+			<Animation id="6" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50020"/>
+					<Attribute id="INITIALASPECT" value="26"/>
+					<Attribute id="FINALASPECT" value="28"/>
+					<Attribute id="FRACTIONTOCHANGE" value="6"/>
+					<Attribute id="LOOP" value="1"/>
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
 		</Animations>
 		<States>
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
@@ -356,13 +372,15 @@
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550020"/>
 			<!-- Running away from Pacman (they can be eaten) -->
-			<State id="4" animation="4" movementBase="560020"/>
+			<State id="4" animation="4" movementBase="550020"/>
 			<!-- After being eaten going back home -->
-			<State id="5" animation="5" movementBase="570020"/>
+			<State id="5" animation="5" movementBase="550020"/>
 			<!-- Moving at home looking up -->
 			<State id="6" animation="2" movementBase="580020"/>
 			<!-- Moving at home looking down -->
 			<State id="7" animation="3" movementBase="580020"/>
+			<!-- Running away from Pacman (they can be eaten), but blink -->
+			<State id="8" animation="6" movementBase="550020"/>
 		</States>
 	</SetOfEntities>
 
@@ -372,12 +390,8 @@
 			<Form id="50020"/>
 		</Forms>
 		<MovementsBase>
-			<!-- Chasing pacman through the maze -->
+			<!-- Moving through the maze -->
 			<Movement id="550030"/>
-			<!-- Running away from pacman through the maze -->
-			<Movement id="560030"/>
-			<!-- After being eaten -->
-			<Movement id="570030"/>
 			<!-- At home -->
 			<Movement id="580030"/>
 		</MovementsBase>
@@ -448,6 +462,17 @@
 					<!-- Not linked with anyone -->
 				</Attributes>
 			</Animation>
+			<!-- Now can be eaten, but in blink status -->
+			<Animation id="6" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50020"/>
+					<Attribute id="INITIALASPECT" value="26"/>
+					<Attribute id="FINALASPECT" value="28"/>
+					<Attribute id="FRACTIONTOCHANGE" value="6"/>
+					<Attribute id="LOOP" value="1"/>
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
 		</Animations>
 		<States>
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
@@ -459,13 +484,15 @@
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550030"/>
 			<!-- Running away from Pacman (they can be eaten) -->
-			<State id="4" animation="4" movementBase="560030"/>
+			<State id="4" animation="4" movementBase="550030"/>
 			<!-- After being eaten going back home -->
-			<State id="5" animation="5" movementBase="570030"/>
+			<State id="5" animation="5" movementBase="550030"/>
 			<!-- Moving at home looking up -->
 			<State id="6" animation="2" movementBase="580030"/>
 			<!-- Moving at home looking down -->
 			<State id="7" animation="3" movementBase="580030"/>
+			<!-- Running away from Pacman (they can be eaten), but blink -->
+			<State id="8" animation="6" movementBase="550030"/>
 		</States>
 	</SetOfEntities>
 
@@ -475,12 +502,8 @@
 			<Form id="50020"/>
 		</Forms>
 		<MovementsBase>
-			<!-- Chasing pacman through the maze -->
+			<!-- Moving through the maze -->
 			<Movement id="550040"/>
-			<!-- Running away from pacman through the maze -->
-			<Movement id="560040"/>
-			<!-- After being eaten -->
-			<Movement id="570040"/>
 			<!-- At home -->
 			<Movement id="580040"/>
 		</MovementsBase>
@@ -551,6 +574,17 @@
 					<!-- Not linked with anyone -->
 				</Attributes>
 			</Animation>
+			<!-- Now can be eaten, but in blink status -->
+			<Animation id="6" type="0">
+				<Attributes>
+					<Attribute id="FORM" value="50020"/>
+					<Attribute id="INITIALASPECT" value="26"/>
+					<Attribute id="FINALASPECT" value="28"/>
+					<Attribute id="FRACTIONTOCHANGE" value="6"/>
+					<Attribute id="LOOP" value="1"/>
+					<!-- Not linked with anyone -->
+				</Attributes>
+			</Animation>
 		</Animations>
 		<States>
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the right -->
@@ -562,13 +596,15 @@
 			<!-- (Starting/Chasing/Going Home/) Pacman while looking to the down -->
 			<State id="3" animation="3" movementBase="550040"/>
 			<!-- Running away from Pacman (they can be eaten) -->
-			<State id="4" animation="4" movementBase="560040"/>
+			<State id="4" animation="4" movementBase="550040"/>
 			<!-- After being eaten going back home -->
-			<State id="5" animation="5" movementBase="570040"/>
+			<State id="5" animation="5" movementBase="550040"/>
 			<!-- Moving at home looking up -->
 			<State id="6" animation="2" movementBase="580040"/>
 			<!-- Moving at home looking down -->
 			<State id="7" animation="3" movementBase="580040"/>
+			<!-- Running away from Pacman (they can be eaten), but blink -->
+			<State id="8" animation="6" movementBase="550040"/>
 		</States>
 	</SetOfEntities>
 

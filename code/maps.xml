@@ -10,5 +10,8 @@
 	<SetOfMaps baseId="50075" number="25" type="1" file="maps/normalmap_yellow.tmx"/>
 	
 	<Map id="50200" type="1" file="maps/map.tmx"/>
+	
+	<!-- For testing purposes -->
+	<SetOfMaps baseId="50100" number="2" type="1" file="maps/maptest.tmx"/>
 
 </Maps>

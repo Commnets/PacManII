@@ -9,7 +9,8 @@ PacManII::Monster::Monster (int cId, int mN, const QGAMES::Forms& f, const QGAME
 	  _monsterNumber (mN),
 	  _points (100), // By default...
 	  _status (PacManII::Monster::Status::_NOTDEFINED),
-	  _lastStatus (PacManII::Monster::Status::_NOTDEFINED)
+	  _lastStatus (PacManII::Monster::Status::_NOTDEFINED),
+	  _elroyCondition (-1)
 { 
 	assert (_monsterNumber >= 0);
 
@@ -96,28 +97,40 @@ void PacManII::Monster::toMove (const QGAMES::Vector& d)
 // ---
 void PacManII::Monster::toChase (bool f)
 {
-	if (isStanding ())
+	if (isStanding () || !isAlive ())
 		return; // When standing, it is at home, so impossible to be in this state!
 	{
 		if (f)
 		{
 			if (status () == PacManII::Monster::Status::_RUNNINGWAY ||
-				status () == PacManII::Monster::Status::_EXITINGHOME)
+				(status () == PacManII::Monster::Status::_EXITINGHOME && !isAtHome ()))
 				setStatus (PacManII::Monster::Status::_CHASING);
 		}
 		else
 		{
 			if (status () == PacManII::Monster::Status::_CHASING ||
-				status () == PacManII::Monster::Status::_EXITINGHOME)
+				(status () == PacManII::Monster::Status::_EXITINGHOME && !isAtHome ()))
 				setStatus (PacManII::Monster::Status::_RUNNINGWAY);
 		}
 	}
 }
 
 // ---
+void PacManII::Monster::toChaseDeferred (bool o)
+{
+	PacManII::Monster::ToChaseBuoy* b = 
+		dynamic_cast <PacManII::Monster::ToChaseBuoy*> (buoy (__PACMANII_TOCHASEBUOYID__));
+	assert (b != nullptr); // Just in case...
+
+	b -> setChasing (o);
+
+	b -> active (true); 
+}
+
+// ---
 void PacManII::Monster::toBeThreaten (bool f)
 {
-	if (isStanding ())
+	if (isStanding () && !isAlive ())
 		return; // When standing, it is at home, so impossible to be affected by this action!
 	else
 	{
@@ -134,6 +147,31 @@ void PacManII::Monster::toBeThreaten (bool f)
 			if (status () == PacManII::Monster::Status::_TOBEEATEN)
 				setStatus (PacManII::Monster::Status::_CHASING); // The orientation is not modified either!
 		}
+	}
+}
+
+// ---
+void PacManII::Monster::toBlink (bool b, int bp)
+{
+	if (_status != PacManII::Monster::Status::_TOBEEATEN)
+		return;
+
+	if (b)
+	{
+		if (!onOffSwitch (_SWITCHBLINKACTIVE) -> isOn ())
+		{
+			onOffSwitch (_SWITCHBLINKACTIVE) -> set (true);
+			onOffSwitch (_SWITCHBLINKSITUATION) -> set (true);
+
+			counter (_COUNTERBLINKSITUATION) -> initialize (bp, 0, true, true);
+
+			setStatus (status ());
+		}
+	}
+	else
+	{
+		if (onOffSwitch (_SWITCHBLINKACTIVE) -> isOn ())
+			onOffSwitch (_SWITCHBLINKACTIVE) -> set (false);
 	}
 }
 
@@ -162,10 +200,35 @@ void PacManII::Monster::initialize ()
 {
 	PacManII::Artist::initialize ();
 
+	_lastStatus = PacManII::Monster::Status::_NOTDEFINED;
+
+	_points = 100; // It has to be set froum outside...
+
 	// Always at home initially...
 	// The position is set by the scene up!
 	setOrientation (QGAMES::Vector (__BD 0, __BD -1, __BD 0));
 	setStatus (PacManII::Monster::Status::_NOTDEFINED);
+
+	_elroyCondition = -1; // No condition at the beginning...
+
+	reStartAllCounters ();
+	reStartAllOnOffSwitches ();
+}
+
+// ---
+void PacManII::Monster::updatePositions ()
+{
+	PacManII::Artist::updatePositions ();
+
+	if (isInATunnelHall ())
+		adaptSpeed ();
+
+	if (onOffSwitch (_SWITCHBLINKACTIVE) -> isOn () &&
+		counter (_COUNTERBLINKSITUATION) -> isEnd ())
+	{
+		onOffSwitch (_SWITCHBLINKSITUATION) -> change ();
+		setStatus (status ()); // Just to blink...
+	}
 }
 
 // ---
@@ -191,6 +254,19 @@ void PacManII::Monster::processEvent (const QGAMES::Event& evnt)
 void PacManII::Monster::whenCollisionWith (QGAMES::Entity* e)
 {
 	// TODO
+}
+
+// ---
+__IMPLEMENTCOUNTERS__ (PacManII::Monster::Counters)
+{
+	addCounter (new QGAMES::Counter (_COUNTERBLINKSITUATION , 1 /** Initilized later. */, true, false));
+}
+
+// ---
+__IMPLEMENTONOFFSWITCHES__ (PacManII::Monster::OnOffSwitches)
+{
+	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHBLINKACTIVE, false));
+	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHBLINKSITUATION, false));
 }
 
 // ---
@@ -255,18 +331,6 @@ void* PacManII::Monster::ToChaseBuoy::treatFor (QGAMES::Element* e)
 	mter -> toChase (_chasing);
 
 	return (this);
-}
-
-// ---
-void PacManII::Monster::toChaseDeferred (bool o)
-{
-	PacManII::Monster::ToChaseBuoy* b = 
-		dynamic_cast <PacManII::Monster::ToChaseBuoy*> (buoy (__PACMANII_TOCHASEBUOYID__));
-	assert (b != nullptr); // Just in case...
-
-	b -> setChasing (o);
-
-	b -> active (true); 
 }
 
 // ---
@@ -421,7 +485,13 @@ void PacManII::StandardMonster::setStateToMoveTo (const QGAMES::Vector& d)
 			break;
 
 		case PacManII::Monster::Status::_TOBEEATEN:
-			setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAY__, true);
+			{
+				if (onOffSwitch (_SWITCHBLINKACTIVE) -> isOn () && onOffSwitch (_SWITCHBLINKSITUATION) -> isOn ())
+					setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAYBLINK__, true);
+				else
+					setCurrentState (__PACMANII_MONSTERSTATERUNNINGAWAY__, true);
+			}
+
 			break;
 
 		case PacManII::Monster::Status::_BEINGEATEN:
@@ -444,12 +514,32 @@ void PacManII::StandardMonster::adaptSpeed ()
 	PacManII::MazeMovement* mM = dynamic_cast <PacManII::MazeMovement*> (currentMovement ());
 	assert (mM != nullptr); // is moving?
 
+	// To choose the right speed is key in games pacman-type
+	// There are many different possibilities, depending on where the monster is in: 
+	// Not the same in a tunnel or at hom than in other positions of the maze, and
+	// not the same chasing or running away than be threaten by pacman!
 	const PacManII::DataGame::LevelDefinition& lD = pG -> dataGame ().levelDefinition (pG -> level ());
-	mM -> setSpeed 
-		(status () == PacManII::Monster::Status::_BEINGEATEN
-			? __BD lD.ghostSpeedWhenBeingFrighten () 
-			: ((status () == PacManII::Monster::Status::_EXITINGHOME) 
-				? __BD lD.ghostSpeedWhenExitingHome () : __BD lD.ghostSpeed ()));
+	if (isInATunnelHall ())
+		mM -> setSpeed (__BD lD.ghostSpeedWhenCrossingTunnel ());
+	else
+	if (elroyCondition () != -1)
+		mM -> setSpeed (__BD lD.elroyCondition (elroyCondition ()).ghostSpeed (_monsterNumber));
+	else 
+		mM -> setSpeed 
+			(status () == PacManII::Monster::Status::_BEINGEATEN
+				? __BD lD.ghostSpeedWhenBeingFrighten () 
+				: ((status () == PacManII::Monster::Status::_EXITINGHOME && isAtHome ()) 
+						? __BD lD.ghostSpeedWhenExitingHome () : __BD lD.ghostSpeed ()));
+}
+
+// ---
+void PacManII::Blinky::setElroyCondition (int eC)
+{
+	if (eC != -1 && isAlive () && status () != PacManII::Monster::Status::_TOBEEATEN)
+	{
+		_elroyCondition = eC;
+		adaptSpeed ();
+	}
 }
 
 // ---
@@ -465,7 +555,10 @@ QGAMES::MazeModel::PositionInMaze PacManII::Blinky::targetMazePosition () const
 
 		case PacManII::Monster::Status::_CHASING:
 			if (_referenceArtists [0] != nullptr)
-				result = _referenceArtists [0] -> currentMazePosition ();
+			{
+				if ((result = _referenceArtists [0] -> currentMazePosition ()) == currentMazePosition ())
+					result = nextXGridPosition (1);
+			}
 			// When there is no references enough...go home!
 			else
 				result = runAwayMazePosition (); 
@@ -492,7 +585,12 @@ QGAMES::MazeModel::PositionInMaze PacManII::Pinky::targetMazePosition () const
 
 		case PacManII::Monster::Status::_CHASING:
 			if (_referenceArtists [0] != nullptr)
-				result = _referenceArtists [0] -> nextXGridPosition (4);
+			{
+				// In the original pac man, the position taken as reference was 4 tiles ahead from pacman and not 2...	
+				// But in this version tiles are twice than in the original one, so they are considered 2 instead of 4!
+				if ((result = _referenceArtists [0] -> nextXGridPosition (2)) == currentMazePosition ())
+					result = nextXGridPosition (1);
+			}
 			// When there is no references enough...go home!
 			else
 				result = runAwayMazePosition (); 
@@ -532,10 +630,15 @@ QGAMES::MazeModel::PositionInMaze PacManII::Inky::targetMazePosition () const
 
 		case PacManII::Monster::Status::_CHASING:
 			if (_referenceArtists [0] != nullptr && _referenceArtists [1] != nullptr)
-				result = QGAMES::MazeModel::PositionInMaze (
+			{
+				// In the original pac man, the position taken as reference was 2 tiles ahead from pacman and not 1...	
+				// But in this version tiles are twice than in the original one, so they are considered 1 instead of 4!
+				if ((result = QGAMES::MazeModel::PositionInMaze (
 						_referenceArtists [1] -> currentMazePosition ().asVector () + 
-							(__BD 2 * (_referenceArtists [0] -> nextXGridPosition (2).asVector () -
-								  _referenceArtists [1] -> currentMazePosition ().asVector ())));
+							(__BD 2 * (_referenceArtists [0] -> nextXGridPosition (1).asVector () -
+								  _referenceArtists [1] -> currentMazePosition ().asVector ())))) == currentMazePosition ())
+					result = nextXGridPosition (1);
+			}
 			// When there is no references enough...go home!
 			else
 				result = runAwayMazePosition (); 
@@ -564,9 +667,14 @@ QGAMES::MazeModel::PositionInMaze PacManII::Clyde::targetMazePosition () const
 		case PacManII::Monster::Status::_CHASING:
 			if (_referenceArtists [0] != nullptr)
 			{
+				// In the original pac man, the distancee considered was 8 tiles instead of 4,
+				// but as in this version tiles are doubl sized than in the original one, 4 has been choseen!.
 				if ((_referenceArtists [0] -> currentMazePosition ().asVector () - 
-					 currentMazePosition ().asVector ()).module () > __BD 8)
-					result = _referenceArtists [0] -> currentMazePosition ();
+					 currentMazePosition ().asVector ()).module () > __BD 4)
+				{
+					if ((result = _referenceArtists [0] -> currentMazePosition ()) == currentMazePosition ())
+						result = nextXGridPosition (1);
+				}
 				else
 					result = runAwayMazePosition ();
 			}

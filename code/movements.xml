@@ -11,37 +11,21 @@
 
 	<!-- Inky's through-the-maze chasing movements -->
 	<SetOfMovements fromId="550010" number="10"/>
-	<!-- Inky's through-the-maze running away movements -->
-	<SetOfMovements fromId="560010" number="10"/>
-	<!-- Inky's after-being-eaten movements -->
-	<SetOfMovements fromId="570010" number="10"/>
 	<!-- Inky's at-home movements -->
 	<SetOfMovements fromId="580010" number="10"/>
 
 	<!-- Blinky's through-the-maze chasing movements -->
 	<SetOfMovements fromId="550020" number="10"/>
-	<!-- Blinky's through-the-maze running away movements -->
-	<SetOfMovements fromId="560020" number="10"/>
-	<!-- Blinky's after-being-eaten movements -->
-	<SetOfMovements fromId="570020" number="10"/>
 	<!-- Blinky's at-home movements -->
 	<SetOfMovements fromId="580020" number="10"/>
 
 	<!-- Pinky's through-the-maze chasing movements -->
 	<SetOfMovements fromId="550030" number="10"/>
-	<!-- Pinky's through-the-maze running away movements -->
-	<SetOfMovements fromId="560030" number="10"/>
-	<!-- Pinky's after-being-eaten movements -->
-	<SetOfMovements fromId="570030" number="10"/>
 	<!-- Pinky's at-home movements -->
 	<SetOfMovements fromId="580030" number="10"/>
 
 	<!-- Clide's through-the-maze chasing movements -->
 	<SetOfMovements fromId="550040" number="10"/>
-	<!-- Clide's through-the-maze running away movements -->
-	<SetOfMovements fromId="560040" number="10"/>
-	<!-- Clide's after-being-eaten movements -->
-	<SetOfMovements fromId="570040" number="10"/>
 	<!-- Clide's at-home movements -->
 	<SetOfMovements fromId="580040" number="10"/>
 

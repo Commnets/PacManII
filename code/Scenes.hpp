@@ -36,6 +36,12 @@ namespace PacManII
 			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
 			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ());
 
+		/** The pacman scene can not delegate thes methods in the standard ones.
+			The status of th switxhs and countrs will be then saved, and this is not what we want to happen.
+			Everytime a screen is lunched back the only important information to keep is the status of the ball aeaten. */
+		virtual QGAMES::SetOfOpenValues runtimeValues () const override;
+		virtual void initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg) override;
+
 		/** Know whether the scene is or not already working. 
 			This is mainly for counters and switches consideration. */
 		void setClapperBoard (bool o)
@@ -59,8 +65,8 @@ namespace PacManII
 							{ return (_numberBallsEaten); }
 		std::string ballsEatenStatus () const;
 		void setBallsEatenStatus (const std::string& st);
-		bool isFirstRound () const
-							{ return (_firstRound); }
+		int numberRound () const
+							{ return (_numberRound); }
 
 		/** The siren will be played when the actual rate changes or when it was force. */
 		void playSiren (bool f = false);
@@ -85,6 +91,8 @@ namespace PacManII
 		void setMonstersChasing (bool c);
 		/** To switch on/off, the threaten status of the monsters. */
 		void setMonstersBeingThreaten (bool o);
+		/** The monsters to blink. */
+		void setMonstersBlinking (bool b, int bp);
 		/** To launch another monster. 
 			Returns true, when at least one monster was launched. */
 		bool launchNextMonster ();
@@ -102,6 +110,7 @@ namespace PacManII
 		static const int _SWITCHMONSTERSCHASING = 0;
 		static const int _SWITCHMONSTERSBEINGTHREATEN = 1;
 		static const int _SWITCHALLMONSTERSMOVING = 2;
+		static const int _SWITCHMONSTERSBLINKING = 3;
 
 		// Implementation
 		/** The percentage of the maze cleaned. */
@@ -111,8 +120,8 @@ namespace PacManII
 		/** To indicta whether it is the first time to execute the updatePositions method. \n
 			First time that method is executed, it is set who refers to whom. */
 		bool _firstTimeUpdateMethod;
-		/** To indicate whether this round is or not the first. */
-		bool _firstRound;
+		/** To indicate th number of round. */
+		bool _numberRound;
 		/** A list of the action blocks relatd with monsters.
 			It is usefull later. */
 		std::vector <MonsterSceneActionBlock*> _monsterActionBlocks;

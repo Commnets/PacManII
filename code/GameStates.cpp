@@ -393,7 +393,8 @@ void PacManII::PlayingControlGameState::onEnter ()
 	g -> addScoreObjects ();
 
 	// This instruction sets the world and the scene accoinding to the level defined in DataGame
-	g -> setLevel (g -> level ());
+	g -> setLevel (_nextLevel);
+	_nextLevel = 1; // One used it is set back to the original value...
 
 	// ...and here we increment number of times the player tries this level...
 	g -> setTriesOnLevel (g -> level (), g -> triesOnLevel (g -> level ()) + 1);
@@ -869,18 +870,19 @@ int PacManII::GameStateControl::circunstanceWhen (QGAMES::GameState* st, const Q
 							break;
 
 						case PacManII::PlayingGameState::MainCharacterState::_REACHGOAL:
-							// When the pacman reaches the goal, either the game finishes when the level is the last possible (4)
-							// or stops (a pacman is threaten by a monster) for a while if the level requieres it, or
-							// just moves to the next level possible...
-							result = (g -> stopsAfterCurrentLevel () ? (g -> isCurrentLevelLast () ? 4 : 3) : 1);
+							{
+								g -> setScore (g -> pacman () -> score ());
+								g -> setFruitsEaten (g -> pacman () -> fruitsEaten ());
 
-							g -> setScore (g -> pacman () -> score ());
-							g -> setFruitsEaten (g -> pacman () -> fruitsEaten ());
+								// When the pacman reaches the goal, either the game finishes when the level is the last possible (4)
+								// or stops (a pacman is threaten by a monster) for a while if the level requieres it, or
+								// just moves to the next level possible...
+								result = (g -> stopsAfterCurrentLevel () ? (g -> isCurrentLevelLast () ? 4 : 3) : 1);
 
-							if (g -> activeWorld () != nullptr)
-								g -> activeWorld () -> finalize ();
-
-							g -> setNextLevel ();
+								// Keeps that information in the playing control entity
+								// to be used once it is initialized!
+								cPS -> setNextLevel (g -> level () + 1);
+							}
 							break;
 
 						case PacManII::PlayingGameState::MainCharacterState::_OPTIONS:

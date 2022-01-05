@@ -80,6 +80,8 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 	{
 		if (_monster -> status () == PacManII::Monster::Status::_ATHOME)
 			onOffSwitch (_SWITCHMOVING) -> set (false);
+		else
+			elronCondition ();
 	}
 	else
 	{
@@ -99,7 +101,7 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 		else
 		{
 			_monster -> toMove (_monster -> directionToStartMovement ()); // Never chase...
-			if (scn -> chasingMode () == true)
+			if (scn -> chasingMode () == true) 
 				_monster -> toChase (true);
 
 			onOffSwitch (_SWITCHTOSTART) -> set (true);
@@ -150,7 +152,47 @@ bool PacManII::MonsterSceneActionBlock::readyToStart ()
 	assert (scn != nullptr);
 
 	return (scn -> numberBallsEatenRound () >= g -> dataGame ().levelDefinition 
-		(g -> level ()).leaveHomeConditions ().dotsToLeaveFor (_monster -> monsterNumber (), scn -> isFirstRound ()));
+		(g -> level ()).leaveHomeCondition (scn -> numberRound ()).dotsToLeaveFor (_monster -> monsterNumber ()));
+}
+
+// ---
+bool PacManII::MonsterSceneActionBlock::elronCondition ()
+{
+	if (!_monster -> hasElroyPossibility ())
+		return (true); // No needed...
+
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
+	assert (scn != nullptr);
+
+	PacManII::DataGame::LevelDefinition::ElroyCondition eC = 
+		g -> levelDefinition (g -> level ()).elroyCondition (scn -> numberRound ());
+
+	bool result = false;
+
+	if (_monster -> elroyCondition () == -1) // Not set still...
+	{
+		if ((scn -> maxNumberBallsToEat () - scn -> numberBallsEaten ()) <= eC.numberBallLeft (_monster -> monsterNumber ()))
+		{
+			_monster -> setElroyCondition (scn -> numberRound ());
+
+			result = true;
+		}
+	}
+
+	if (_monster -> elroyCondition () != -1) // Already set...
+	{
+		if (_monster -> isAlive () && 
+			!_monster -> isChasing () && eC.chasingWhenScatter (_monster -> monsterNumber ()))
+		{
+			_monster -> toChase (true);
+
+			result = true;
+		}
+	}
+
+	return (result);
 }
 
 // ---

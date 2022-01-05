@@ -127,7 +127,9 @@ namespace PacManII
 			  _fruitsEaten (nullptr),
 			  _showFPS (false), // Not to show by default...
 			  _detectCollisions (false), // Not detected by default...
-			  _tmxAddsOnMapBuilder (nullptr)
+			  _tmxAddsOnMapBuilder (nullptr),
+			  _drawArtistTarget (false),
+			  _passwordWellIntroduced (false)
 							{ }
 
 		~Game ()
@@ -252,6 +254,13 @@ namespace PacManII
 		TMXMapBuilder* tmxAddsOnMapBuilder () 
 							{ return (_tmxAddsOnMapBuilder); }
 
+		// Implementation
+		/** To determine whether draw or not artist target. */
+		bool drawArtistTarget () const
+							{ return (_drawArtistTarget); }
+		bool passwordWellIntroduced () const
+							{ return (_passwordWellIntroduced); }
+
 		protected:
 		/** The core builder of pacman can't be overloaded later. */
 		virtual QGAMES::TextBuilder* createTextBuilder () final override
@@ -300,6 +309,11 @@ namespace PacManII
 		bool _detectCollisions;
 		/** A reference to the adds on to create the maps. */
 		TMXMapBuilder* _tmxAddsOnMapBuilder;
+		/** To draw or not to draw target of the artists in the maze. */
+		bool _drawArtistTarget;
+		/** To know whether a password has or not well defined in the configuration file. 
+			This password is used to avoid e.g pacman to die. */
+		bool _passwordWellIntroduced;
 	};
 }
 

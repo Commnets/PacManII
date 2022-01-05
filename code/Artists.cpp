@@ -73,14 +73,6 @@ PacManII::Artist::Artist (int cId, const QGAMES::Forms& f, const QGAMES::Entity:
 }
 
 // ---
-bool PacManII::Artist::canMove (const QGAMES::Vector& d, const QGAMES::Vector& a)
-{
-	// TODO
-
-	return (true);
-}
-
-// ---
 void PacManII::Artist::changeDirectionWhenPossibleTo (const QGAMES::Vector& d)
 { 
 	// An Artist can change the direction of the movement when it is moving...
@@ -131,15 +123,23 @@ void PacManII::Artist::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
 
 	PacManII::PacmanElement::drawOn (scr, p);
 
-#ifndef NDEBUG
-	QGAMES::Position posI = mazePositionToMapPosition (currentMazePosition ());
-	if (posI != QGAMES::Position::_noPoint)
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+
+	if (g -> drawArtistTarget ())
 	{
-		QGAMES::Position posT = mazePositionToMapPosition (targetMazePosition ());
-		for (int i = 0; i < 3; i++)
-			scr -> drawCircle (posT, QGAMES::Vector::_zNormal, __BD (16 - i), __BD (16 - i), __QGAMES_REDCOLOR__, false);
-		scr -> drawLine (posI, posT, __QGAMES_REDCOLOR__, 3);
+		QGAMES::Position posI = mazePositionToMapPosition (currentMazePosition ());
+		if (posI != QGAMES::Position::_noPoint)
+		{
+			QGAMES::Position posT = mazePositionToMapPosition (targetMazePosition ());
+			for (int i = 0; i < 3; i++)
+				scr -> drawCircle (posT, QGAMES::Vector::_zNormal, __BD (16 - i), __BD (16 - i), __QGAMES_REDCOLOR__, false);
+			scr -> drawLine (posI, posT, __QGAMES_REDCOLOR__, 3);
+		}
 	}
+
+#ifndef _NDEBUG
+	scr -> drawRectangle (collisionZone (), __QGAMES_YELLOWCOLOR__, false);
 #endif
 }
 

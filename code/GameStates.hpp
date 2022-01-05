@@ -209,15 +209,19 @@ namespace PacManII
 
 	/** Complex state to control when playing. */
 	class PlayingGameState; // Defined later but used here...
+	class GameStateControl; // ...The same
 	class PlayingControlGameState final : public QGAMES::GameStateControl
 	{
 		public:
+		friend PacManII::GameStateControl;
+
 		PlayingControlGameState () = delete;
 
 		PlayingControlGameState (int id, 
 				const QGAMES::GameStates& sts, const QGAMES::GameStateControl::FlowMap& fM)
 			: QGAMES::GameStateControl (id, QGAMES::Game::game (), sts, fM),
-			  _pacman (nullptr)
+			  _pacman (nullptr),
+			  _nextLevel (1) // By defaul...
 							{ }
 
 		PlayingControlGameState (const PlayingControlGameState&) = delete;
@@ -236,10 +240,17 @@ namespace PacManII
 		private:
 		virtual int circunstanceWhen (QGAMES::GameState* st, const QGAMES::Event& evnt) override;
 
+		// Implementation
+		/** When playing status finishes, this is to set which the next level will be the nxt time to enter here. */
+		void setNextLevel (int l)
+							{ _nextLevel = l; }
+
 		private:
 		// Implementation
 		/** A reference to the dragon artist being controlled by this playing state. */
 		PacMan* _pacman;
+		/** The number of the next level. */
+		int _nextLevel;
 	};
 
 	/** Just to play. The control is on Player's hands eventually. */

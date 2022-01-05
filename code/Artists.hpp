@@ -74,10 +74,12 @@ namespace PacManII
 		bool doesPositionMatchesTile (const QGAMES::Position& p) const;
 	};
 
-	/** All artists in pacman moves in the same way. 
-		The center of any artist always move from the center to a tile to the center of the next
+	/** All artists in pacman moves and also in the same way. 
+		The center of any artist always move from the center of a tile to the center of the next one
 		following the direction of the movement. \n 
-		So, the variable _direction should indicate */
+		So, the variable _direction should indicate that. 
+		When the artist is stopped, th variabl direction should be 0, 
+		but the variable orientation should indicate to which place the element is looking to. */
 	class Artist : public PacmanElement
 	{
 		public:
@@ -103,8 +105,6 @@ namespace PacManII
 		virtual void setReferenceArtists (const std::vector <Artist*>& r)
 							{ _referenceArtists = r; }
 
-		virtual bool canMove (const QGAMES::Vector& d, const QGAMES::Vector& a) override;
-
 		/** When it is needed to change the direction of the movement, 
 			this method should be invoked. The artist will change when possible. */
 		void changeDirectionWhenPossibleTo (const QGAMES::Vector& d);
@@ -114,6 +114,10 @@ namespace PacManII
 							{ return (_pathInMaze.empty () 
 								? currentMazePosition () 
 								: ((n < (int) _pathInMaze.size ()) ? _pathInMaze [n] : QGAMES::MazeModel::_noPosition)); }
+
+		/** A little bit reduced from the original one. */
+		virtual QGAMES::Rectangle collisionZone () const
+							{ return (PacmanElement::collisionZone ().scale (__BD 0.75)); } // A little bit reduced (half)
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;

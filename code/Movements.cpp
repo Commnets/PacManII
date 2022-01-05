@@ -42,6 +42,11 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 	if (art -> nextMazePosition (0) == QGAMES::MazeModel::_noPosition)
 		return; // ...makes no sense to progress...
 
+	// If the direction has changed out of the movement in a intermediate position
+	// betwen two tiles. This only can happen with Pacman...(so far)
+	if (art -> orientation () != _lastDirection)
+		_lastDirection = art -> orientation ();
+
 	bool stopCycle = false; // to notify only once when stopping...
 	for (int i = (int) ((_speed * _CONSTANT) + _qLeft); i > 0 && !stopCycle; i--)
 	{

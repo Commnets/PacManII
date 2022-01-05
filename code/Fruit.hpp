@@ -82,7 +82,7 @@ namespace PacManII
 		int _points;
 		Status _status;
 
-		private:
+		// The counters and the switches
 		static const int _COUNTERPOINTSVISIBLE = 0;
 		static const int _SWITCHPOINTSVISIBLE = 0;
 	};

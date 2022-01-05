@@ -80,10 +80,11 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 // ---
 QGAMES::SetOfOpenValues PacManII::Map::runtimeValues () const
 {
-	QGAMES::SetOfOpenValues result = QGAMES::TiledMap::runtimeValues ();
+	QGAMES::SetOfOpenValues result;
 
-	int lE = result.lastOpenValueId ();
-	result.addOpenValue (lE + 1, QGAMES::OpenValue (ballsEatenStatus ()));
+	// Layers has no status to keep in a pacman game...
+
+	result.addOpenValue (0, QGAMES::OpenValue (ballsEatenStatus ()));
 
 	return (result);
 }
@@ -91,15 +92,9 @@ QGAMES::SetOfOpenValues PacManII::Map::runtimeValues () const
 // ---
 void PacManII::Map::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
 {
-	int lE = cfg.lastOpenValueId ();
+	assert (cfg.existOpenValue (0));
 
-	assert (cfg.existOpenValue (lE));
-
-	QGAMES::SetOfOpenValues cCfg = cfg;
-	setBallsEatenStatus (cCfg.openValue (lE).strValue ());
-	cCfg.removeOpenValue (lE);
-
-	QGAMES::TiledMap::initializeRuntimeValuesFrom (cCfg);
+	setBallsEatenStatus (cfg.openValue (0).strValue ());
 }
 
 // ---
@@ -205,7 +200,7 @@ void PacManII::Map::setBallsEatenStatus (const std::string& st)
 // ---
 void PacManII::Map::initialize ()
 {
-	_mazeLayer -> setBallsEatenStatus (std::string (__NULL_STRING__));
+	_mazeLayer -> setBallsEatenStatus (std::string (__NULL_STRING__)); // All points by default...
 }
 
 // ---

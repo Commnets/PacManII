@@ -104,6 +104,30 @@
 					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
 				</Entities>
 			</SceneTemplate>
+			
+			<!-- Just for testing purposes -->
+			<SceneTemplate baseId="50100" number="2"> 
+				<Actions>
+				</Actions>
+				
+				<Attributes>
+				</Attributes>
+
+				<Conexions>
+				</Conexions>
+
+				<Maps>
+					<Map id="50100" file="maps/maptest.tmx"/>
+				</Maps>
+
+				<Entities>  
+					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
+					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
+				</Entities>
+			</SceneTemplate>
 		</SetOfScenes>
 
 		<Scenes>

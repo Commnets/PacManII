@@ -28,15 +28,7 @@ namespace PacManII
 			{ _NOTDEFINED = 0, _STOPPED = 1, _MOVING = 2, _CHASING = 3 };
 
 		PacMan (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
-				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
-			: Artist (cId, f, d),
-			  _alive (true),
-			  _score (0),
-			  _status (Status::_NOTDEFINED),
-			  _lastStatus (Status::_NOTDEFINED),
-			  _hasEaten (false),
-			  _lastMulScoreNotified (0)
-							{ }
+				const QGAMES::Entity::Data& d = QGAMES::Entity::Data ());
 
 		virtual Entity* clone () const override
 							{ return (new PacMan (id (), forms (), data ())); }
@@ -46,6 +38,7 @@ namespace PacManII
 
 		// Additional behaviour of pacman...
 		void toChase (bool c);
+		void toChaseDeferred (bool c);
 
 		virtual bool isEnemy (const PacmanElement* elmnt) const override;
 
@@ -60,7 +53,7 @@ namespace PacManII
 
 		int score () const
 							{ return (_score); }
-		void setScore (int s); 
+		void setScore (int s);
 
 		const std::map <int, bool> fruitsEaten () const
 							{ return (_fruitsEaten); }
@@ -95,6 +88,23 @@ namespace PacManII
 		virtual void whatToDoOnCurrentPosition () override;
 		virtual void setStateToStandLookingTo (const QGAMES::Vector& d) override;
 		virtual void setStateToMoveTo (const QGAMES::Vector& d) override;
+
+		/** Define a buoy to chase within the inEveryLoop method. */
+		class ToChaseBuoy final : public QGAMES::Buoy
+		{
+			public:
+			ToChaseBuoy ()
+				: QGAMES::Buoy (__PACMANII_TOCHASEBUOYID__, (QGAMES::bdata) 0)
+							{ /** Nothing else to do. */ }
+
+			void setChasing (bool c)
+							{ _chasing = c; }
+
+			virtual void* treatFor (QGAMES::Element* e) override;
+
+			private:
+			bool _chasing;
+		};
 
 		// Implementation
 		/** To adapt the speed of the pacman when moving. */

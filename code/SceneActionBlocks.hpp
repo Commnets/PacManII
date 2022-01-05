@@ -81,7 +81,9 @@ namespace PacManII
 		protected:
 		/** To determine other potential conditions to start moving. 
 			It could be overloaded later. By default takes into account the number of balls eaten. */
-		virtual bool readyToStart (); 
+		virtual bool readyToStart ();
+		/** To execute the elron condition if any. */
+		virtual bool elronCondition ();
 
 		__DECLAREONOFFSWITCHES__ (OnOffSwitches)
 		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override

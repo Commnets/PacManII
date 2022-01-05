@@ -13,7 +13,7 @@ PacManII::Scene::Scene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Conne
 	  _totalNumberBallsEaten (-1), // initialized later
 	  _numberBallsEaten (-1), // initialized later
 	  _firstTimeUpdateMethod (true),
-	  _firstRound (true),
+	  _numberRound (0),
 	  _monsterActionBlocks (),
 	  _numberMonstersMoving ()
 {
@@ -30,6 +30,44 @@ void PacManII::Scene::startBlinking (QGAMES::bdata bT, int nB)
 	PacManII::Map* mp = nullptr;
 	if ((mp = dynamic_cast <PacManII::Map*> (activeMap ())) != nullptr)
 		mp -> startBlinking (bT, nB);
+}
+
+// ---
+QGAMES::SetOfOpenValues PacManII::Scene::runtimeValues () const
+{
+	QGAMES::SetOfOpenValues result;
+
+	result.addOpenValue (0, QGAMES::OpenValue (_numberRound));
+	result.addSetOfOpenValues (0,
+		(activeMap () == nullptr) ? QGAMES::SetOfOpenValues () : activeMap () -> runtimeValues ());
+
+	// Th information of the action blocks has no status to keep in a pacman game...
+
+	return (result);
+}
+
+// ---
+void PacManII::Scene::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
+{
+	assert (cfg.existOpenValue (0) && 
+			cfg.existSetOfOpenValues (0));
+
+	_numberRound = cfg.openValue (0).intValue ();
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+	const PacManII::DataGame::LevelDefinition& lD = g -> levelDefinition (g -> level ());
+	counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> initialize 
+		((int) (__BD lD.leaveHomeCondition (_numberRound).maxSecondsToLeave () * __BD g -> framesPerSecond ()), 0, true, true);
+
+	if (activeMap ())
+	{
+		activeMap () -> initializeRuntimeValuesFrom (cfg.setOfOpenValues (0));
+
+		_totalNumberBallsToEat = maxNumberBallsToEat ();
+		_totalNumberBallsEaten = numberBallsEaten ();
+		_numberBallsEaten = 0;
+		_percentageCleaned = __BD _totalNumberBallsEaten / __BD _totalNumberBallsToEat;
+	}
 }
 
 // ---
@@ -118,7 +156,9 @@ void PacManII::Scene::initialize ()
 	_totalNumberBallsEaten = numberBallsEaten ();
 	_numberBallsEaten = 0;
 	_percentageCleaned = __BD _totalNumberBallsEaten / __BD _totalNumberBallsToEat;
-	_firstRound = _totalNumberBallsEaten == 0; // In other circunstances it is not the first round...
+
+	// This variable is saved, so it could different than 0 later...
+	_numberRound = 0; 
 
 	reStartAllCounters ();
 	reStartAllOnOffSwitches ();
@@ -128,13 +168,12 @@ void PacManII::Scene::initialize ()
 	const PacManII::DataGame::LevelDefinition& lD = g -> levelDefinition (g -> level ());
 	const PacManII::DataGame::LevelDefinition::ScatterChaseCycle& sCC = 
 		lD.scatterChaseCycle (counter (_COUNTERMONSTERCHASINGCYCLES) -> value ());
-	const PacManII::DataGame::LevelDefinition::LeaveHomeConditions& lHC = lD.leaveHomeConditions ();
 	counter (_COUNTERMONSTERSCHASING) -> initialize 
 		((int) (sCC.secondsChase () * __BD g -> framesPerSecond ()), 0, true, false);
 	counter (_COUNTERMONSTERSRUNNINGAWAY) -> initialize 
 		((int) (sCC.secondsScatter () * __BD g -> framesPerSecond ()), 0, true, false);
 	counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> initialize 
-		((int) (lHC.maxSecondsToLeave () * __BD g -> framesPerSecond ()), 0, true, true);
+		((int) (__BD lD.leaveHomeCondition (_numberRound).maxSecondsToLeave () * __BD g -> framesPerSecond ()), 0, true, true);
 
 	_firstTimeUpdateMethod = true;
 }
@@ -175,15 +214,33 @@ void PacManII::Scene::updatePositions ()
 	if (!onOffSwitch (_SWITCHALLMONSTERSMOVING) -> isOn () && counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> isEnd ())
 		onOffSwitch (_SWITCHALLMONSTERSMOVING) -> set (!launchNextMonster ());
 
-	// Deal with the thraten state!
-	if (onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn () &&
-		counter (_COUNTERMONSTERSBEINGTHREATEN) -> isEnd ())
+	// Deal with the threaten state!
+	if (onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn ())
 	{
-		onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> set (false);
+		if (counter (_COUNTERMONSTERSBEINGTHREATEN) -> isEnd ())
+		{
+			onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> set (false);
 
-		setMonstersBeingThreaten (false);
+			onOffSwitch (_SWITCHMONSTERSBLINKING) -> set (false);
 
-		game () -> soundBuilder () -> sound (__PACMANII_SOUNDTHREATING__) -> stop ();
+			setMonstersBlinking (false, 0 /** not used. */);
+
+			setMonstersBeingThreaten (false);
+
+			game () -> soundBuilder () -> sound (__PACMANII_SOUNDTHREATING__) -> stop ();
+		}
+		else
+		{
+			if (!onOffSwitch (_SWITCHMONSTERSBLINKING) -> isOn () &&
+				counter (_COUNTERMONSTERSBEINGTHREATEN) -> value () >= 
+					(counter (_COUNTERMONSTERSBEINGTHREATEN) -> limitValue () >> 1))
+			{
+				onOffSwitch (_SWITCHMONSTERSBLINKING) -> set (true);
+
+				setMonstersBlinking (true, 
+					counter (_COUNTERMONSTERSBEINGTHREATEN) -> value () >> 3 /** 1/8 per change, 4 cycles */);
+			}
+		}
 	}
 
 	// Deal with the chasing state!
@@ -225,6 +282,8 @@ void PacManII::Scene::finalize ()
 
 	if (onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn ())
 		game () -> soundBuilder () -> sound (__PACMANII_SOUNDTHREATING__) -> stop ();
+
+	_numberRound++;
 }
 
 // ---
@@ -284,6 +343,7 @@ __IMPLEMENTONOFFSWITCHES__ (PacManII::Scene::OnOffSwitches)
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHMONSTERSCHASING, false));
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHMONSTERSBEINGTHREATEN, false));
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHALLMONSTERSMOVING, false));
+	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHMONSTERSBLINKING, false));
 }
 
 // ---
@@ -300,6 +360,14 @@ void PacManII::Scene::setMonstersBeingThreaten (bool o)
 	for (auto i : characters ())
 		if (dynamic_cast <PacManII::Monster*> (i.second) != nullptr)
 			(static_cast <PacManII::Monster*> (i.second)) -> toBeThreaten (o);
+}
+
+// ---
+void PacManII::Scene::setMonstersBlinking (bool b, int bp)
+{
+	for (auto i : characters ())
+		if (dynamic_cast <PacManII::Monster*> (i.second) != nullptr)
+			(static_cast <PacManII::Monster*> (i.second)) -> toBlink (b, bp);
 }
 
 // ---

@@ -20,7 +20,21 @@
 
 namespace PacManII
 {
-	/** What the machine controls. */
+	/** 
+	  *	What the machine controls. \n
+	  *	A monster moves through the maze chasing likely pacman. \n
+	  *	Every monster has be on different states: \n
+	  *	_NOTDEFINED	:	It is only a transient state, usually at the beginning of any game. \n
+	  *	_ATHOME		:	When the monster starts the movement. Phisically it could be in th house space or not. \n
+	  * _EXITINGHOME:	When it is already moving but it is still in the home space. \n
+	  *					See definition of a map to know how to declare a hom space. \n
+	  *	_CHASING	:	Moving through the maze and pursuiting the target. \n
+	  *	_RUNNINGAWAY:	Moving through the maze and running away from the target (defined in the method runAwayMazePosition). \n
+	  *	_TOBEEATEN	:	When it is in the situation to be eaten.
+	  *	_BEINGEATEN	:	That happened, and the monster has to move back home to recover itself.
+	  *	What is the position to run away o the element to chase has to be defined later. \n
+	  * Every monster can be or not under an "elroy condition". It could mean many things and thy have to defined later.
+	  */
 	class Monster : public Artist
 	{
 		public:
@@ -60,6 +74,18 @@ namespace PacManII
 		void toChase (bool f);
 		void toChaseDeferred (bool o);
 		void toBeThreaten (bool f);
+		/** The last parameter are the loops per blink */
+		void toBlink (bool b, int bp);
+
+		/** The elroy condition change things in the speed and maybe in the behaviour. 
+			To accept or not the change depends on the type of monster. 
+			By default it is not accepted and it always -1, meaning no condition aceepted. */
+		virtual bool hasElroyPossibility () const
+							{ return (false); }
+		virtual void setElroyCondition (int nC) 
+							{ _elroyCondition = -1; }
+		int elroyCondition () const
+							{ return (_elroyCondition); }
 
 		virtual bool isAlive () const override
 							{ return (_status != Status::_BEINGEATEN); }
@@ -69,6 +95,10 @@ namespace PacManII
 							{ return (!isStanding () && _status != Status::_NOTDEFINED); }
 		bool isDangerous () const
 							{ return (_status == Status::_CHASING || _status == Status::_RUNNINGWAY); }
+		bool isChasing () const 
+							{ return (_status == Status::_CHASING); }
+		bool isRunningAway () const
+							{ return (_status == Status::_RUNNINGWAY); }
 		bool canReverseMovement () const;
 
 		// To know the status...
@@ -76,12 +106,20 @@ namespace PacManII
 							{ return (_status); }
 
 		virtual void initialize () override;
+		virtual void updatePositions () override;
 
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		virtual void whenCollisionWith (QGAMES::Entity* e) override;
 
 		protected:
+		__DECLARECOUNTERS__ (Counters);
+		virtual QGAMES::Counters* createCounters () override
+							{ return (new Counters); }
+		__DECLAREONOFFSWITCHES__ (OnOffSwitches)
+		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
+							{ return (new OnOffSwitches); }
+
 		void setStatus (const Status& st);
 
 		/** To know the last status. */
@@ -111,12 +149,14 @@ namespace PacManII
 		};
 
 		// Implementation
+		/** To adapt the speed of the monster to the different cicunstances. 
+			It could be invoked from many different places but from "whatToDoWhenMovementStatusIsRequested" method mainly. */
 		virtual void adaptSpeed () = 0;
 		/** The monsters can not enter back their home unless they have been eaten!. */
 		virtual QGAMES::MazeModel::PathInMaze& recalculatePathInMaze 
 			(const QGAMES::Vector& mD = QGAMES::Vector::_noPoint) override;
 		/** Where to run. */
-		inline QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;
+		QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const;
 
 		protected:
 		/** The number of the monster. */
@@ -127,9 +167,21 @@ namespace PacManII
 		Status _status;
 		/** The last status of the monster. */
 		Status _lastStatus;
+		/** Whether the monster is in "elroy condition", meaning changes in the behaviour. 
+			-1 means no elroy condition. */
+		int _elroyCondition;
+
+		// The counters and the switches
+		static const int _COUNTERBLINKSITUATION = 0;
+		static const int _SWITCHBLINKACTIVE = 0;
+		static const int _SWITCHBLINKSITUATION = 1;
 	};
 
-	/** The standard monster always pursuit a pacman. */
+	/** 
+	  * The standard monster always pursuit a pacman. \n
+	  *	So, the method setReferenceArtist controls this. \n
+	  * The target position depends on the state, but for standard monsters all are calculated in the same way.
+	  */
 	class StandardMonster : public Monster
 	{
 		public:
@@ -149,7 +201,7 @@ namespace PacManII
 		virtual void updatePositions () override;
 
 		protected:
-		/** The tager position in a standard monster for most of the internal status except chasing is calculated in the same way. \
+		/** The target position in a standard monster for most of the internal status except chasing is calculated in the same way. \
 			Just only the target position when chasing will depend on the specific monster. */
 		virtual QGAMES::MazeModel::PositionInMaze targetMazePosition () const override;
 
@@ -173,6 +225,10 @@ namespace PacManII
 
 		virtual Entity* clone () const override
 							{ return (new Blinky (id (), forms (), data ())); }
+
+		virtual bool hasElroyPossibility () const override
+							{ return (true); }
+		virtual void setElroyCondition (int eC) override; 
 
 		protected:
 		/** When chasing Blinky's target position is the position where pacman is,

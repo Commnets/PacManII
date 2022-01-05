@@ -4,6 +4,22 @@
 #include "Maps.hpp"
 
 // ---
+PacManII::PacMan::PacMan (int cId, const QGAMES::Forms& f, const QGAMES::Entity::Data& d)
+	: PacManII::Artist (cId, f, d),
+	  _alive (true),
+	  _score (0),
+	  _status (PacManII::PacMan::Status::_NOTDEFINED),
+	  _lastStatus (PacManII::PacMan::Status::_NOTDEFINED),
+	  _hasEaten (false),
+	  _lastMulScoreNotified (0)
+{
+	// Adds a buoy to be able to "chase" out of the process event manipulation...
+	assert (!buoys ().empty ()); // Just in case...
+	buoys ().insert (QGAMES::Buoys::value_type
+		(__PACMANII_TOCHASEBUOYID__, new PacManII::PacMan::ToChaseBuoy ()));
+}
+
+// ---
 void PacManII::PacMan::toStand ()
 {
 	// The orientation is not changed...
@@ -28,6 +44,18 @@ void PacManII::PacMan::toChase (bool c)
 {
 	if (isMoving ())
 		setStatus (c ? PacManII::PacMan::Status::_CHASING : PacManII::PacMan::Status::_MOVING);
+}
+
+// ---
+void PacManII::PacMan::toChaseDeferred (bool o)
+{
+	PacManII::PacMan::ToChaseBuoy* b = 
+		dynamic_cast <PacManII::PacMan::ToChaseBuoy*> (buoy (__PACMANII_TOCHASEBUOYID__));
+	assert (b != nullptr); // Just in case...
+
+	b -> setChasing (o);
+
+	b -> active (true); 
 }
 
 // ---
@@ -145,24 +173,24 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 	if (e == nullptr)
 		return;
 
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+
 	if (pE -> isAlive ())
 	{
-		bool nearEnough = 
-			(centerPosition () - pE -> centerPosition ()).module () < __BD (visualLength () >> 1);
 		if (isEnemy (pE))
 		{
 			PacManII::Monster* mter = dynamic_cast <PacManII::Monster*> (pE);
-			if (mter != nullptr && nearEnough)
+			if (mter != nullptr && 
+				isNearOf (pE, __BD (visualLength () >> 1)))
 			{
 				if (mter -> isDangerous ())
 				{
-//					QGAMES::Event (__PACMANII_PACMANDESTROYED__, this);
+					if (!g -> passwordWellIntroduced ())
+						QGAMES::Event (__PACMANII_PACMANDESTROYED__, this);
 				}
 				else
 				{
-					PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-					assert (g != nullptr);
-
 					setScore (score () + mter -> points ());
 
 					game () -> soundBuilder () -> sound (__PACMANII_SOUNDEATGHOST__) -> play (-1);
@@ -174,11 +202,9 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 		else
 		{
 			PacManII::Fruit* frt = dynamic_cast <PacManII::Fruit*> (pE);
-			if (frt != nullptr && nearEnough)
+			if (frt != nullptr && 
+				isNearOf (frt, __BD (visualLength () >> 1)))
 			{
-				PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-				assert (g != nullptr);
-
 				setScore (score () + frt -> points ());
 
 				addFruitEaten (frt -> type ());
@@ -277,10 +303,11 @@ void PacManII::PacMan::whatToDoOnCurrentPosition ()
 			game () -> sound (__PACMANII_SOUNDCHOMP__) -> play (__QGAMES_MAINCHARACTERSOUNDCHANNEL__); // Chomp...
 
 			_hasEaten = true;
+
 			adaptSpeed ();
 
 			if (t -> hasPower ())
-				setStatus (PacManII::PacMan::Status::_CHASING);
+				toChaseDeferred (true);
 
 			setScore (score () + 
 				(t -> hasPower () 
@@ -290,6 +317,7 @@ void PacManII::PacMan::whatToDoOnCurrentPosition ()
 		else
 		{
 			_hasEaten = false;
+
 			adaptSpeed ();
 		}
 	}
@@ -323,6 +351,17 @@ void PacManII::PacMan::setStateToMoveTo (const QGAMES::Vector& d)
 		setCurrentState (__PACMANII_PACMANSTATEEATINGLOOKINGDOWN__, true);
 	else
 		assert (false); // No other orientations are possible...
+}
+
+// ---
+void* PacManII::PacMan::ToChaseBuoy::treatFor (QGAMES::Element* e)
+{
+	PacManII::PacMan* pcm = dynamic_cast <PacManII::PacMan*> (e);
+	assert (pcm != nullptr);
+
+	pcm -> toChase (_chasing);
+
+	return (this);
 }
 
 // ---

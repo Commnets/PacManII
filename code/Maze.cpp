@@ -59,13 +59,14 @@ QGAMES::MazeModel::PositionInMaze PacManII::Maze::nextXGridPositionFollowing
 	assert (verifyDirections ({ d }));
 
 	QGAMES::MazeModel::PositionInMaze result = p;
+	QGAMES::MazeModel::PositionInMaze tmp = p;
 	bool out = false;
 	for (unsigned i = 0; i < x && !out; i++)
 	{
 		QGAMES::Vector vE = (e && d == QGAMES::Vector (__BD 0, __BD -1, __BD 0)) 
 			? QGAMES::Vector (__BD -1, __BD 0, __BD 0) : QGAMES::Vector::_cero;
-		if (isInMaze (p + d + vE))
-			result = p + d + vE;
+		if (isInMaze (result + d + vE))
+			result = result + d + vE;
 		else
 			out = true;
 	}
@@ -88,6 +89,45 @@ QGAMES::MazeModel::PathInMaze PacManII::Maze::next2StepsToGoTo (const QGAMES::Ma
 	QGAMES::MazeModel::PathInMaze result = { p1 };
 
 	// ----LAMBDAS---
+	// To know whether it is a "corner" or not...
+	auto isCorner = [=](const QGAMES::MazeModel::PositionInMaze& p) -> bool
+		{ 
+			return ((p._positionX <= 0 && p._positionY <= 0) ||
+					(p._positionX >= (sizeX () - 1) && p._positionY <= 0) ||
+					(p._positionX >= (sizeX () - 1) && p._positionY >= (sizeY () - 1)) ||
+					(p._positionX <= 0 && p._positionY >= (sizeY () - 1))); 
+		};
+
+	// To determine which corner is...
+	auto numberCorner = [=](const QGAMES::MazeModel::PositionInMaze& p) -> int
+		{
+			int result = -1; // No corner...
+			if (p._positionX <= 0 && p._positionY <= 0) result = 0; // left - up
+			else if (p._positionX >= (sizeX () - 1) && p._positionY <= 0) result = 1; // right - up
+			else if (p._positionX >= (sizeX () - 1) && p._positionY >= (sizeY () - 1)) result = 2; // right - down
+			else if (p._positionX <= 0 && p._positionY >= (sizeY () - 1)) result = 3; // left - down
+			return (result);
+		};
+
+	// To compare two distances. Returns true when the firsr is closer to the corner than the second
+	auto isCloserThan = [=]
+			(const QGAMES::MazeModel::PositionInMaze& p1, 
+			 const QGAMES::MazeModel::PositionInMaze& p2, const QGAMES::MazeModel::PositionInMaze& p) -> bool
+		{
+			bool result = false;
+			switch (numberCorner (p))
+			{
+				case  0: result = (p1._positionX - p2._positionX) < (p2._positionY - p1._positionY); break;
+				case  1: result = (p1._positionX - p2._positionX) > (p1._positionY - p2._positionY); break;
+				case  2: result = (p1._positionX - p2._positionX) > (p2._positionY - p1._positionY); break;
+				case  3: result = (p1._positionX - p2._positionX) < (p1._positionY - p2._positionY); break;
+				case -1: default: 
+					result = (p.asVector () - p1.asVector ()).module2 () < (p.asVector () - p2.asVector ()).module2 (); break;
+			}
+			return (result);
+		};
+
+	// The manhattan distance...
 	auto manhattanDistance = [=](const QGAMES::MazeModel::PositionInMaze& p1, 
 								 const QGAMES::MazeModel::PositionInMaze& p2) -> int
 			{ return (std::abs (p1._positionX - p2._positionX) + std::abs (p1._positionY - p2._positionY)); };
@@ -107,7 +147,7 @@ QGAMES::MazeModel::PathInMaze PacManII::Maze::next2StepsToGoTo (const QGAMES::Ma
 			QGAMES::MazeModel::PositionInMaze nP = nextPositionToFollowing (p1, i);
 			assert (nP != QGAMES::MazeModel::_noPosition); // It shouldn't but who knows!
 			if (pA == QGAMES::MazeModel::_noPosition) pA = nP;
-			else if (manhattanDistance (nP, p2) < manhattanDistance (pA, p2)) pA = nP;
+			else if (isCloserThan (nP, pA, p2)) pA = nP;
 		}
 	}
 

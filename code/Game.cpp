@@ -419,6 +419,10 @@ std::string PacManII::Game::defaultParameter (const std::string& p) const
 		result = std::string (__PACMANII_DEFAULTLEVELPARAMETER__);
 	else if (p == std::string (__PACMANII_SHOWPFSPARAMETER__))
 		result = std::string (__PACMANII_DEFAULTSHOWFPSPARAMETER__);
+	else if (p == std::string (__PACMANII_DRAWARTISTTARGETPARAMETER__))
+		result = std::string (__PACMANII_DEFAULTDRAWARTISTTARGETPARAMETER__);
+	else if (p == std::string (__PACMANII_PASSWORDPARAMETER__))
+		result = std::string (__PACMANII_DEFAULTPASSWORDPARAMETER__);
 	else result = QGAMES::AdvancedArcadeGame::defaultParameter (p);
 	return (result);
 }
@@ -446,9 +450,13 @@ void PacManII::Game::initialize ()
 
 #ifndef NDEBUG
 	setShowFPS (true);
+	_drawArtistTarget = true;
+	_passwordWellIntroduced = true;
 #else
 	std::string sfps = parameter (std::string (__PACMANII_SHOWPFSPARAMETER__));
 	setShowFPS (QGAMES::toUpper (QGAMES::trim (sfps)) == std::string (__YES_STRING__));
+	_drawArtistTarget = parameter (std::string (__PACMANII_DRAWARTISTTARGETPARAMETER__)) == std::string (__YES_STRING__);
+	_passwordWellIntroduced = parameter (std::string (__PACMANII_PASSWORDPARAMETER__)) == std::string ("PACMANPWD");
 #endif
 
 	setState (gCS); // To start...

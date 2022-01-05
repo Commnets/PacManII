@@ -29,40 +29,90 @@ namespace PacManII
 		class LevelDefinition final
 		{
 			public:
-			class LeaveHomeConditions final
+			/** In one level there can be several of these: One per round. 
+				Every elroy condition has one different value of its attributes per monster. 
+				If it is requested an attribute for a monster number not defined, the last one available will be returned. 
+				So, it is not needed to create th elroy condition for all monsters in the game, 
+				but only for the ones an elroy condition has to be taken into account. 
+				A no useful elroy condition will be the one defining the number of remaining balls before being activated to 0. */
+			class ElroyCondition final
 			{
 				public:
-				LeaveHomeConditions () 
-					: _maxSecondsToLeave (__BD 3),
-					  _dotsToLeavePerRoundAndMonster ({ {}, { 0, 0, 30, 60 } })
+				ElroyCondition () 
+					: _chasingWhenScatter ({ true, false }), 
+					  _numberBallsLeft ({ 10, 0 /** The ky. */ }), 
+					  _ghostSpeed ({ 0.8f, 0.0f })
 							{ }
 
-				LeaveHomeConditions (QGAMES::bdata sL, const std::vector <std::vector <int>>& dL)
-					: _maxSecondsToLeave (sL),
-					  _dotsToLeavePerRoundAndMonster (dL)
-							{ }	
+				ElroyCondition (const std::vector <bool>& cS, const std::vector <int> nL, const std::vector <double>& mS)
+					: _chasingWhenScatter (cS), _numberBallsLeft (nL), _ghostSpeed (mS)
+							{ }
 
-				LeaveHomeConditions (const LeaveHomeConditions&) = default;
+				ElroyCondition (const ElroyCondition&) = default;
 
-				LeaveHomeConditions& operator = (const LeaveHomeConditions&) = default;
+				ElroyCondition& operator = (const ElroyCondition&) = default;
 
-				QGAMES::bdata maxSecondsToLeave () const
-							{ return (_maxSecondsToLeave); }
-				int dotsToLeaveFor (int nM, bool fR) const
-							{ return 
-								(fR 
-									? (nM >= (int) _dotsToLeavePerRoundAndMonster [0].size ()) 
-										? _dotsToLeavePerRoundAndMonster [0][(int) _dotsToLeavePerRoundAndMonster.size () - 1] 
-										: _dotsToLeavePerRoundAndMonster [0][nM]
-									: (nM >= (int) _dotsToLeavePerRoundAndMonster [1].size ()) 
-										? _dotsToLeavePerRoundAndMonster [1][(int) _dotsToLeavePerRoundAndMonster.size () - 1] 
-										: _dotsToLeavePerRoundAndMonster [1][nM]); }
+				int chasingWhenScatter (int nM) const
+							{ return ((nM >= (int) (_chasingWhenScatter.size () - 1)) 
+										? _chasingWhenScatter [(int) _chasingWhenScatter.size () - 1] 
+										: _chasingWhenScatter [nM]); }
+				int numberBallLeft (int nM) const
+							{ return ((nM >= (int) (_numberBallsLeft.size () - 1)) 
+										? _numberBallsLeft [(int) _numberBallsLeft.size () - 1] 
+										: _numberBallsLeft [nM]); }
+				double ghostSpeed (int nM) const
+							{ return ((nM >= (int) (_ghostSpeed.size () - 1)) 
+										? _ghostSpeed [(int) _ghostSpeed.size () - 1] 
+										: _ghostSpeed [nM]); }
 
 				private:
-				const QGAMES::bdata _maxSecondsToLeave;
-				const std::vector <std::vector <int>> _dotsToLeavePerRoundAndMonster;
+				const std::vector <bool> _chasingWhenScatter;
+				const std::vector <int> _numberBallsLeft;
+				const std::vector <double> _ghostSpeed;
 			};
 
+			typedef std::vector <ElroyCondition> ElroyConditions;
+
+			/** In a level, there can be several of these: One per round. 
+				Every leave home condition can have different values for its attributs per number of monster.
+				If it is requested an attribute for a monster number not defined, the last one available will be returned. 
+				So, it is not needed to create the leave home condition for all monsters in the game, 
+				but only for the ones an leave home condition has to be taken into account. 
+				A no useful condition will be the one defining the number of balls eaten before moving to 0. */
+			class LeaveHomeCondition final
+			{
+				public:
+				LeaveHomeCondition () 
+					: _maxSecondsToLeave (__BD 3),
+					  _dotsToLeavePerMonster ({ 0, 0, 30, 60 })
+							{ }
+
+				LeaveHomeCondition (double sL, const std::vector <int>& dL)
+					: _maxSecondsToLeave (sL),
+					  _dotsToLeavePerMonster (dL)
+							{ }	
+
+				LeaveHomeCondition (const LeaveHomeCondition&) = default;
+
+				LeaveHomeCondition& operator = (const LeaveHomeCondition&) = default;
+
+				double maxSecondsToLeave () const
+							{ return (_maxSecondsToLeave); }
+				int dotsToLeaveFor (int nM) const
+							{ return ((nM >= (int) (_dotsToLeavePerMonster.size () - 1)) 
+										? _dotsToLeavePerMonster [(int) _dotsToLeavePerMonster.size () - 1] 
+										: _dotsToLeavePerMonster [nM]); }
+
+				private:
+				const double _maxSecondsToLeave;
+				const std::vector <int> _dotsToLeavePerMonster;
+			};
+
+			typedef std::vector <LeaveHomeCondition> LeaveHomeConditions;
+
+			/** The scatter - chase cycle is the time spend between switching from scatter to chase or the opposite. 
+				It can be defined as many as needed. 
+				If a not defined cycle is requested, the last one will be returned. */
 			class ScatterChaseCycle final
 			{
 				public:
@@ -78,15 +128,15 @@ namespace PacManII
 
 				ScatterChaseCycle& operator = (const ScatterChaseCycle&) = default;
 
-				QGAMES::bdata secondsScatter () const
+				double secondsScatter () const
 							{ return (_secondsScatter); }
-				QGAMES::bdata secondsChase () const
+				double secondsChase () const
 							{ return (_secondsChase); }
 
 				private:
 				/** Seconds running away from pacman to home,
 					and seconds chasing pacman. */
-				const QGAMES::bdata _secondsScatter, _secondsChase;
+				const double _secondsScatter, _secondsChase;
 			};
 
 			typedef std::vector <ScatterChaseCycle> ScatterChaseCycles;
@@ -99,7 +149,8 @@ namespace PacManII
 				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
 						_pacmanSpeedWhenFrighting (1.0f), _pacmanSpeedWhenEatingFrightingDots (1.0f),
 				  _ghostSpeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
-						_ghostSpeedWhenExitingHome (1.0f), _ghostSpeedWhenCrossingTunnel (1.0f)
+						_ghostSpeedWhenExitingHome (1.0f), _ghostSpeedWhenCrossingTunnel (1.0f),
+				  _elroyConditions ({ })
 							{ }
 
 			LevelDefinition (int wT, int sT, int mT, 
@@ -107,7 +158,8 @@ namespace PacManII
 					int bS, int bP, double sBA, double sBD, 
 					const ScatterChaseCycles& sC, const LeaveHomeConditions& lHC,
 					double pS, double pED, double pWF, double pWEFD, 
-					double gS, double gWF, double gWE, double gWT)
+					double gS, double gWF, double gWE, double gWT,
+					const ElroyConditions& eC)
 				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
 				  _pointsBall (pB), _pointsPowerBall (pPB), _secondsChasing (mSC),
 				  _bonusSymbolId (bS), _bonusPoints (bP), _secondsBonusToAppear (sBA), _secondsBonusToDisappear (sBD),
@@ -115,8 +167,10 @@ namespace PacManII
 				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
 						_pacmanSpeedWhenFrighting (pWF), _pacmanSpeedWhenEatingFrightingDots (pWEFD),
 				  _ghostSpeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
-						_ghostSpeedWhenExitingHome (gWE), _ghostSpeedWhenCrossingTunnel (gWT)
-							{ assert (_scatterChaseCycles.size () != 0); }
+						_ghostSpeedWhenExitingHome (gWE), _ghostSpeedWhenCrossingTunnel (gWT),
+				  _elroyConditions (eC)
+							{ assert (!_scatterChaseCycles.empty () && 
+									  !_elroyConditions.empty ()); }
 
 			LevelDefinition (const LevelDefinition&) = default;
 
@@ -144,11 +198,14 @@ namespace PacManII
 							{ return (_secondsBonusToDisappear); }
 			const ScatterChaseCycles& scatterChaseCycles () const
 							{ return (_scatterChaseCycles); }
-			const ScatterChaseCycle& scatterChaseCycle (unsigned int n) const 
-							{ return (n > _scatterChaseCycles.size () 
-								? _scatterChaseCycles [_scatterChaseCycles.size () - 1] : _scatterChaseCycles [n]); }
+			const ScatterChaseCycle& scatterChaseCycle (int n) const 
+							{ return (n >= ((int) _scatterChaseCycles.size () - 1) 
+								? _scatterChaseCycles [(int) _scatterChaseCycles.size () - 1] : _scatterChaseCycles [n]); }
 			const LeaveHomeConditions& leaveHomeConditions () const
 							{ return (_leaveHomeConditions); }
+			const LeaveHomeCondition& leaveHomeCondition (int nR) const
+							{ return (nR >= (int) (_leaveHomeConditions.size () - 1) 
+								? _leaveHomeConditions [(int) _leaveHomeConditions.size () - 1] : _leaveHomeConditions [nR]); }
 			double pacmanSpeed () const 
 							{ return (_pacmanSpeed); } 
 			double pacmanSpeedWhenEatingDots () const 
@@ -165,6 +222,11 @@ namespace PacManII
 							{ return (_ghostSpeedWhenExitingHome); }
 			double ghostSpeedWhenCrossingTunnel () const 
 							{ return (_ghostSpeedWhenCrossingTunnel); }
+			const ElroyConditions& elroyConditions () const
+							{ return (_elroyConditions); }
+			const ElroyCondition& elroyCondition (int nR) const
+							{ return (nR >= (int) (_elroyConditions.size () - 1) 
+								? _elroyConditions [(int) _elroyConditions.size () - 1] : _elroyConditions [nR]); }
 
 			private:
 			/** The word, the scene and the map of the level. */
@@ -183,13 +245,15 @@ namespace PacManII
 			const int _bonusPoints;
 			/** The number of seconds before the bonus symbol to appear. */
 			const double _secondsBonusToAppear;
-			/** The number of senconds the bonus symbol is maintained in the screen. */
+			/** The number of seconds the bonus symbol is maintained in the screen. */
 			const double _secondsBonusToDisappear;
 			/** The cycles beetween scatting and chaseing */
 			const ScatterChaseCycles _scatterChaseCycles;
 			/** The conditions to manag when th monstrs leave home. */
 			const LeaveHomeConditions _leaveHomeConditions;
-			// Proportion eover the maximum possible...
+
+			// Related wth the speed:
+			// Proportion over the maximum possible...
 			/** Usual Pacman speed. */
 			const double _pacmanSpeed; 
 			/** Pacman's speed when eating dots. */
@@ -206,6 +270,8 @@ namespace PacManII
 			const double _ghostSpeedWhenExitingHome;
 			/** Monster's speed when they are facind the tunnel. */
 			const double _ghostSpeedWhenCrossingTunnel;
+			/** Potential elroy conditions. */
+			const ElroyConditions _elroyConditions;
 		};
 
 		typedef std::vector <LevelDefinition> LevelDefinitions;
@@ -221,10 +287,13 @@ namespace PacManII
 
 		DataGame& operator = (const DataGame& d) = default;
 
-		/** Parameter starts in 1. 
+		int firstNumberLevelDefinitionForScene (int sId) const;
+
+		/** Parameter starts in 0. 
 			The last on always repeat. */
-		const LevelDefinition& levelDefinition (unsigned int lD) const
-							{ return ((lD <= _levels.size ()) ? _levels [lD - 1] : _levels [_levels.size () - 1]); }
+		const LevelDefinition& levelDefinition (int lD) const
+							{ return ((lD >= (int) _levels.size ()) 
+								? _levels [(int) _levels.size () - 1] : _levels [lD - 1]); }
 
 		const int everyToGetAnExtraLive () const
 							{ return (_everyToGetAnExtraLive); }
