@@ -138,7 +138,7 @@ void PacManII::Artist::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
 		}
 	}
 
-#ifndef _NDEBUG
+#ifndef NDEBUG
 	scr -> drawRectangle (collisionZone (), __QGAMES_YELLOWCOLOR__, false);
 #endif
 }

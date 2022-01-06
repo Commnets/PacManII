@@ -393,8 +393,8 @@ void PacManII::PlayingControlGameState::onEnter ()
 	g -> addScoreObjects ();
 
 	// This instruction sets the world and the scene accoinding to the level defined in DataGame
-	g -> setLevel (_nextLevel);
-	_nextLevel = 1; // One used it is set back to the original value...
+	g -> setLevel ((_nextLevel == -1) ? g -> level () : _nextLevel);
+	_nextLevel = -1; // One used it is set back to the original value...
 
 	// ...and here we increment number of times the player tries this level...
 	g -> setTriesOnLevel (g -> level (), g -> triesOnLevel (g -> level ()) + 1);

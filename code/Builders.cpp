@@ -346,6 +346,9 @@ PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 	  _TILESRUNAWAYMONSTERS			({ 0,1,2,3,4,5,6,7,8,9 }),
 	  _TILEFRUIT					(30),
 	  _TILEEXITMONSTERSHOME			(50),
+	  _TILERETURNMONSTERAFTERDIE	(52),
+	  _TILESCONNECTION				({ 51,53,54,55,56,57,58,59 }),
+	  _TILESZONES					({ 0, 1, 2, 3, 4, 5, 6, 7 }),
 	  _TILESDIRECTIONSMAZE			({	{  0, { false,	true,	false,	true	} }, // LEFT, RIGHT, UP, DOWN
 										{  1, { true,	true,	false,	true	} },
 										{  2, { true,	false,	false,	true	} },
@@ -361,9 +364,7 @@ PacManII::TMXMapBuilder::TMXMapBuilder (QGAMES::Sprite2DBuilder* sB)
 										{ 12, { true,	true,	true,	false	} },
 										{ 13, { true,	false,	true,	false	} },
 										{ 14, { false,	false,	true,	false	} },
-										{ 15, { false,	false,	false,	false	} }}),
-	  _TILESZONES					({ 0, 1, 2, 3, 4, 5, 6, 7 }),
-	  _TILESCONNECTION				({ 51,52,53,54,55,56,57,58,59 })
+										{ 15, { false,	false,	false,	false	} }})
 {
 	assert (_TILESLIMITBRIGHT.size () == _TILESLIMITDARK.size ());
 	// The have to have the same size to change between them...

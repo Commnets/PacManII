@@ -140,8 +140,7 @@ void PacManII::Fruit::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
 		PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 		assert (g != nullptr);
 		QGAMES::ScoreObjectText * txt = 
-			g -> textBuilder () -> createText (__PACMANII_NEWTOUR24GREENLETTERS__, 
-				std::to_string (g -> levelDefinition (g -> level ()).bonusPoints ()));
+			g -> textBuilder () -> createText (__PACMANII_NEWTOUR24GREENLETTERS__, std::to_string (_points));
 		txt -> drawOn (scr,
 			(p == QGAMES::Position::_noPoint) 
 				? centerPosition () - 

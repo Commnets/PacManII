@@ -263,12 +263,16 @@
 			<State id="4" animation="4" movementBase="550010"/>
 			<!-- After being eaten going back home -->
 			<State id="5" animation="5" movementBase="550010"/>
+			<!-- Moving at home looking right -->
+			<State id="6" animation="0" movementBase="580010"/>
+			<!-- Moving at home looking left -->
+			<State id="7" animation="1" movementBase="580010"/>
 			<!-- Moving at home looking up -->
-			<State id="6" animation="2" movementBase="580010"/>
+			<State id="8" animation="2" movementBase="580010"/>
 			<!-- Moving at home looking down -->
-			<State id="7" animation="3" movementBase="580010"/>
+			<State id="9" animation="3" movementBase="580010"/>
 			<!-- Running away from Pacman (they can be eaten), but blink -->
-			<State id="8" animation="6" movementBase="550010"/>
+			<State id="10" animation="6" movementBase="550010"/>
 		</States>
 	</SetOfEntities>
 
@@ -375,12 +379,16 @@
 			<State id="4" animation="4" movementBase="550020"/>
 			<!-- After being eaten going back home -->
 			<State id="5" animation="5" movementBase="550020"/>
+			<!-- Moving at home looking right -->
+			<State id="6" animation="0" movementBase="580020"/>
+			<!-- Moving at home looking left -->
+			<State id="7" animation="1" movementBase="580020"/>
 			<!-- Moving at home looking up -->
-			<State id="6" animation="2" movementBase="580020"/>
+			<State id="8" animation="2" movementBase="580020"/>
 			<!-- Moving at home looking down -->
-			<State id="7" animation="3" movementBase="580020"/>
+			<State id="9" animation="3" movementBase="580020"/>
 			<!-- Running away from Pacman (they can be eaten), but blink -->
-			<State id="8" animation="6" movementBase="550020"/>
+			<State id="10" animation="6" movementBase="550020"/>
 		</States>
 	</SetOfEntities>
 
@@ -487,12 +495,16 @@
 			<State id="4" animation="4" movementBase="550030"/>
 			<!-- After being eaten going back home -->
 			<State id="5" animation="5" movementBase="550030"/>
+			<!-- Moving at home looking right -->
+			<State id="6" animation="0" movementBase="580030"/>
+			<!-- Moving at home looking left -->
+			<State id="7" animation="1" movementBase="580030"/>
 			<!-- Moving at home looking up -->
-			<State id="6" animation="2" movementBase="580030"/>
+			<State id="8" animation="2" movementBase="580030"/>
 			<!-- Moving at home looking down -->
-			<State id="7" animation="3" movementBase="580030"/>
+			<State id="9" animation="3" movementBase="580030"/>
 			<!-- Running away from Pacman (they can be eaten), but blink -->
-			<State id="8" animation="6" movementBase="550030"/>
+			<State id="10" animation="6" movementBase="550030"/>
 		</States>
 	</SetOfEntities>
 
@@ -599,12 +611,16 @@
 			<State id="4" animation="4" movementBase="550040"/>
 			<!-- After being eaten going back home -->
 			<State id="5" animation="5" movementBase="550040"/>
+			<!-- Moving at home looking right -->
+			<State id="6" animation="0" movementBase="580040"/>
+			<!-- Moving at home looking left -->
+			<State id="7" animation="1" movementBase="580040"/>
 			<!-- Moving at home looking up -->
-			<State id="6" animation="2" movementBase="580040"/>
+			<State id="8" animation="2" movementBase="580040"/>
 			<!-- Moving at home looking down -->
-			<State id="7" animation="3" movementBase="580040"/>
+			<State id="9" animation="3" movementBase="580040"/>
 			<!-- Running away from Pacman (they can be eaten), but blink -->
-			<State id="8" animation="6" movementBase="550040"/>
+			<State id="10" animation="6" movementBase="550040"/>
 		</States>
 	</SetOfEntities>
 

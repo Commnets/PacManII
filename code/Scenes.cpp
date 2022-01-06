@@ -127,6 +127,16 @@ void PacManII::Scene::setBallsEatenStatus (const std::string& st)
 }
 
 // ---
+int PacManII::Scene::numberMonsters () const
+{
+	int result = 0;
+	for (auto i : characters ())
+		if (dynamic_cast <PacManII::Monster*> (i.second) != nullptr)
+			result++;
+	return (result);
+}
+
+// ---
 void PacManII::Scene::playSiren (bool f)
 { 
 	SirenRate sR = SirenRate::_NORMAL;

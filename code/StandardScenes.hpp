@@ -32,15 +32,21 @@ namespace PacManII
 			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
 			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ())
 			: Scene (c, m, cn, p, ePL),
-			  _pacman (nullptr)	
+			  _pacman (nullptr),
+			  _numberMonstersEaten (0)
 							{ }
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;
 		virtual void finalize () override;
 
+		virtual void processEvent (const QGAMES::Event& evnt) override;
+
 		private:
 		PacMan* _pacman;
+
+		// Implementation
+		int _numberMonstersEaten;
 	};
 
 	/** The very basic Scene, is a standard one but defining the monsters and the fruit scenee action blocks

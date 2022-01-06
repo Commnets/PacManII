@@ -71,6 +71,8 @@ namespace PacManII
 		const QGAMES::MazeModel::PositionInMaze& monsterInitialPosition (int nM) const;
 		const QGAMES::MazeModel::PositionInMaze& monsterRunAwayPosition (int nM) const;
 		const QGAMES::MazeModel::PositionInMaze& monsterExitingHomePosition () const;
+		const QGAMES::MazeModel::PositionInMaze& monsterReturningPositionAfterDieing () const;
+		const QGAMES::MazeModel::PositionInMaze& oneHomePosition () const;
 		const QGAMES::MazeModel::PositionInMaze& fruitPosition () const;
 
 		/** To convert any position in the maze in a position in the map. 
@@ -130,6 +132,7 @@ namespace PacManII
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::MazeModel::PositionInMaze> _monsterRunAwayPositions;
 		mutable QGAMES::MazeModel::PositionInMaze _monsterExitingHomePosition;
+		mutable QGAMES::MazeModel::PositionInMaze _monsterReturningPositionAfterDieing;
 		mutable QGAMES::MazeModel::PositionInMaze _fruitPosition;
 		// Maze zones
 		mutable std::map <int, std::vector <QGAMES::MazeModel::PositionInMaze>> _mazeZones;
@@ -183,18 +186,19 @@ namespace PacManII
 		MazeLocationsLayer (int c, const std::string& n, const QGAMES::Tiles& t, QGAMES::Map* m = NULL, 
 				const QGAMES::LayerProperties& p = QGAMES::LayerProperties ())
 			: QGAMES::TileLayer (c, n, t, m, QGAMES::TileLayer::_ORTHOGONAL, p, false),
-			  _enteringExitingTunnelPathPositions (),
-			  _monsterExitingHomePosition (QGAMES::Position::_noPoint)
+			  _monsterExitingHomePosition (QGAMES::Position::_noPoint),
+			  _monsterReturningPositionAfterDieing (QGAMES::Position::_noPoint)
 							{ setVisible (false); /* Always */ }
 
 		/** To know important positions kept in this layer. 
 			The position of the tile is returned. */
 		const QGAMES::Position& monsterExitingHomePosition () const;
+		const QGAMES::Position& monsterReturningPositionAfterDieing () const;
 
 		protected:
 		/** To accelerate how positions are calculated (per number of artist). */
-		mutable QGAMES::Positions _enteringExitingTunnelPathPositions;
 		mutable QGAMES::Position _monsterExitingHomePosition;
+		mutable QGAMES::Position _monsterReturningPositionAfterDieing;
 	};
 
 	/** Representing the "MazeZones" layer. */

@@ -94,7 +94,7 @@ namespace PacManII
 		virtual bool isMoving () const override
 							{ return (!isStanding () && _status != Status::_NOTDEFINED); }
 		bool isDangerous () const
-							{ return (_status == Status::_CHASING || _status == Status::_RUNNINGWAY); }
+							{ return (isAlive () && (_status == Status::_CHASING || _status == Status::_RUNNINGWAY)); }
 		bool isChasing () const 
 							{ return (_status == Status::_CHASING); }
 		bool isRunningAway () const

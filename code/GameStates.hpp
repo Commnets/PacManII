@@ -221,7 +221,7 @@ namespace PacManII
 				const QGAMES::GameStates& sts, const QGAMES::GameStateControl::FlowMap& fM)
 			: QGAMES::GameStateControl (id, QGAMES::Game::game (), sts, fM),
 			  _pacman (nullptr),
-			  _nextLevel (1) // By defaul...
+			  _nextLevel (-1) // Meaning to take the one defined in the configuration
 							{ }
 
 		PlayingControlGameState (const PlayingControlGameState&) = delete;

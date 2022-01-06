@@ -253,7 +253,9 @@ namespace PacManII
 		/** To know the tile frame defining the exit of monster's home. */
 		int monsterExitingHomeFrame () const
 							{ return (_TILEEXITMONSTERSHOME); }
-		/** To know the tile frame describing when a tunnel starts. */
+		/** To know the tile frame defining whre a monster has to come back after dieing. */
+		int monsterToComeBackFrame () const
+							{ return (_TILERETURNMONSTERAFTERDIE); }
 		/** To know the file describing connections points, usually the tunnels. */
 		const std::vector <int>& connectionFrames () const
 							{ return (_TILESCONNECTION); }
@@ -301,6 +303,8 @@ namespace PacManII
 		// Tiles located in the "MazeLocations" layer
 		/** The tile used to define the home exiting position for monsters */
 		int _TILEEXITMONSTERSHOME;
+		/** The tile usd to define the place where monsters have to return after dieing. */
+		int _TILERETURNMONSTERAFTERDIE;
 		/** Tiles indicating connection points. */
 		std::vector <int> _TILESCONNECTION;
 

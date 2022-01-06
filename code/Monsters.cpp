@@ -253,7 +253,26 @@ void PacManII::Monster::processEvent (const QGAMES::Event& evnt)
 // ---
 void PacManII::Monster::whenCollisionWith (QGAMES::Entity* e)
 {
-	// TODO
+	PacManII::PacmanElement* pE = dynamic_cast <PacManII::PacmanElement*> (e);
+	if (e == nullptr)
+		return;
+
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr);
+
+	if (pE -> isAlive ())
+	{
+		if (isAlive () && isEnemy (pE))
+		{
+			PacManII::PacMan* pcm = dynamic_cast <PacManII::PacMan*> (pE);
+			if (pcm != nullptr && 
+				isNearOf (pE, __BD (visualLength () >> 1)))
+			{
+				if (!isDangerous ())
+					setStatus (PacManII::Monster::Status::_BEINGEATEN);
+			}
+		}
+	}
 }
 
 // ---
@@ -426,7 +445,7 @@ QGAMES::MazeModel::PositionInMaze PacManII::StandardMonster::targetMazePosition 
 			break;
 
 		case PacManII::Monster::Status::_BEINGEATEN:
-			result = pMap () -> monsterInitialPosition (monsterNumber ());
+			result = pMap () -> monsterReturningPositionAfterDieing  ();
 			break;
 
 		// Chasing status will deepend on the specific monster...
@@ -443,7 +462,11 @@ void PacManII::StandardMonster::setStateToStandLookingTo (const QGAMES::Vector& 
 		case PacManII::Monster::Status::_NOTDEFINED:
 		case PacManII::Monster::Status::_ATHOME:
 			{
-				if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
+				if (d == QGAMES::Vector (__BD 1, __BD 0, __BD 0))
+					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGRIGHT__, true);
+				else if (d == QGAMES::Vector (__BD -1, __BD 0, __BD 0))
+					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGLEFT__, true);
+				else if (d == QGAMES::Vector (__BD 0, __BD -1, __BD 0))
 					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGUP__, true);
 				else if (d == QGAMES::Vector (__BD 0, __BD 1, __BD 0))
 					setCurrentState (__PACMANII_MONSTERSTATEATHOMELOOKINGDOWN__, true);
@@ -519,6 +542,9 @@ void PacManII::StandardMonster::adaptSpeed ()
 	// Not the same in a tunnel or at hom than in other positions of the maze, and
 	// not the same chasing or running away than be threaten by pacman!
 	const PacManII::DataGame::LevelDefinition& lD = pG -> dataGame ().levelDefinition (pG -> level ());
+	if (!isAlive ())
+		mM -> setSpeed (__BD lD.ghostSpeed () * __BD 2);
+	else
 	if (isInATunnelHall ())
 		mM -> setSpeed (__BD lD.ghostSpeedWhenCrossingTunnel ());
 	else
@@ -526,7 +552,7 @@ void PacManII::StandardMonster::adaptSpeed ()
 		mM -> setSpeed (__BD lD.elroyCondition (elroyCondition ()).ghostSpeed (_monsterNumber));
 	else 
 		mM -> setSpeed 
-			(status () == PacManII::Monster::Status::_BEINGEATEN
+			(status () == PacManII::Monster::Status::_TOBEEATEN
 				? __BD lD.ghostSpeedWhenBeingFrighten () 
 				: ((status () == PacManII::Monster::Status::_EXITINGHOME && isAtHome ()) 
 						? __BD lD.ghostSpeedWhenExitingHome () : __BD lD.ghostSpeed ()));

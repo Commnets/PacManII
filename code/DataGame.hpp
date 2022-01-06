@@ -141,11 +141,51 @@ namespace PacManII
 
 			typedef std::vector <ScatterChaseCycle> ScatterChaseCycles;
 
+			class FruitCondition
+			{
+				public:
+				FruitCondition ()
+					: _bonusSymbolId (0), 
+					  _bonusPoints (200), 
+					  _numberBallsEatenToAppear (35),
+					  _secondsBonusToDisappear (10.0f)
+							{ }
+
+				FruitCondition (int bS, int bP, int nB, double sD)
+					: _bonusSymbolId (bS), 
+					  _bonusPoints (bP),
+					  _numberBallsEatenToAppear (nB),
+					  _secondsBonusToDisappear (sD)
+							{ }
+
+				FruitCondition (const FruitCondition&) = default;
+
+				FruitCondition& operator = (const FruitCondition&) = default;
+
+				int bonusSymbolId () const
+							{ return (_bonusSymbolId); }
+				int bonusPoints () const
+							{ return (_bonusPoints); }
+				int numberBallsEatenToAppear () const
+							{ return (_numberBallsEatenToAppear); }
+				double secondsBonusToDisappear () const
+							{ return (_secondsBonusToDisappear); }
+
+				private:
+				int _bonusSymbolId;
+				int _bonusPoints;
+				int _numberBallsEatenToAppear;
+				double _secondsBonusToDisappear;
+			};
+
+			typedef std::vector <FruitCondition> FruitConditions;
+
 			LevelDefinition ()
 				: _worldTypeId (__PACMANII_BASICWORLD__), _sceneTypeId (__PACMANII_BASICSCENE__), _mapTypeId (__PACMANII_BASICMAP__),
 				  _pointsBall (50), _pointsPowerBall (200), _secondsChasing (1.0f),
-				  _bonusSymbolId (0), _bonusPoints (100), _secondsBonusToAppear (10.0f), _secondsBonusToDisappear (10.0f),
-				  _scatterChaseCycles ({ ScatterChaseCycle () }), _leaveHomeConditions (),
+				  _fruitConditions ({ { 0, 100, 35, 10.0f } }), 
+				  _scatterChaseCycles ({ ScatterChaseCycle () }), 
+				  _leaveHomeConditions (),
 				  _pacmanSpeed (1.0f), _pacmanSpeedWhenEatingDots (1.0f), 
 						_pacmanSpeedWhenFrighting (1.0f), _pacmanSpeedWhenEatingFrightingDots (1.0f),
 				  _ghostSpeed (1.0f), _ghostSpeedWhenBeingFrighten (1.0f), 
@@ -155,15 +195,17 @@ namespace PacManII
 
 			LevelDefinition (int wT, int sT, int mT, 
 					int pB, int pPB, double mSC, 
-					int bS, int bP, double sBA, double sBD, 
-					const ScatterChaseCycles& sC, const LeaveHomeConditions& lHC,
+				    const FruitConditions& fC, 
+					const ScatterChaseCycles& sC, 
+					const LeaveHomeConditions& lHC,
 					double pS, double pED, double pWF, double pWEFD, 
 					double gS, double gWF, double gWE, double gWT,
 					const ElroyConditions& eC)
 				: _worldTypeId (wT), _sceneTypeId (sT), _mapTypeId (mT),
 				  _pointsBall (pB), _pointsPowerBall (pPB), _secondsChasing (mSC),
-				  _bonusSymbolId (bS), _bonusPoints (bP), _secondsBonusToAppear (sBA), _secondsBonusToDisappear (sBD),
-				  _scatterChaseCycles (sC), _leaveHomeConditions (lHC),
+				  _fruitConditions (fC),
+				  _scatterChaseCycles (sC), 
+				  _leaveHomeConditions (lHC),
 				  _pacmanSpeed (pS), _pacmanSpeedWhenEatingDots (pED), 
 						_pacmanSpeedWhenFrighting (pWF), _pacmanSpeedWhenEatingFrightingDots (pWEFD),
 				  _ghostSpeed (gS), _ghostSpeedWhenBeingFrighten (gWF), 
@@ -188,14 +230,11 @@ namespace PacManII
 							{ return (_pointsPowerBall); }
 			double secondsChasing () const
 							{ return (_secondsChasing); }
-			int bonusSymbolId () const 
-							{ return (_bonusSymbolId); }
-			int bonusPoints () const 
-							{ return (_bonusPoints); }
-			double secondsBonusSymbolToAppear () const
-							{ return (_secondsBonusToAppear); }
-			double secondsBonusSymbolToDisappear () const
-							{ return (_secondsBonusToDisappear); }
+			const FruitConditions& fruitConditions () const
+							{ return (_fruitConditions); }
+			const FruitCondition fruitCondition (int n) const
+							{ return (n >= ((int) _fruitConditions.size () - 1) 
+								? _fruitConditions [(int) _fruitConditions.size () - 1] : _fruitConditions [n]); }
 			const ScatterChaseCycles& scatterChaseCycles () const
 							{ return (_scatterChaseCycles); }
 			const ScatterChaseCycle& scatterChaseCycle (int n) const 
@@ -239,14 +278,8 @@ namespace PacManII
 			const int _pointsPowerBall;
 			/** The seconds chasing. */
 			const double _secondsChasing;
-			/** Id of the symbol that will appears randomly at pacman's home after several of seconds. */
-			const int _bonusSymbolId;
-			/** How many point will eating it give you? */
-			const int _bonusPoints;
-			/** The number of seconds before the bonus symbol to appear. */
-			const double _secondsBonusToAppear;
-			/** The number of seconds the bonus symbol is maintained in the screen. */
-			const double _secondsBonusToDisappear;
+			/** The conditions for the fruit to appear and it behaviour. */
+			FruitConditions _fruitConditions;
 			/** The cycles beetween scatting and chaseing */
 			const ScatterChaseCycles _scatterChaseCycles;
 			/** The conditions to manag when th monstrs leave home. */

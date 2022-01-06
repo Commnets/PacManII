@@ -20,6 +20,8 @@ void PacManII::StandardScene::initialize ()
 	assert (aM != nullptr);
 	_pacman -> setPosition (aM -> mazePositionToMapPosition (aM -> pacmanInitialPosition (0 /** It can be more. */)) - 
 		QGAMES::Vector (__BD (_pacman -> visualLength () >> 1), __BD (_pacman -> visualHeight () >> 1), __BD 0));
+
+	_numberMonstersEaten = 0;
 }
 
 // ---
@@ -33,6 +35,10 @@ void PacManII::StandardScene::updatePositions ()
 
 	// To chase or not...(depends on what monsters do)
 	_pacman -> toChase (onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn ());
+
+	// When monsters are not longer threaten, the list of monsters eaten is cleaned
+	if (!onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn ())
+		_numberMonstersEaten = 0;
 }
 
 // ---
@@ -45,6 +51,22 @@ void PacManII::StandardScene::finalize ()
 	removeCharacter (_pacman);
 
 	_pacman = nullptr;
+}
+
+// ---
+void PacManII::StandardScene::processEvent (const QGAMES::Event& evnt)
+{
+	if (evnt.code () == __PACMANII_PACMANEATMONSTER__)
+	{
+		PacManII::Monster* mtr = static_cast <PacManII::Monster*> (evnt.data ());
+
+		// As the number of monsters eaten is bigger, the number of points grow (double)
+		_pacman -> setScore (_pacman -> score () + (mtr -> points () >> (++_numberMonstersEaten)));
+		if (_numberMonstersEaten == numberMonsters ())
+			_pacman -> setScore (_pacman -> score () + 12000); // Additional!!
+	}
+
+	PacManII::Scene::processEvent (evnt);
 }
 
 // ---
@@ -73,13 +95,19 @@ void PacManII::BasicScene::initialize ()
 	PacManII::Game* g = dynamic_cast< PacManII::Game*> (game ());
 	assert (g != nullptr);
 	assert (!existsActionBlock (4));
+	
+	std::vector <int> bS, bP, bE;
+	std::vector <QGAMES::bdata> sD;
+	for (auto i : g -> levelDefinition (g -> level ()).fruitConditions ())
+	{
+		bS.push_back (i.bonusSymbolId ());
+		bP.push_back (i.bonusPoints ());
+		bE.push_back (i.numberBallsEatenToAppear ());
+		sD.push_back (__BD i.secondsBonusToDisappear ());
+	}
+
 	addActionBlock (new PacManII::FruitSceneActionBlock 
-		(4, PacManII::FruitSceneActionBlock::Properties (
-			__PACMANII_FRUITBASEENTITYID__, 
-			g -> levelDefinition (g -> level ()).bonusSymbolId (),
-			g -> levelDefinition (g -> level ()).bonusPoints (),
-			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToAppear (), 
-			__BD g -> levelDefinition (g -> level ()).secondsBonusSymbolToDisappear ())));
+		(4, PacManII::FruitSceneActionBlock::Properties (__PACMANII_FRUITBASEENTITYID__, bS, bP, bE, sD)));
 }
 
 // ---

@@ -16,6 +16,7 @@ PacManII::Map::Map (int c, const QGAMES::Layers& l, int w, int h, int d, int tW,
 	  _monsterInitialPositions (), 
 	  _monsterRunAwayPositions (),
 	  _monsterExitingHomePosition (QGAMES::MazeModel::_noPosition),
+	  _monsterReturningPositionAfterDieing (QGAMES::MazeModel::_noPosition),
 	  _fruitPosition (QGAMES::MazeModel::_noPosition),
 	  _mazeZones ()
 { 
@@ -142,6 +143,25 @@ const QGAMES::MazeModel::PositionInMaze& PacManII::Map::monsterExitingHomePositi
 		return (_monsterExitingHomePosition);
 
 	return (_monsterExitingHomePosition = mapPositionToMazePosition (_mazeLocationsLayer -> monsterExitingHomePosition ()));
+}
+
+// ---
+const QGAMES::MazeModel::PositionInMaze& PacManII::Map::monsterReturningPositionAfterDieing () const
+{
+	assert (_mazeLocationsLayer != nullptr);
+
+	if (_monsterReturningPositionAfterDieing != QGAMES::MazeModel::_noPosition)
+		return (_monsterReturningPositionAfterDieing);
+
+	return (_monsterReturningPositionAfterDieing = 
+		mapPositionToMazePosition (_mazeLocationsLayer -> monsterReturningPositionAfterDieing ()));
+}
+
+// ---
+const QGAMES::MazeModel::PositionInMaze& PacManII::Map::oneHomePosition () const
+{
+	return (maze ().positionsForZone (__PACMANII_MAZEMONSTERSHOMEZONE__).empty () 
+		? QGAMES::MazeModel::_noPosition : maze ().positionsForZone (__PACMANII_MAZEMONSTERSHOMEZONE__)[0]);
 }
 
 // ---
@@ -347,6 +367,25 @@ const QGAMES::Position& PacManII::MazeLocationsLayer::monsterExitingHomePosition
 			_monsterExitingHomePosition = tilePosition ((*i));
 
 	return (_monsterExitingHomePosition);
+}
+
+// ---
+const QGAMES::Position& PacManII::MazeLocationsLayer::monsterReturningPositionAfterDieing () const
+{
+	if (_monsterReturningPositionAfterDieing != QGAMES::Position::_noPoint)
+		return (_monsterReturningPositionAfterDieing);
+
+	const PacManII::Game* g = dynamic_cast <const PacManII::Game*> (game ());
+	assert (g != nullptr);
+	const PacManII::TMXMapBuilder* mB = g -> tmxAddsOnMapBuilder ();
+	assert (mB != nullptr);
+
+	for (QGAMES::Tiles::const_iterator i = tiles ().begin (); 
+		i != tiles ().end () && _monsterReturningPositionAfterDieing == QGAMES::Position::_noPoint; i++)
+		if ((*i) -> numberFrame () == mB -> monsterToComeBackFrame ())
+			_monsterReturningPositionAfterDieing = tilePosition ((*i));
+
+	return (_monsterReturningPositionAfterDieing);
 }
 
 // ---

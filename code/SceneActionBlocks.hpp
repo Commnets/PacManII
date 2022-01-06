@@ -109,15 +109,24 @@ namespace PacManII
 		{
 			Properties ()
 				: _entityId (0),
-				  _type (0), _points (200),
-				  _secondsToAppear (__BD 7), _secondsToDisappear (__BD 7)
+				  _types ({ 0 }),
+				  _points ({ 200 }),
+				  _ballsEatenToAppear ({ 40 }), 
+				  _secondsToDisappear ({ __BD 10 })
 							{ }
 
-			Properties (int eId, int tp, int p, QGAMES::bdata sA, QGAMES::bdata sD)
+			Properties (int eId, const std::vector<int>& tp, const std::vector<int>& p, 
+					const std::vector<int>&bE, const std::vector<QGAMES::bdata>& sD)
 				: _entityId (eId),
-				  _type (tp), _points (p),
-				  _secondsToAppear (sA), _secondsToDisappear (sD)
-							{ }
+				  _types (tp), 
+				  _points (p),
+				  _ballsEatenToAppear (bE), 
+				  _secondsToDisappear (sD)
+							{ int sz = (int) _types.size ();
+							  assert ((int) _points.size () == sz &&
+									  (int) _ballsEatenToAppear.size () == sz && 
+									  (int) _secondsToDisappear.size () == sz &&
+									  !_types.empty ()); }
 
 			Properties (const QGAMES::SceneActionBlockProperties& prps);
 
@@ -126,10 +135,10 @@ namespace PacManII
 			Properties& operator = (const Properties&) = default;
 
 			int _entityId;
-			int _type;
-			int _points;
-			QGAMES::bdata _secondsToAppear;
-			QGAMES::bdata _secondsToDisappear;
+			std::vector <int> _types;
+			std::vector <int> _points;
+			std::vector <int> _ballsEatenToAppear;
+			std::vector <QGAMES::bdata> _secondsToDisappear;
 		};
 
 		FruitSceneActionBlock () = delete;
@@ -164,10 +173,11 @@ namespace PacManII
 		Properties _properties;
 
 		/** The counters and the switches. */
-		static const int _COUNTERTOAPPEARFRUIT = 0;
+		static const int _COUNTERNUMBERFRUIT = 0;
 		static const int _COUNTERTODISAPPEARFRUIT = 1;
-		static const int _SWITCHFRUITONSCENE = 0;
-		static const int _SWITCHFRUITSHOWN = 1;
+		static const int _SWITCHBLOCKACTIVE = 0;
+		static const int _SWITCHFRUITONSCENE = 1;
+		static const int _SWITCHFRUITSHOWN = 2;
 
 		// Implementation
 		Fruit* _fruit;

@@ -174,8 +174,7 @@ void PacManII::Game::setLevel (int l, int nP)
 // ---
 bool PacManII::Game::stopsAfterCurrentLevel () const
 {
-	return (true);
-//	return (level () % 3 == 0);
+	return (level () % 3 == 0);
 }
 
 // ---
@@ -451,12 +450,11 @@ void PacManII::Game::initialize ()
 #ifndef NDEBUG
 	setShowFPS (true);
 	_drawArtistTarget = true;
-	_passwordWellIntroduced = true;
+	_passwordWellIntroduced = parameter (std::string (__PACMANII_PASSWORDPARAMETER__)) == std::string ("PACMANPWD");
 #else
 	std::string sfps = parameter (std::string (__PACMANII_SHOWPFSPARAMETER__));
 	setShowFPS (QGAMES::toUpper (QGAMES::trim (sfps)) == std::string (__YES_STRING__));
 	_drawArtistTarget = parameter (std::string (__PACMANII_DRAWARTISTTARGETPARAMETER__)) == std::string (__YES_STRING__);
-	_passwordWellIntroduced = parameter (std::string (__PACMANII_PASSWORDPARAMETER__)) == std::string ("PACMANPWD");
 #endif
 
 	setState (gCS); // To start...

@@ -68,6 +68,9 @@ namespace PacManII
 		int numberRound () const
 							{ return (_numberRound); }
 
+		/** To know information about the monsters. */
+		int numberMonsters () const;
+
 		/** The siren will be played when the actual rate changes or when it was force. */
 		void playSiren (bool f = false);
 		void stopSiren ();
@@ -121,7 +124,7 @@ namespace PacManII
 			First time that method is executed, it is set who refers to whom. */
 		bool _firstTimeUpdateMethod;
 		/** To indicate th number of round. */
-		bool _numberRound;
+		int _numberRound;
 		/** A list of the action blocks relatd with monsters.
 			It is usefull later. */
 		std::vector <MonsterSceneActionBlock*> _monsterActionBlocks;

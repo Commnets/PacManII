@@ -205,21 +205,25 @@ __IMPLEMENTONOFFSWITCHES__ (PacManII::MonsterSceneActionBlock::OnOffSwitches)
 // ---
 PacManII::FruitSceneActionBlock::Properties::Properties (const QGAMES::SceneActionBlockProperties& prps)
 	: _entityId (0),
-	  _type (0), _points (200),
-	  _secondsToAppear (__BD 7), _secondsToDisappear (__BD 7)
+	  _types ({ 0 }), _points ({ 200 }),
+	  _ballsEatenToAppear({ 40 }), _secondsToDisappear ({ __BD 10 })
 {
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKENTITYIDATTR__)) != prps.end ())
 		_entityId = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKENTITYIDATTR__))).second.c_str ());
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKTYPEATTR__)) != prps.end ())
-		_type = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKTYPEATTR__))).second.c_str ());
+		_types = QGAMES::getElementsFromAsInt 
+			(std::string ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKTYPEATTR__))).second.c_str ()), ',');
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKPOINTSATTR__)) != prps.end ())
-		_points = std::atoi ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKPOINTSATTR__))).second.c_str ());
+		_points = QGAMES::getElementsFromAsInt
+			(std::string ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKPOINTSATTR__))).second.c_str ()), ',');
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__)) != prps.end ())
-		_secondsToAppear = __BD (std::atof ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__))).second.c_str ()));
+		_ballsEatenToAppear = QGAMES::getElementsFromAsInt 
+			(std::string ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTOAPPEARATTR__))).second.c_str ()), ',');
 	if (prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__)) != prps.end ())
-		_secondsToDisappear = __BD (std::atof ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__))).second.c_str ()));
+		_secondsToDisappear = QGAMES::getElementsFromAsBDATA
+			(std::string ((*prps.find (std::string (__PACMANII_FRUITSCENEBLOCKSECONDSTODISAPPEARATTR__))).second.c_str ()), ',');
 
-	PacManII::FruitSceneActionBlock::Properties (_entityId, _type, _points, _secondsToAppear, _secondsToDisappear);
+	PacManII::FruitSceneActionBlock::Properties (_entityId, _types, _points, _ballsEatenToAppear, _secondsToDisappear);
 }
 
 // ---
@@ -238,9 +242,6 @@ void PacManII::FruitSceneActionBlock::initialize ()
 
 	_fruit -> initialize ();
 
-	_fruit -> setType (_properties._type);
-	_fruit -> setPoints (_properties._points);
-
 	_fruit -> setStatus (PacManII::Fruit::Status::_NOTDEFINED);
 
 	_fruit -> setVisible (false);
@@ -248,10 +249,11 @@ void PacManII::FruitSceneActionBlock::initialize ()
 	reStartAllCounters ();
 	reStartAllOnOffSwitches ();
 
-	counter (_COUNTERTOAPPEARFRUIT) -> 
-		initialize ((int) (_properties._secondsToAppear * __BD QGAMES::Game::game () -> framesPerSecond ()), 0, true, false); 
-	counter (_COUNTERTODISAPPEARFRUIT) ->  
-		initialize ((int) (_properties._secondsToDisappear * __BD QGAMES::Game::game () -> framesPerSecond ()), 0, true, false); 
+	if (!_properties._types.empty ()) // Just in case, although it shouldn't...
+		counter (_COUNTERNUMBERFRUIT) -> initialize ((int) _properties._types.size (), 0, true, false); 
+		// and the block is active and no fruit is in the screen
+	else
+		onOffSwitch (_SWITCHBLOCKACTIVE) -> set (false);
 }
 
 // ---
@@ -263,28 +265,10 @@ void PacManII::FruitSceneActionBlock::updatePositions ()
 	if (!scn -> clapperBoard ())
 		return;
 
-	if (onOffSwitch (_SWITCHFRUITSHOWN) -> isOn ())
-		return; // Nothing else to do one the fruit has been shown...
+	if (!onOffSwitch (_SWITCHBLOCKACTIVE) -> isOn ())
+		return;
 
-	// When there is no fruit in the scene...
-	if (!onOffSwitch (_SWITCHFRUITONSCENE) -> isOn ())
-	{
-		// ...and it is time for it....
-		if (counter (_COUNTERTOAPPEARFRUIT) -> isEnd ())
-		{
-			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
-			assert (g != nullptr);
-
-			_fruit -> setType (g -> levelDefinition (g -> level ()).bonusSymbolId ());
-			_fruit -> setStatus (PacManII::Fruit::Status::_SHOWN);
-
-			onOffSwitch (_SWITCHFRUITONSCENE) -> set (true);
-
-			counter (_COUNTERTODISAPPEARFRUIT) -> initialize ();
-		}
-	}
-	// ...and when no
-	else
+	if (onOffSwitch (_SWITCHFRUITONSCENE) -> isOn ())
 	{
 		bool tD = false;
 		if (_fruit -> isAlive ()) // It could be aten whilst it is on the screen...
@@ -292,7 +276,9 @@ void PacManII::FruitSceneActionBlock::updatePositions ()
 			if (counter (_COUNTERTODISAPPEARFRUIT) -> isEnd ())
 			{
 				_fruit -> setStatus (PacManII::Fruit::Status::_NOTDEFINED);
-				
+
+				_fruit -> setVisible (false);
+
 				tD = true;
 			}
 		}
@@ -302,7 +288,31 @@ void PacManII::FruitSceneActionBlock::updatePositions ()
 		if (tD)
 		{
 			onOffSwitch (_SWITCHFRUITONSCENE) -> set (false);
-			onOffSwitch (_SWITCHFRUITSHOWN) -> set (true);
+
+			onOffSwitch (_SWITCHBLOCKACTIVE) -> set (!counter (_COUNTERNUMBERFRUIT) -> isEnd ());
+		}
+	}
+	else
+	{
+		if (scn -> numberBallsEaten () >= 
+			_properties._ballsEatenToAppear [counter (_COUNTERNUMBERFRUIT) -> value ()])
+		{
+			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+			assert (g != nullptr);
+
+			_fruit -> setType (g -> levelDefinition (g -> level ()).
+				fruitCondition (counter (_COUNTERNUMBERFRUIT) -> value ()).bonusSymbolId ());
+			_fruit -> setPoints (g -> levelDefinition (g -> level ()).
+				fruitCondition (counter (_COUNTERNUMBERFRUIT) -> value ()).bonusPoints ());
+			_fruit -> setStatus (PacManII::Fruit::Status::_SHOWN);
+
+			_fruit -> setVisible (true);
+
+			counter (_COUNTERTODISAPPEARFRUIT) -> initialize ((int) (g -> levelDefinition 
+				(g -> level ()).fruitCondition (counter (_COUNTERNUMBERFRUIT) -> value ()).secondsBonusToDisappear () * 
+					__BD g -> framesPerSecond ()), 0, true, false);
+
+			onOffSwitch (_SWITCHFRUITONSCENE) -> set (true);
 		}
 	}
 }
@@ -323,15 +333,17 @@ void PacManII::FruitSceneActionBlock::finalize ()
 __IMPLEMENTCOUNTERS__ (PacManII::FruitSceneActionBlock::Counters)
 {
 	addCounter (new QGAMES::Counter 
-		(PacManII::FruitSceneActionBlock::_COUNTERTOAPPEARFRUIT, 0, 0 , true, false));
+		(PacManII::FruitSceneActionBlock::_COUNTERNUMBERFRUIT, 1, 0 , true, false));
 	addCounter (new QGAMES::Counter 
-		(PacManII::FruitSceneActionBlock::_COUNTERTODISAPPEARFRUIT, 0, 0, true, false)); 
-	// Both will be initialized later...
+		(PacManII::FruitSceneActionBlock::_COUNTERTODISAPPEARFRUIT, 1, 0, true, false)); 
+	// All initialized later better...
 }
 
 // ---
 __IMPLEMENTONOFFSWITCHES__ (PacManII::FruitSceneActionBlock::OnOffSwitches)
 {
+	addOnOffSwitch (new QGAMES::OnOffSwitch 
+		(PacManII::FruitSceneActionBlock::_SWITCHBLOCKACTIVE, true));
 	addOnOffSwitch (new QGAMES::OnOffSwitch 
 		(PacManII::FruitSceneActionBlock::_SWITCHFRUITONSCENE, false));
 	addOnOffSwitch (new QGAMES::OnOffSwitch 

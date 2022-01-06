@@ -187,14 +187,14 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 				if (mter -> isDangerous ())
 				{
 					if (!g -> passwordWellIntroduced ())
-						QGAMES::Event (__PACMANII_PACMANDESTROYED__, this);
+						notify (QGAMES::Event (__PACMANII_PACMANDESTROYED__, this));
 				}
 				else
 				{
-					setScore (score () + mter -> points ());
-
 					game () -> soundBuilder () -> sound (__PACMANII_SOUNDEATGHOST__) -> play (-1);
 
+					// The points will be added in the scene obsrving pacman
+					// This is because the number of points to add could depend on (e.g.) the number of eatn monsters.
 					QGAMES::Event (__PACMANII_PACMANEATMONSTER__, mter);
 				}
 			}
