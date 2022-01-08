@@ -12,15 +12,6 @@ PacManII::Lives::Lives (int lF)
 }
 
 // ---
-void PacManII::Lives::setLives (int l)
-{
-	_lives = l;
-	if (_lives < 0) _lives = 0;
-	if (_lives > __PACMANII_MAXNUMBEROFLIVESINSCREEN__) 
-		_lives = __PACMANII_MAXNUMBEROFLIVESINSCREEN__;
-}
-
-// ---
 void PacManII::Lives::initialize ()
 {
 	QGAMES::ScoreObject::initialize ();
@@ -34,7 +25,7 @@ void PacManII::Lives::drawOn (QGAMES::Screen* s, const QGAMES::Position& p)
 	QGAMES::Position iPos = QGAMES::Position::_cero;
 	QGAMES::Frame* frame = currentForm () -> frame (0);
 	QGAMES::bdata w = __BD (frame -> originalForm () -> frameWidth () + 2);
-	for (int i = 0; i < _lives; i++, iPos += QGAMES::Vector (w, __BD 0, __BD 0))
+	for (int i = 0; i < _lives && i < __PACMANII_MAXNUMBEROFLIVESINSCREEN__; i++, iPos += QGAMES::Vector (w, __BD 0, __BD 0))
 		frame -> drawOn (s, p + iPos);
 }
 
@@ -43,8 +34,8 @@ void PacManII::Lives::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_LIVESACTUALIZED__)
 		setLives (evnt.values ().openValue (__PACMANII_LIVESVALUEPARAMETER__).intValue ());
-	else
-		QGAMES::ScoreObject::processEvent (evnt); // To the parent...
+		
+	QGAMES::ScoreObject::processEvent (evnt); // To the parent...
 }
 
 // ---
@@ -83,8 +74,8 @@ void PacManII::TimeCounter::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_GAMETIMEACTUALIZED__)
 		setSeconds (evnt.values ().openValue (__PACMANII_GAMETIMEVALUEPARAMETER__).intValue ());
-	else
-		QGAMES::ScoreObjectText::processEvent (evnt);
+
+	QGAMES::ScoreObjectText::processEvent (evnt);
 }
 
 // ---
@@ -104,8 +95,8 @@ void PacManII::ScoreCounter::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_SCOREACTUALIZED__)
 		setNumber (evnt.values ().openValue (__PACMANII_SCOREVALUEPARAMETER__).intValue ());
-	else
-		QGAMES::ScoreObjectNumber::processEvent (evnt);
+
+	QGAMES::ScoreObjectNumber::processEvent (evnt);
 }
 
 // ---
@@ -150,9 +141,11 @@ void PacManII::FruitsEaten::initialize ()
 void PacManII::FruitsEaten::drawOn (QGAMES::Screen* s, const QGAMES::Position& p)
 {
 	QGAMES::Position iPos = QGAMES::Position::_cero;
-	for (auto i : _fruitsEaten)
+	int fI = (int) _fruitsEaten.size () - __PACMANII_MAXNUMBEROFFRUITSINSCREEN__; if (fI < 0) fI = 0; 
+	// The last __PACMANII_MAXNUMBEROFFRUITSINSCREEN__ are presented. No more.
+	for (int i = fI; i < (int) _fruitsEaten.size (); i++)
 	{
-		QGAMES::Frame* frame = currentForm () -> frame (i);
+		QGAMES::Frame* frame = currentForm () -> frame (_fruitsEaten [i]);
 		frame -> drawOn (s, p + iPos);
 		iPos += QGAMES::Vector (__BD (frame -> originalForm () -> frameWidth () - 5), __BD 0, __BD 0);
 	}
@@ -163,6 +156,6 @@ void PacManII::FruitsEaten::processEvent (const QGAMES::Event& evnt)
 {
 	if (evnt.code () == __PACMANII_FRUITSCARRIEDACTUALIZED__)
 		setFruitsEaten (evnt.values ().openValue (__PACMANII_FRUITSCARRIEDVALUEPARAMETER__).strValue ());
-	else
-		QGAMES::ScoreObject::processEvent (evnt); // To the parent...
+
+	QGAMES::ScoreObject::processEvent (evnt); // To the parent...
 }

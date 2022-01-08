@@ -47,9 +47,14 @@ namespace PacManII
 		std::string ballsEatenStatus () const;
 		void setBallsEatenStatus (const std::string& st);
 
-		/** To play the sire. */
+		/** To play / stop the siren. */
 		void playSiren (bool f = false);
 		void stopSiren ();
+
+		/** To stop all elments in pacman. */
+		void stopAllElements ();
+		/** To hide monsters. */
+		void hideAllMonsters ();
 
 		virtual void initialize () override;
 		virtual void finalize () override;

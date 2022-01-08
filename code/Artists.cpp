@@ -66,7 +66,7 @@ PacManII::Artist::Artist (int cId, const QGAMES::Forms& f, const QGAMES::Entity:
 	  _nextDirectionWhenPossible (QGAMES::Vector::_cero),
 	  _referenceArtistLastMazePositions ()
 { 
-	// Adds a buoy to be abble to "stop" out of the process event manipulation...
+	// Adds a buoy to be abble to "stop" out of the event manipulation process...
 	assert (!buoys ().empty ()); // Just in case...
 	buoys ().insert (QGAMES::Buoys::value_type
 		(__PACMANII_TOSTOPBUOYID__, new PacManII::Artist::ToStopBuoy ()));
@@ -104,6 +104,9 @@ void PacManII::Artist::initialize ()
 // ---
 void PacManII::Artist::updatePositions ()
 {
+	if (!isVisible ())
+		return;
+
 	QGAMES::MazeModel::PositionInMaze lP = currentMazePosition ();
 
 	PacManII::PacmanElement::updatePositions ();

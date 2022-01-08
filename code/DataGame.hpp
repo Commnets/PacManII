@@ -29,12 +29,17 @@ namespace PacManII
 		class LevelDefinition final
 		{
 			public:
-			/** In one level there can be several of these: One per round. 
-				Every elroy condition has one different value of its attributes per monster. 
-				If it is requested an attribute for a monster number not defined, the last one available will be returned. 
-				So, it is not needed to create th elroy condition for all monsters in the game, 
-				but only for the ones an elroy condition has to be taken into account. 
-				A no useful elroy condition will be the one defining the number of remaining balls before being activated to 0. */
+			/** 
+			  * In one level there can be several of these: One per round. \n
+			  * A round is a different execution of the same level and for the same player. 
+			  * This could happen when pacman is killed before ends cleaning up the balls in a level. \n
+			  *	Every elroy condition has one different value of its attributes per monster. \n
+			  *	If it is requested an attribute for a number of monster not defined, the last one available will be returned. 
+			  *	So, it is not needed to create the elroy condition for all monsters in the game, 
+			  *	but only for the ones an elroy condition has to be taken into account. \n 
+			  * An elroy conditions activates when a number of ball remains, so
+			  *	A no useful elroy condition will be the one defining the number of remaining balls before being activated to 0. 
+			  */
 			class ElroyCondition final
 			{
 				public:
@@ -73,12 +78,16 @@ namespace PacManII
 
 			typedef std::vector <ElroyCondition> ElroyConditions;
 
-			/** In a level, there can be several of these: One per round. 
-				Every leave home condition can have different values for its attributs per number of monster.
-				If it is requested an attribute for a monster number not defined, the last one available will be returned. 
-				So, it is not needed to create the leave home condition for all monsters in the game, 
-				but only for the ones an leave home condition has to be taken into account. 
-				A no useful condition will be the one defining the number of balls eaten before moving to 0. */
+			/** 
+			  * In a level, there can be several of these: One per round. \n
+			  *	Every leave home condition can have different values for its attributes per number of monster.
+			  *	If it is requested an attribute for a number of monster not defined, the last one available will be returned. \n
+			  *	So, it is not needed to create the leave home conditions for all monsters in the game, 
+			  *	but only for the ones an leave home condition has to be taken into account. \n
+			  * A Lave home condition activates when a number of balls have been eaten, so
+			  *	a no useful condition will be the one defining the number of balls eaten before moving to 0.
+			  * It will be activ inmediatly.
+			  */
 			class LeaveHomeCondition final
 			{
 				public:
@@ -110,9 +119,11 @@ namespace PacManII
 
 			typedef std::vector <LeaveHomeCondition> LeaveHomeConditions;
 
-			/** The scatter - chase cycle is the time spend between switching from scatter to chase or the opposite. 
-				It can be defined as many as needed. 
-				If a not defined cycle is requested, the last one will be returned. */
+			/** 
+			  * The scatter - chase cycle is the time spend between switching from scatter to chase or the opposite. \n 
+			  *	It can be defined as many as needed. \n
+			  *	If a not defined cycle is requested, the last one will be returned. 
+			  */
 			class ScatterChaseCycle final
 			{
 				public:
@@ -141,6 +152,11 @@ namespace PacManII
 
 			typedef std::vector <ScatterChaseCycle> ScatterChaseCycles;
 
+			/**
+			  *	To define the conditions a fruit appear in the maze (at the position defined) \n
+			  * A level can hav many of these defined. \n
+			  * A fruit condition activates when a number of ball are eaten.
+			  */
 			class FruitCondition
 			{
 				public:
@@ -319,8 +335,6 @@ namespace PacManII
 		DataGame (const DataGame& d) = default;
 
 		DataGame& operator = (const DataGame& d) = default;
-
-		int firstNumberLevelDefinitionForScene (int sId) const;
 
 		/** Parameter starts in 0. 
 			The last on always repeat. */

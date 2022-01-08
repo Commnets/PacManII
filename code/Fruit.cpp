@@ -74,6 +74,7 @@ void PacManII::Fruit::setStatus (const PacManII::Fruit::Status& st)
 		case PacManII::Fruit::Status::_NOTDEFINED:
 			{
 				setVisible (false);
+
 				onOffSwitch (_SWITCHPOINTSVISIBLE) -> set (false);
 			}
 
@@ -81,9 +82,8 @@ void PacManII::Fruit::setStatus (const PacManII::Fruit::Status& st)
 
 		case PacManII::Fruit::Status::_SHOWN:
 			{
-				setPosition (mazePositionToMapPosition (pMap () -> fruitPosition ()) - 
-					QGAMES::Vector (__BD (visualLength () >> 1), __BD (visualHeight () >> 1), __BD 0)); 
 				setVisible (true);
+
 				onOffSwitch (_SWITCHPOINTSVISIBLE) -> set (false);
 			}
 
@@ -92,6 +92,7 @@ void PacManII::Fruit::setStatus (const PacManII::Fruit::Status& st)
 		case PacManII::Fruit::Status::_EATEN:
 			{
 				setVisible (true);
+
 				onOffSwitch (_SWITCHPOINTSVISIBLE) -> set (true);
 			}
 
@@ -112,7 +113,11 @@ void PacManII::Fruit::initialize ()
 	reStartAllCounters ();
 	reStartAllOnOffSwitches ();
 
-	setType (0); // The very basic initially...
+	setType (0); // Th one to show will b defined externally later (from the block controlling the fruit)
+
+	// The fruit is shown where it is defined in the maze...
+	setPosition (mazePositionToMapPosition (pMap () -> fruitPosition ()) - 
+		QGAMES::Vector (__BD (visualLength () >> 1), __BD (visualHeight () >> 1), __BD 0)); 
 
 	setStatus (PacManII::Fruit::Status::_NOTDEFINED);
 }
@@ -120,6 +125,9 @@ void PacManII::Fruit::initialize ()
 // ---
 void PacManII::Fruit::updatePositions ()
 {
+	if (!isVisible ())
+		return;
+
 	PacManII::PacmanElement::updatePositions ();
 
 	if (onOffSwitch (_SWITCHPOINTSVISIBLE) -> isOn ())
@@ -163,7 +171,8 @@ void PacManII::Fruit::whenCollisionWith (QGAMES::Entity* e)
 // ---
 __IMPLEMENTCOUNTERS__ (PacManII::Fruit::Counters)
 {
-	addCounter (new QGAMES::Counter (_COUNTERPOINTSVISIBLE, 1 * QGAMES::Game::game () -> framesPerSecond (), true, true));
+	addCounter (new QGAMES::Counter 
+		(_COUNTERPOINTSVISIBLE, 1 /** second max for points. */ * QGAMES::Game::game () -> framesPerSecond (), true, true));
 }
 
 // ---

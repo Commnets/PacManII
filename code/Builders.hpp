@@ -55,7 +55,7 @@ namespace PacManII
 		virtual QGAMES::GameState* createGameState (const QGAMES::GameStateBuilder::GameStateDefinition* def) override;
 	};
 
-	/** To create a game state add on that shows a set of monsters moving in the right side of the screen moving randomly. */
+	/** To create a game state adds on that shows a set of monsters moving in the right side of the screen moving randomly. */
 	class ForShowingMonsterMovingGameStateAddOn final : public QGAMES::GameStateBuilder::AddsOn
 	{
 		public:
@@ -68,7 +68,7 @@ namespace PacManII
 		virtual QGAMES::GameState* createGameState (const QGAMES::GameStateBuilder::GameStateDefinition* def) override;
 	};
 
-	/** To create a game state add on to show the name of the player. */
+	/** To create a game state adds on to show the name of the player. */
 	class ForShowingPlayerNameGameStateAddOn final : public QGAMES::GameStateBuilder::AddsOn
 	{
 		public:
@@ -81,7 +81,7 @@ namespace PacManII
 		virtual QGAMES::GameState* createGameState (const QGAMES::GameStateBuilder::GameStateDefinition* def) override;
 	};
 
-	/** To create a game state add on to show the name of the current lvel. */
+	/** To create a game state adds on to show the name of the current lvel. */
 	class ForShowingLevelGameStateAddOn final : public QGAMES::GameStateBuilder::AddsOn
 	{
 		public:
@@ -122,6 +122,19 @@ namespace PacManII
 
 		virtual bool canCreateGameState (int t) const override
 						{ return (t == __PACMANII_GAMESTATEPLAYINGTYPE__); }
+		virtual QGAMES::GameState* createGameState (const QGAMES::GameStateBuilder::GameStateDefinition* def) override;
+	};
+
+	/** To create the game stat to stop monsters moving. */
+	class ForStopPacmanElemntsMovingGameStateAddOn final : public QGAMES::GameStateBuilder::AddsOn
+	{
+		public:
+		ForStopPacmanElemntsMovingGameStateAddOn (QGAMES::GameStateBuilder* b)
+			: QGAMES::GameStateBuilder::AddsOn (b)
+							{ }
+
+		virtual bool canCreateGameState (int t) const override
+						{ return (t == __PACMANII_GAMESTATESTOPPINGELEMENTSTYPE__); }
 		virtual QGAMES::GameState* createGameState (const QGAMES::GameStateBuilder::GameStateDefinition* def) override;
 	};
 
@@ -184,8 +197,9 @@ namespace PacManII
 			 const QGAMES::GameStates& sts, const QGAMES::GameStateControl::FlowMap& fl) override;
 	};
 
-	/** To create the movements of the game. */
-	class MovementBuilder final : public QGAMES::AdvancedMovementBuilder
+	/** To create the movements of the game. \n
+		It can be extended to include new ones or to define movements for the new entities. */
+	class MovementBuilder : public QGAMES::AdvancedMovementBuilder
 	{
 		public:
 		MovementBuilder () = delete;
@@ -203,8 +217,9 @@ namespace PacManII
 			(const QGAMES::MovementBuilder::MovementDefinition& def) override;
 	};
 
-	/** To create specific entities of the game. */
-	class EntityBuilder final : public QGAMES::AdvancedEntityBuilder
+	/** To create specific entities of the game. \n
+		It can be extendd to include our own!. */
+	class EntityBuilder : public QGAMES::AdvancedEntityBuilder
 	{
 		public:
 		EntityBuilder () = delete;
@@ -293,29 +308,29 @@ namespace PacManII
 		// Implementation
 		// Tiles located in the "ArtistsLocation" layer
 		/** The tiles used to describe the path. */
-		std::vector <int> _TILESLIMITDARK, _TILESLIMITBRIGHT, 
+		const std::vector <int> _TILESLIMITDARK, _TILESLIMITBRIGHT, 
 			_TILESPOWERBALL, _TILESNORMALBALL, _TILESPATH, _TILESPATHLIMITRIGHT, _TILESPATHLIMITLEFT;
 		/** The tiles used to define the location of artists. */
-		std::vector <int> _TILESHOMEPACMAN, _TILESHOMEMONSTERS, _TILESRUNAWAYMONSTERS;
+		const std::vector <int> _TILESHOMEPACMAN, _TILESHOMEMONSTERS, _TILESRUNAWAYMONSTERS;
 		/** The tile to indicate the position where the fruit appears. */
-		int _TILEFRUIT;
+		const int _TILEFRUIT;
 
 		// Tiles located in the "MazeLocations" layer
 		/** The tile used to define the home exiting position for monsters */
-		int _TILEEXITMONSTERSHOME;
+		const int _TILEEXITMONSTERSHOME;
 		/** The tile usd to define the place where monsters have to return after dieing. */
-		int _TILERETURNMONSTERAFTERDIE;
+		const int _TILERETURNMONSTERAFTERDIE;
 		/** Tiles indicating connection points. */
-		std::vector <int> _TILESCONNECTION;
+		const std::vector <int> _TILESCONNECTION;
 
 		// Tiles located in the "MazeZones" layer
 		/** Tile frame to indicate different zones. */
-		std::vector <int> _TILESZONES; 
+		const std::vector <int> _TILESZONES; 
 
 		// Tiles located in the "Directions" layer
 		/** The equivalent between tiles to mark direection and the direction itself.
 			Th order of the second veector is LEFT/RIGHT/UP/DOWN. */
-		std::map <int, std::vector <bool>> _TILESDIRECTIONSMAZE;
+		const std::map <int, std::vector <bool>> _TILESDIRECTIONSMAZE;
 	};
 
 	/** The extension to create worlds. 

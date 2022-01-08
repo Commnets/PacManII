@@ -157,6 +157,22 @@ void PacManII::Scene::stopSiren ()
 }
 
 // ---
+void PacManII::Scene::stopAllElements ()
+{
+	for (auto i : characters ())
+		if (dynamic_cast <PacManII::Artist*> (i.second))
+			static_cast <PacManII::Artist*> (i.second) -> toStand ();
+}
+
+// ---
+void PacManII::Scene::hideAllMonsters ()
+{
+	for (auto i : characters ())
+		if (dynamic_cast <PacManII::Monster*> (i.second))
+			static_cast <PacManII::Monster*> (i.second) -> setVisible (false);
+}
+
+// ---
 void PacManII::Scene::initialize ()
 {
 	// The scene has to be initialized just after characters are added...
@@ -217,16 +233,20 @@ void PacManII::Scene::updatePositions ()
 		return; // It is not still working...
 
 	// This piece of code is to control when and who (monster) has to start the movement
-	// There is a general timer
-	// Any time, the timer gets the limit, the next monster is launched
+	// There is a general timer defined at configuration level:
+	// Any time, that timer gets the limit, the next monster is launched
 	// The value of this counter is determined by the level!
 	// When all monsters are moving, then this piece of code is jumped!
+	// The monster scene block controls also when a monster is launched. 
+	// In that case, it will depend on the number of ball eaten by pacman.
 	if (!onOffSwitch (_SWITCHALLMONSTERSMOVING) -> isOn () && counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> isEnd ())
 		onOffSwitch (_SWITCHALLMONSTERSMOVING) -> set (!launchNextMonster ());
 
 	// Deal with the threaten state!
+	// Is it on?
 	if (onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> isOn ())
 	{
+		// Is it time to finish the state?
 		if (counter (_COUNTERMONSTERSBEINGTHREATEN) -> isEnd ())
 		{
 			onOffSwitch (_SWITCHMONSTERSBEINGTHREATEN) -> set (false);
@@ -239,8 +259,10 @@ void PacManII::Scene::updatePositions ()
 
 			game () -> soundBuilder () -> sound (__PACMANII_SOUNDTHREATING__) -> stop ();
 		}
+		// If not...
 		else
 		{
+			// ...and the time passed is half the total, the monsters start to blink
 			if (!onOffSwitch (_SWITCHMONSTERSBLINKING) -> isOn () &&
 				counter (_COUNTERMONSTERSBEINGTHREATEN) -> value () >= 
 					(counter (_COUNTERMONSTERSBEINGTHREATEN) -> limitValue () >> 1))
@@ -254,16 +276,20 @@ void PacManII::Scene::updatePositions ()
 	}
 
 	// Deal with the chasing state!
+	// Are they?
 	if (onOffSwitch (_SWITCHMONSTERSCHASING) -> isOn ())
 	{
+		// is it the end of the scatter-chase cycle?
 		if (counter (_COUNTERMONSTERSCHASING) -> isEnd ())
 		{
 			onOffSwitch (_SWITCHMONSTERSCHASING) -> set (false);
 
+			// back to the scatter situation...
 			setMonstersChasing (false);
 
-			counter (_COUNTERMONSTERCHASINGCYCLES) -> isEnd (); // To add 1...
+			counter (_COUNTERMONSTERCHASINGCYCLES) -> isEnd (); // To add 1 to the number of cycles excuted and
 
+			// ...preparing the context for the next cycle...
 			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 			assert (g != nullptr);
 			const PacManII::DataGame::LevelDefinition::ScatterChaseCycle& sCC = 
@@ -274,8 +300,10 @@ void PacManII::Scene::updatePositions ()
 				((int) (sCC.secondsScatter () * __BD g -> framesPerSecond ()), 0, true, false);
 		}
 	}
+	// If not...
 	else
 	{
+		// ..is it time to start chasing?
 		if (counter (_COUNTERMONSTERSRUNNINGAWAY) -> isEnd ())
 		{
 			onOffSwitch (_SWITCHMONSTERSCHASING) -> set (true);
@@ -329,8 +357,6 @@ void PacManII::Scene::processEvent (const QGAMES::Event& evnt)
 	else
 	if (evnt.code () == __PACMANII_MONSTERSTARTEDTOMOVE__)
 		_numberMonstersMoving.push_back (static_cast <PacManII::MonsterSceneActionBlock*> (evnt.data ()) -> monsterNumber ());
-	else
-		notify (QGAMES::Event (evnt.code (), this, evnt.values ()));
 
 	QGAMES::Scene::processEvent (evnt);
 }

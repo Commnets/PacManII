@@ -20,11 +20,12 @@
 
 namespace PacManII
 {
-	/** The fuits in the maze. */
+	/** The fruits in the maze. \n
+		@see PacmanElement documentation for more details. */
 	class Fruit : public PacmanElement
 	{
 		public:
-		// The different status a monster cab ne in...
+		// The different status a fruit can be in...
 		enum class Status 
 			{ _NOTDEFINED = 0, _SHOWN = 1, _EATEN = 2 };
 
@@ -52,13 +53,14 @@ namespace PacManII
 							{ return (_type); }
 		void setType (int t);
 
-		/** To set and know the number of points assigned to this fruit. */
+		/** To set and know the number of points assigned to this fruit.
+			Those points should be given to the one eatening it. */
 		int points () const
 							{ return (_points); }
 		void setPoints (int p)
 							{ _points = p; }
 
-		// To know and change the status...
+		/** To know and change the status */
 		void setStatus (const Status& st);
 		Status status () const
 							{ return (_status); }

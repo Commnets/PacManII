@@ -23,12 +23,16 @@ namespace PacManII
 {
 	class MonsterSceneActionBlock;
 
-	/** Basic Scene of the game. \n
-		Maps can be only PacManII ones. \n
-		The Scene has a siren in the background. \n
-		The rate of the siren goes up as map has less balls to eat. \n
-		When the a power ball is eaten the scene turns into a chaising state. What to do depends on the definitions later.
-		The game can be extended in terms of scenes. */
+	/** 
+	  * Basic Scene of the game. \n
+	  *	Maps can be only PacManII ones. \n
+	  *	The Scene has a siren in the background. The rate of the siren goes up as map has less balls to eat. \n
+	  *	When the a power ball is eaten the scene turns into a thraten state. The monsters (and only theem) start to runway. \n
+	  * The scene controls the time in this state, pushing the monsters to blink when the time to finish is close to last. \n
+	  * The scene is also responsable of launching the monsters from home to the maze, 
+	  * taking into account what has been defined in the configuration class. \n
+	  *	The game can be extended in terms of scenes. 
+	  */
 	class Scene : public QGAMES::Scene
 	{
 		public:
@@ -37,13 +41,15 @@ namespace PacManII
 			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ());
 
 		/** The pacman scene can not delegate thes methods in the standard ones.
-			The status of th switxhs and countrs will be then saved, and this is not what we want to happen.
-			Everytime a screen is lunched back the only important information to keep is the status of the ball aeaten. */
+			The status of the switches and counters will be then saved, and this is not what we want to happen. \n
+			Everytime a screen is lunched back the only important information to keep is the status of the balls eaten,
+			because the rest will start as initialized. */
 		virtual QGAMES::SetOfOpenValues runtimeValues () const override;
 		virtual void initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg) override;
 
 		/** Know whether the scene is or not already working. 
-			This is mainly for counters and switches consideration. */
+			This is mainly for counters and switches consideration. 
+			It is invoked from GameState classes. */
 		void setClapperBoard (bool o)
 							{ _clapperBoard = o; }
 		bool clapperBoard () const
@@ -53,7 +59,9 @@ namespace PacManII
 		bool chasingMode () const
 							{ return (onOffSwitch (_SWITCHMONSTERSCHASING) -> isOn ()); }
 
-		/** To blink. */
+		/** To control maze blinking. \n
+			The first parameter indicates time beyween blinks, and the second the number of blinks to execute. 
+			-1 will meani forever. */
 		void startBlinking (QGAMES::bdata bT, int nB);
 		bool isBlinking () const;
 		void stopBlinking ();
@@ -65,15 +73,22 @@ namespace PacManII
 							{ return (_numberBallsEaten); }
 		std::string ballsEatenStatus () const;
 		void setBallsEatenStatus (const std::string& st);
+
+		/** To know the number of round. */
 		int numberRound () const
 							{ return (_numberRound); }
 
 		/** To know information about the monsters. */
 		int numberMonsters () const;
 
-		/** The siren will be played when the actual rate changes or when it was force. */
+		/** The siren will be played when the actual rate changes or when it was force (f = true). */
 		void playSiren (bool f = false);
 		void stopSiren ();
+
+		/** To stop all elments in pacman. */
+		void stopAllElements ();
+		/** To hide monsters. */
+		void hideAllMonsters ();
 
 		virtual void initialize () override;
 		virtual void updatePositions () override;

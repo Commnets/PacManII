@@ -15,7 +15,6 @@
 #define __PACMANII_LETTERS__
 
 #include "Defs.hpp"
-
 #include <advancedArcade/adinclude.hpp>
 
 namespace PacManII

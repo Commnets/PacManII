@@ -23,8 +23,12 @@
 
 namespace PacManII
 {
-	/** The standard scene only considers the single pacman. 
-		The rest of elments would have to define the rest of info as external actionblocks in the XML file. */
+	/** 
+	  * The standard scene only considers the single pacman. \n
+	  * The rest of elments would have to be defined as external actionblocks in the XML file or
+	  * specifically inheriting from this one, that can be overloaded.
+	  * That scene control when pacman is in chasing modee taking into account the situation of the monsters. \n
+	  */
 	class StandardScene : public Scene
 	{
 		public:
@@ -49,8 +53,11 @@ namespace PacManII
 		int _numberMonstersEaten;
 	};
 
-	/** The very basic Scene, is a standard one but defining the monsters and the fruit scenee action blocks
-		in the constrctor of the class, avoinding so their definition in the xml file. */
+	/**
+	  * The very basic Scene, is a standard one but defining the monsters and the fruit scene action blocks
+	  * in the constrctor of the class, avoiding so their definition in the scene xml file. \n
+	  * It can't be extended.
+	  */
 	class BasicScene final : public StandardScene
 	{
 		public:

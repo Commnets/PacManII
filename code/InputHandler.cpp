@@ -61,14 +61,14 @@ void PacManII::InputHandlerBehaviour::onKeyboardStatus (const std::vector <bool>
 			evntId = __PACMANII_MOVINGDOWNLEFTEVENT__;
 			break;
 		default:
-			// Take into account that an strange combinations of keys, will stop the movement...
+			// Take into account that an strange combinations of keys, could stop the movement...
 			evntId = __PACMANII_NOMOVINGEVENT__;
 			break;
 	}
 
 	inputHandler () -> notify (QGAMES::Event (evntId, nullptr /** not needed. */));
 
-	// Fire is used to create special effect in some levels...
+	// Fire could be used to create special effects in some levels...
 	if (kS [_keys [__QGAMES_KEYFIRE__]])
 		_force++;
 	else

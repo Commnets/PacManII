@@ -382,6 +382,7 @@ QGAMES::GameStateBuilder* PacManII::Game::createGameStateBuilder ()
 	result -> addAddsOn (new PacManII::ForShowingLevelGameStateAddOn (result));
 	result -> addAddsOn (new PacManII::ForPlayingControlGameStateAddOn (result));
 	result -> addAddsOn (new PacManII::ForPlayingGameStateAddOn (result));
+	result -> addAddsOn (new PacManII::ForStopPacmanElemntsMovingGameStateAddOn (result));
 	result -> addAddsOn (new PacManII::ForBlinkMazePlayingGameStateAddOn (result));
 	result -> addAddsOn (new PacManII::ForOptionsWhenPlayingGameStateAddOn (result));
 	result -> addAddsOn (new PacManII::ForShowingHallOfFameGameStateAddOn (result));

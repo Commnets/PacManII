@@ -218,6 +218,9 @@ void PacManII::Monster::initialize ()
 // ---
 void PacManII::Monster::updatePositions ()
 {
+	if (!isVisible ())
+		return;
+
 	PacManII::Artist::updatePositions ();
 
 	if (isInATunnelHall ())
@@ -322,7 +325,7 @@ void PacManII::Monster::whatToDoWhenStopStatusIsRequested (const QGAMES::Vector&
 {
 	setOrientation (d);
 	setStateToStandLookingTo (orientation ()); // Looking at the last direction...
-	setMove (QGAMES::Vector::_cero); // ...but not moving... 
+	setMove (orientation ()); // ...but not moving... but never lossing the orientation
 	_pathInMaze = { }; // ..and with no path to follow
 	changeDirectionWhenPossibleTo (QGAMES::Vector::_cero); // ...finally it stops!
 }

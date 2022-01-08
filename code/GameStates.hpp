@@ -113,6 +113,7 @@ namespace PacManII
 		virtual void drawOn (QGAMES::Screen* scr) override;
 		virtual void onExit () override;
 
+		private:
 		__DECLARECOUNTERS__ (Counters);
 		virtual QGAMES::Counters* createCounters () override
 							{ return (new Counters ()); }
@@ -120,7 +121,6 @@ namespace PacManII
 		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
 							{ return (new OnOffSwitches ()); }
 
-		private:
 		void setInitialPositionFrom (const QGAMES::Position& iPos);
 
 		private:
@@ -282,6 +282,94 @@ namespace PacManII
 		// Implementation
 		/** A reference to the dragon artist being controlled by this playing state. */
 		PacMan* _pacman;
+	};
+
+	/** A game state to stop pacman elements moving. */
+	class StopPacmanElemntsMovingGameState final : public QGAMES::GameState
+	{
+		public:
+		/** This structure is used to determinate bhaviour when blinking. */
+		struct Properties
+		{
+			Properties ()
+				: _stopAll (true),
+				  _hideMonsters (false),
+				  _vanishPacman (false)
+							{ }
+
+			/**
+			  *	@param sA	To stop all pacelements' movement?.
+			  * @param hM	Hide monsters?
+			  * @param vP	Vanish Pacman?
+			  */
+			Properties (bool sA, bool hM, bool vP)
+				: _stopAll (sA),
+				  _hideMonsters (hM),
+				  _vanishPacman (vP)
+							{ }
+
+			/** 
+				A constructor based on parameters.
+				It is used in the game state constructor.
+				The structure of the game state control definition file :
+				...
+				<Attributes>
+					<Attribute id = "STOPALL" value = "YES|NO"/>
+					<Attribute id = "HIDEMONSTERS" value = "YES|NO"/>
+					<Attribute id = "VANISHPACMAN" value = "YES|NO"/>
+				</Attributes>
+				...
+			*/
+			Properties (const std::map <std::string, std::string>& prps);
+
+			// Default copy constructor is enough
+			Properties (const Properties& prps) = default;
+
+			Properties& operator = (const Properties& prps) = default;
+		
+			bool _stopAll;
+			bool _hideMonsters;
+			bool _vanishPacman;
+		};
+
+		StopPacmanElemntsMovingGameState () = delete;
+
+		StopPacmanElemntsMovingGameState (int t, const Properties& prps, QGAMES::GameState* nS = nullptr)
+			: QGAMES::GameState (t, QGAMES::Game::game (), nS),
+			  _properties (prps),
+			  _mazeWorld (nullptr),
+			  _pacman (nullptr)
+							{ }
+
+		StopPacmanElemntsMovingGameState (const StopPacmanElemntsMovingGameState&) = delete;
+
+		StopPacmanElemntsMovingGameState& operator = (const StopPacmanElemntsMovingGameState&) = delete;
+
+		virtual void onEnter () override;
+		virtual void updatePositions () override;
+		virtual void onExit () override;
+
+		private:
+		__DECLARECOUNTERS__ (Counters);
+		virtual QGAMES::Counters* createCounters () override
+							{ return (new Counters ()); }
+		__DECLAREONOFFSWITCHES__ (OnOffSwitches);
+		virtual QGAMES::OnOffSwitches* createOnOffSwitches () override
+							{ return (new OnOffSwitches ()); }
+
+		private:
+		Properties _properties;
+
+		// Implementation
+		/** A reference to the current world. */
+		World* _mazeWorld;
+		/** and to pacman. */
+		PacMan* _pacman;
+
+		static const int _COUNTERTOCHANGESTATUS = 0;
+		static const int _COUNTERVANISHSTATUS = 1;
+		static const int _SWITCHVANISHCOMPLETED = 0;
+		static const int _FADE [10];
 	};
 
 	/** A game state to blink the maze. */

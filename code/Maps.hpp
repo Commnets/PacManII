@@ -21,9 +21,6 @@
 
 namespace PacManII
 {
-	/** Basic map of the game. 
-		Layers can be only PacManII ones. 
-		The game can be extended in terms of maps. */
 	class ArtistsLocationsLayer;
 	class MazeLocationsLayer;
 	class MazeZonesLayer;
@@ -31,6 +28,9 @@ namespace PacManII
 	class MazeLayer;
 	class BackgroundLayer;
 
+	/** Basic map of the game. 
+		Layers can be only PacManII ones. 
+		The game can be extended in terms of maps. */
 	class Map final : public QGAMES::TiledMap
 	{
 		public:
@@ -162,7 +162,7 @@ namespace PacManII
 							{ setVisible (false); /* Always */ }
 
 		/** To know important positions kept in this layer. 
-			The position of the tile is returned. */
+			The position (screen) of the tile is returned. */
 		const std::map <int, QGAMES::Position>& pacmanInitialPositions () const; 
 		const QGAMES::Position& pacmanInitialPosition (int nP) const;
 		const std::map <int, QGAMES::Position>& monsterInitialPositions () const;
@@ -172,7 +172,7 @@ namespace PacManII
 		const QGAMES::Position& fruitPosition () const;
 
 		protected:
-		/** To accelerate how positions are calculated (per number of artist). */
+		/** To accelerate how positions are accesed (per number of artist). */
 		mutable std::map <int, QGAMES::Position> _pacmanInitialPositions;
 		mutable std::map <int, QGAMES::Position> _monsterInitialPositions;
 		mutable std::map <int, QGAMES::Position> _monsterRunAwayPositions;
@@ -211,7 +211,7 @@ namespace PacManII
 							{ setVisible (false); /* Always */ }
 	};
 
-	/** Representing the maze description layer. */
+	/** Representing the "Maze" (where directions are presented) layer. */
 	class DirectionsLayer final : public QGAMES::TileLayer
 	{
 		public:
@@ -221,8 +221,9 @@ namespace PacManII
 							{ setVisible (false); /* Always. */ }
 	};
 
-	/** Representing a layer of the game.
-		Tiles can be only PacManII ones. */
+	/** Representing the pure maze. the only one visible appart of background!. 
+		The effect of blinking is executed here. \n
+		Th information needed to execute it is defined in the builder (TMX). */
 	class MazeLayer final : public QGAMES::TileLayer
 	{
 		public:
@@ -292,7 +293,7 @@ namespace PacManII
 		void setBright (bool b);
 	};
 
-	/** Representing all types of possible path. */
+	/** Representing all types elements in the path. */
 	class TilePath final : public QGAMES::Tile
 	{
 		public:
@@ -305,7 +306,7 @@ namespace PacManII
 			  _originalFrame (nf)
 							{ }
 
-		/** To know and change th type. */
+		/** To know and change the type. */
 		Type type () const
 							{ return (_type); }
 		bool alreadyEaten () const

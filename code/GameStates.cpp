@@ -1,6 +1,8 @@
 #include "GameStates.hpp"
 #include "Game.hpp"
 
+const int PacManII::StopPacmanElemntsMovingGameState::_FADE [10] = { 250, 220, 190, 160, 130, 100, 70, 40, 10, 0 };
+
 // ---
 void PacManII::InitializePacManIIGameState::onEnter ()
 {
@@ -694,6 +696,91 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 			QGAMES::GameState::processEvent (evnt);
 			break;
 	}
+}
+
+// ---
+PacManII::StopPacmanElemntsMovingGameState::Properties::Properties (const std::map <std::string, std::string>& prps)
+	: _stopAll (true),
+	  _hideMonsters (false),
+	  _vanishPacman (false)
+{
+	auto isYes = [](const std::string& prp) -> bool
+		{ std::string txt = prp; QGAMES::toUpper (txt); return (txt == std::string (__YES_STRING__)); };
+
+	if (prps.find (__PACMANII_GAMESTATESTOPPINGELEMENTSATTRSTOPALL__) != prps.end ())
+		_stopAll = isYes ((*prps.find (__PACMANII_GAMESTATESTOPPINGELEMENTSATTRSTOPALL__)).second);
+	if (prps.find (__PACMANII_GAMESTATESTOPPINGELEMENTSATTRHIDEMONSTERS__) != prps.end ()) 
+		_hideMonsters = isYes ((*prps.find (__PACMANII_GAMESTATESTOPPINGELEMENTSATTRHIDEMONSTERS__)).second);
+	if (prps.find (__PACMANII_GAMESTATESTOPPINGELEMENTSATTRVPACMAN__) != prps.end ()) 
+		_vanishPacman = isYes ((*prps.find (__PACMANII_GAMESTATESTOPPINGELEMENTSATTRVPACMAN__)).second);
+
+	PacManII::StopPacmanElemntsMovingGameState::Properties (_stopAll, _hideMonsters, _vanishPacman);
+}
+
+// ---
+void PacManII::StopPacmanElemntsMovingGameState::onEnter ()
+{
+	QGAMES::GameState::onEnter ();
+
+	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
+	assert (g != nullptr); // Just in case...
+	_mazeWorld = dynamic_cast <PacManII::World*> (g -> activeWorld ());
+	assert (_mazeWorld != nullptr);
+	_pacman = g -> pacman ();
+	assert (_pacman != nullptr);
+
+	reStartAllCounters ();
+	reStartAllOnOffSwitches ();
+
+	_mazeWorld -> setClapperBoard (false);
+
+	if (_properties._stopAll)
+		_mazeWorld -> stopAllElements ();
+	if (_properties._hideMonsters)
+		_mazeWorld -> hideAllMonsters ();
+}
+
+// ---
+void PacManII::StopPacmanElemntsMovingGameState::updatePositions ()
+{
+	QGAMES::GameState::updatePositions ();
+
+	if (_properties._vanishPacman)
+	{
+		if (!onOffSwitch (_SWITCHVANISHCOMPLETED) -> isOn () && 
+			counter (_COUNTERTOCHANGESTATUS) -> isEnd ())
+		{
+			_pacman -> setAlphaLevel (counter (_COUNTERVANISHSTATUS) -> value ());
+
+			onOffSwitch (_SWITCHVANISHCOMPLETED) -> set (counter (_COUNTERVANISHSTATUS) -> isEnd ());
+		}
+	}
+}
+
+// ---
+void PacManII::StopPacmanElemntsMovingGameState::onExit ()
+{
+	QGAMES::GameState::onExit ();
+
+	_mazeWorld = nullptr;
+
+	_pacman -> setAlphaLevel (255);
+	_pacman = nullptr;
+}
+
+// ---
+__IMPLEMENTCOUNTERS__ (PacManII::StopPacmanElemntsMovingGameState::Counters)
+{
+	addCounter (new QGAMES::Counter 
+		(PacManII::StopPacmanElemntsMovingGameState::_COUNTERTOCHANGESTATUS, 3, 0, true, true));
+	addCounter (new QGAMES::Counter 
+		(PacManII::StopPacmanElemntsMovingGameState::_COUNTERVANISHSTATUS, 10, 0, true, false));
+}
+
+// ---
+__IMPLEMENTONOFFSWITCHES__ (PacManII::StopPacmanElemntsMovingGameState::OnOffSwitches)
+{
+	addOnOffSwitch (new QGAMES::OnOffSwitch (PacManII::StopPacmanElemntsMovingGameState::_SWITCHVANISHCOMPLETED, false));
 }
 
 // ---

@@ -177,6 +177,24 @@ void PacManII::World::stopSiren ()
 }
 
 // ---
+void PacManII::World::stopAllElements ()
+{
+	// Only over the active scene if any...
+	PacManII::Scene* scn = nullptr;
+	if ((scn = dynamic_cast <PacManII::Scene*> (activeScene ())) != nullptr)
+		scn -> stopAllElements ();
+}
+
+// ---
+void PacManII::World::hideAllMonsters ()
+{
+	// Only over the active scene if any...
+	PacManII::Scene* scn = nullptr;
+	if ((scn = dynamic_cast <PacManII::Scene*> (activeScene ())) != nullptr)
+		scn -> hideAllMonsters ();
+}
+
+// ---
 void PacManII::World::initialize ()
 {
 	QGAMES::World::initialize ();
@@ -222,6 +240,8 @@ void PacManII::World::initialize ()
 // ---
 void PacManII::World::finalize ()
 {
+	QGAMES::World::finalize ();
+
 	// The current status of the game is stored...
 	runtimeValues ();
 
@@ -229,6 +249,4 @@ void PacManII::World::finalize ()
 	PacManII::Game::Conf* cfg = dynamic_cast <PacManII::Game::Conf*> (game () -> configuration ());
 	assert (cfg != nullptr); // Just in case...
 	cfg -> setConfValueForElement (id (), _fullConfPerPlayer);
-
-	QGAMES::World::finalize ();
 }

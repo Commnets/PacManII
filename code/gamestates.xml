@@ -494,6 +494,15 @@
 		<Attributes>
 			<Attribute id="TIME" value="1.0"/> <!-- Seconds to wait -->
 		</Attributes>
+		<Nested>
+			<GameState id="501130" type="50105" name="When Dieing Stop" main="NO"> <!-- Type PacmanElements stopped -->
+				<Attributes>
+					<Attribute id="STOPALL" value="YES"/>
+					<Attribute id="HIDEMONSTERS" value="NO"/>
+					<Attribute id="VANISHPACMAN" value="NO"/>
+				</Attributes>
+			</GameState>
+		</Nested>
 	</GameState>
 	
 	<!-- This game state is used when the artist reaches the limit of the current scene (the goal)

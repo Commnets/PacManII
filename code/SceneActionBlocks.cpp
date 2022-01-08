@@ -137,6 +137,8 @@ void PacManII::MonsterSceneActionBlock::processEvent (const QGAMES::Event& evnt)
 		PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
 		assert (scn != nullptr);
 
+		// Never stops!
+		// In demo modes and unwantd stop could happen when pacman position is reached
 		_monster -> toChaseDeferred (scn -> chasingMode ());
 	}
 
@@ -175,7 +177,7 @@ bool PacManII::MonsterSceneActionBlock::elronCondition ()
 	{
 		if ((scn -> maxNumberBallsToEat () - scn -> numberBallsEaten ()) <= eC.numberBallLeft (_monster -> monsterNumber ()))
 		{
-			_monster -> setElroyCondition (scn -> numberRound ());
+			_monster -> setElroyCondition (scn -> numberRound ()); // If it is accepted it won't ever more -1
 
 			result = true;
 		}

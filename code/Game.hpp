@@ -26,11 +26,13 @@
 namespace PacManII
 {
 	/** The game class.
-		It is not a final class, because the game can be expanded later. */
+		It is not a final class, because the game can be expanded later to include new artists,
+		but only a few methods can be finally extended. */
 	class Game : public QGAMES::AdvancedArcadeGame
 	{
 		public:
-		class Conf : public QGAMES::AdvancedArcadeGame::Conf
+		/** The conf can't be extended. */
+		class Conf final : public QGAMES::AdvancedArcadeGame::Conf
 		{
 			public:
 			Conf (int nP, int mL, int dL);
@@ -230,16 +232,16 @@ namespace PacManII
 							{ assert (nE >= 0 && nE < __PACMANII_NUMBERENTITIES__); 
 							  return (dynamic_cast <Clyde*> (character (__PACMANII_CLYDEBASEENTITYID__ + nE))); }
 
-		virtual void addScoreObjects () override;
-		virtual void removeScoreObjects () override;
+		virtual void addScoreObjects () final override;
+		virtual void removeScoreObjects () final override;
 
-		virtual void pauseGame () override;
-		virtual void continueGame () override;
+		virtual void pauseGame () final override;
+		virtual void continueGame () final override;
 
 		virtual bool drawGameBeforeState () const final override /** Can't be overrided later. */
 							{ return (true); }
 
-		virtual void processEvent (const QGAMES::Event& evnt) override;
+		virtual void processEvent (const QGAMES::Event& evnt) final override;
 
 		virtual void detectCollisions () final override; /** Can be overrided later */
 
@@ -268,29 +270,29 @@ namespace PacManII
 		virtual QGAMES::GUISystemBuilder* createGUISystemBuilder () final override
 							{ return (new GUISystemBuilder (game () -> parameter (__GAME_PROPERTYGUISYSTEMFILE__), 
 								game () -> formBuilder ())); }
-		virtual QGAMES::GameStateBuilder* createGameStateBuilder () override;
+		virtual QGAMES::GameStateBuilder* createGameStateBuilder () final override;
 		virtual QGAMES::EntityBuilder* createEntityBuilder () override
 							{ return (new EntityBuilder (parameter (__GAME_PROPERTYENTITIESFILE__), 
 									formBuilder (), movementBuilder ())); }
-		virtual QGAMES::MovementBuilder* createMovementBuilder () final override
+		virtual QGAMES::MovementBuilder* createMovementBuilder () override
 							{ return (new MovementBuilder (parameter (__GAME_PROPERTYMOVEMENTSFILE__))); }
-		virtual QGAMES::MapBuilder* createMapBuilder () override;
+		virtual QGAMES::MapBuilder* createMapBuilder () final override;
 		virtual QGAMES::WorldBuilder* createWorldBuilder () override
 							{ return (new WorldBuilder (parameter (__GAME_PROPERTYWORLDSFILE__), 
 								mapBuilder ())); }
-		virtual QGAMES::CharacterControlStepsMonitorBuilder* createCharacterMonitorBuilder () override
+		virtual QGAMES::CharacterControlStepsMonitorBuilder* createCharacterMonitorBuilder () final override
 							{ return (new QGAMES::CharacterControlStepsMonitorBuilder 
 								(parameter (__GAME_PROPERTUCHARACTERMONITORFILE__))); }
 
-		virtual Configuration* createConfiguration () override;
+		virtual Configuration* createConfiguration () final override;
 
 		virtual QGAMES::InputHandler* createInputHandler () final override
 							{ return (implementation () -> createInputHandler (new PacManII::InputHandlerBehaviour ())); }
 
 		virtual std::string defaultParameter (const std::string& p) const final override;
 
-		virtual void initialize () override;
-		virtual void finalize () override;
+		virtual void initialize () final override;
+		virtual void finalize () final override;
 
 		private:
 		const DataGame _theDataGame;

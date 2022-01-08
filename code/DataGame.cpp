@@ -257,15 +257,3 @@ PacManII::DataGame PacManII::DataGame::standardDataGame ()
 
 	return (PacManII::DataGame (lD, 15000));
 }
-
-// ---
-int PacManII::DataGame::firstNumberLevelDefinitionForScene (int sId) const
-{
-	int result = -1;
-
-	for (int i = 0; i < (int) _levels.size () && result == 1; i++)
-		if (_levels [i].sceneTypeId () == sId)
-			result = i;
-	
-	return (result);
-}

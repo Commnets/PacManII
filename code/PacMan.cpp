@@ -79,6 +79,7 @@ void PacManII::PacMan::setScore (int s)
 	if ((mS = _score / g -> dataGame ().everyToGetAnExtraLive ()) > _lastMulScoreNotified) 
 	{
 		_lastMulScoreNotified = mS;
+
 		notify (QGAMES::Event (__PACMANII_PACMANPOINTSHIGHLIGHTREACHED__, this, oV));
 	}
 
@@ -125,6 +126,9 @@ void PacManII::PacMan::initialize ()
 // ---
 void PacManII::PacMan::updatePositions ()
 {
+	if (!isVisible ())
+		return;
+
 	PacManII::Artist::updatePositions ();
 
 	if (doesPositionMatchesTile (position ()))
@@ -135,15 +139,6 @@ void PacManII::PacMan::updatePositions ()
 				toMove (_nextDirectionWhenPossible);
 		}
 	}
-
-/*
-	For testing purposes only:
-
-	if (_counter++ == 400)
-		notify (QGAMES::Event (__1IN2PROBABLE__ ? __PACMANII_PACMANREACHEDGOAL__ : __PACMANII_PACMANDESTROYED__, this));
-		notify (QGAMES::Event (__PACMANII_PACMANDESTROYED__, this));
-		notify (QGAMES::Event (__PACMANII_PACMANREACHEDGOAL__, this));
-*/
 }
 
 // ---
@@ -186,7 +181,7 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 			{
 				if (mter -> isDangerous ())
 				{
-					if (!g -> passwordWellIntroduced ())
+					if (!g -> passwordWellIntroduced ()) // Unlimited lives = password well introduced
 						notify (QGAMES::Event (__PACMANII_PACMANDESTROYED__, this));
 				}
 				else
@@ -253,7 +248,7 @@ QGAMES::MazeModel::PositionInMaze PacManII::PacMan::targetMazePosition () const
 	if (isStanding ())
 		return (currentMazePosition ());
 
-	QGAMES::Vector dir = direction ();
+	QGAMES::Vector dir = direction (); // It is 0 when no moving...
 	if (isMoving () && 
 		_nextDirectionWhenPossible != QGAMES::Vector::_cero && 
 		pMap () -> maze ().isPossibleToMoveTo (currentMazePosition (), _nextDirectionWhenPossible))
@@ -374,7 +369,6 @@ void PacManII::PacMan::adaptSpeed ()
 	assert (pG != nullptr); // Just in case...
 	PacManII::MazeMovement* mM = dynamic_cast <PacManII::MazeMovement*> (currentMovement ());
 	assert (mM != nullptr); // is moving?
-
 	const PacManII::DataGame::LevelDefinition& lD = pG -> dataGame ().levelDefinition (pG -> level ());
 	mM -> setSpeed (_status == PacManII::PacMan::Status::_CHASING 
 		? (_hasEaten ? __BD lD.pacmanSpeedWhenEatingFrightingDots () : __BD lD.pacmanSpeedWhenFrighting ()) 
@@ -384,7 +378,7 @@ void PacManII::PacMan::adaptSpeed ()
 // ---
 QGAMES::MazeModel::PathInMaze& PacManII::PacMan::recalculatePathInMaze (const QGAMES::Vector& mD)
 {
-	// The mandatory direction is not takn into account ever
+	// The mandatory direction is not taken into account ever
 
 	// Calculate whether the pacman is or not at the entry of monster's home
 	// and if it is, what is the direction to enter, because it has to be avoided ever
@@ -415,7 +409,7 @@ QGAMES::MazeModel::PathInMaze& PacManII::PacMan::recalculatePathInMaze (const QG
 	_pathInMaze = { currentMazePosition () };
 	if (pth.size () > 1)
 		for (QGAMES::MazeModel::PathInMaze::const_iterator j = ++pth.begin (); j != pth.end () && i++ < 5; j++)
-			_pathInMaze.push_back ((*j));
+			_pathInMaze.push_back ((*j)); // 5 positions in advance (if possible) for pacman...
 
 	return (_pathInMaze);
 }

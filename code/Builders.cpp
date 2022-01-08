@@ -211,6 +211,15 @@ QGAMES::GameState* PacManII::ForPlayingGameStateAddOn::createGameState
 }
 
 // ---
+QGAMES::GameState* PacManII::ForStopPacmanElemntsMovingGameStateAddOn::createGameState 
+	(const QGAMES::GameStateBuilder::GameStateDefinition* def)
+{
+	return (new PacManII::StopPacmanElemntsMovingGameState (def -> _id, 
+		PacManII::StopPacmanElemntsMovingGameState::Properties (def -> _attributes),
+		(def -> _nested != nullptr) ? builder () -> gameState (def -> _nested -> _id) : nullptr));
+}
+
+// ---
 QGAMES::GameState* PacManII::ForBlinkMazePlayingGameStateAddOn::createGameState 
 	(const QGAMES::GameStateBuilder::GameStateDefinition* def)
 {

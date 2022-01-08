@@ -83,7 +83,7 @@ QGAMES::SetOfOpenValues PacManII::Map::runtimeValues () const
 {
 	QGAMES::SetOfOpenValues result;
 
-	// Layers has no status to keep in a pacman game...
+	// Layers have no status to keep in a pacman game...
 
 	result.addOpenValue (0, QGAMES::OpenValue (ballsEatenStatus ()));
 

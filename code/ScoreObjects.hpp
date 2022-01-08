@@ -29,9 +29,9 @@ namespace PacManII
 		virtual Entity* clone () const override
 							{ return (new Lives (_livesForm)); }
 
-		/** To set the number of lives. */
-		void setLives (int l);
-		/** To know the number of lives. */
+		/** To set / know the number of lives. */
+		void setLives (int l)
+							{ _lives = l; }
 		int lives () const
 							{ return (_lives); }
 
@@ -39,7 +39,6 @@ namespace PacManII
 		virtual void drawOn (QGAMES::Screen* s, 
 			const QGAMES::Position& p = QGAMES::Position::_noPoint) override;
 
-		/** @see parent. */
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		private:
@@ -115,7 +114,8 @@ namespace PacManII
 		int _font;
 	};
 
-	/** The fruits eaten by pacman. */
+	/** The fruits eaten by pacman.
+		No more than __PACMANII_MAXNUMBEROFFRUITSINSCREEN__ will be presented at the same time. */
 	class FruitsEaten final : public QGAMES::ScoreObject
 	{
 		public:
@@ -124,11 +124,10 @@ namespace PacManII
 		virtual Entity* clone () const override
 							{ return (new FruitsEaten (_fruitsForm)); }
 
-		/** To set the fruits carried by pacman. */
+		/** To set / know the fruits carried by pacman. */
 		void setFruitsEaten (const std::vector <int>& fE)
 							{ _fruitsEaten = fE; }
 		void setFruitsEaten (const std::string& fE);
-		/** To know the fruits carried by pacman. */
 		const std::vector <int>& fruitsEaten () const
 							{ return (_fruitsEaten); }
 
