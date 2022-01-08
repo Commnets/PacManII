@@ -18,7 +18,7 @@
 	<Sound id="50010" type="1" loop="-1" file="sounds/pacman_threatening.wav"/>
 	
 	<!-- Backgrounds sounds -->
-	<Sound id="50010" type="1" loop="-1" file="sounds/pacmanIIgameoverbackground.wav"/>
+	<Sound id="50014" type="1" loop="-1" file="sounds/pacmanIIgameoverbackground.wav"/>
 	<Sound id="50011" type="1" loop="-1" file="sounds/pacmanIIhalloffamebackground.wav"/>
 	<Sound id="50012" type="1" loop="-1" file="sounds/pacmanIImenubackground.wav"/>
 	<Sound id="50013" type="1" loop="-1" file="sounds/pacmanIIwinbackground.wav"/>

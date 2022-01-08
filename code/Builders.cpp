@@ -408,13 +408,20 @@ QGAMES::Tile* PacManII::TMXMapBuilder::createTile (int id, QGAMES::Form* form, i
 
 	if (form -> name () == std::string (__PACMANII_FORMTILESMAZENAME__))
 	{
-		if (isInType (nf, _TILESLIMITDARK) || isInType (nf, _TILESLIMITBRIGHT)) result = new PacManII::TileLimit (id, form, nf, p);
-		else if (isInType (nf, _TILESPOWERBALL)) result = new PacManII::TilePath (id, form, nf, PacManII::TilePath::Type::_POWERBALL,	p);
-		else if (isInType (nf, _TILESNORMALBALL)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_BALL, p);
-		else if (isInType (nf, _TILESPATH)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_EMPTY, p);
-		else if (isInType (nf, _TILESPATHLIMITRIGHT)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_RIGHTLIMIT, p);
-		else if (isInType (nf, _TILESPATHLIMITLEFT)) result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_LEFTLIMIT, p);
-		else result = new QGAMES::NullTile (id); /// Just in case, but a well defined maze whould reach this point ever...
+		if (isInType (nf, _TILESLIMITDARK) || isInType (nf, _TILESLIMITBRIGHT)) 
+			result = new PacManII::TileLimit (id, form, nf, p);
+		else if (isInType (nf, _TILESPOWERBALL)) 
+			result = new PacManII::TilePath (id, form, nf, PacManII::TilePath::Type::_POWERBALL,	p);
+		else if (isInType (nf, _TILESNORMALBALL)) 
+			result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_BALL, p);
+		else if (isInType (nf, _TILESPATH)) 
+			result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_EMPTY, p);
+		else if (isInType (nf, _TILESPATHLIMITRIGHT)) 
+			result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_RIGHTLIMIT, p);
+		else if (isInType (nf, _TILESPATHLIMITLEFT)) 
+			result = new PacManII::TilePath (id, form, nf,  PacManII::TilePath::Type::_LEFTLIMIT, p);
+		else 
+			result = new QGAMES::NullTile (id); /// Just in case, but a well defined maze whould reach this point ever...
 	}
 	else
 		result = new QGAMES::Tile (id, form, nf, 0, p); // When it is not a corner, all of them will be equal...

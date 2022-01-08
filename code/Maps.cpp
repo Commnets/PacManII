@@ -520,7 +520,9 @@ std::string PacManII::MazeLayer::ballsEatenStatus () const
 	for (auto i : tiles ())
 	{
 		const PacManII::TilePath* tl = dynamic_cast <const PacManII::TilePath*> (i);
-		result += (tl == nullptr) ? std::string ("_") : std::to_string ((tl -> alreadyEaten () ? 0 : 1));
+		result += (tl == nullptr) 
+			? std::string ("_") 
+			: std::to_string (tl -> canBeEaten () ? (tl -> alreadyEaten () ? 0 : 1) : 2);
 	}
 
 	return (result);
@@ -544,15 +546,17 @@ void PacManII::MazeLayer::setBallsEatenStatus (const std::string& st)
 		for (auto i : tiles ())
 		{
 			if (st [j] == '_')
-			{
 				// Just to be sure that the status requiered represents the map...
 				assert (dynamic_cast <PacManII::TilePath*> (i) == nullptr);
-			}
 			else
 			{
 				PacManII::TilePath* tP = dynamic_cast <PacManII::TilePath*> (i);
 				assert (tP != nullptr);
-				tP -> eaten (st [j] == '1' ? false : true);
+				if (tP -> canBeEaten ())
+				{
+					assert (st [j] != '2');
+					tP -> eaten (st [j] == '1' ? false : true, false); // Do not notify...
+				}
 			}
 
 			j++;
@@ -574,7 +578,7 @@ void PacManII::TileLimit::setBright (bool b)
 }
 
 // ---
-bool PacManII::TilePath::eaten (bool s)
+bool PacManII::TilePath::eaten (bool s, bool n)
 { 
 	bool result = false;
 
@@ -591,7 +595,8 @@ bool PacManII::TilePath::eaten (bool s)
 
 			setForm (form (), mB -> frameForEmptyPath ());
 
-			notify (QGAMES::Event (__PACMANII_BALLEATEN__, this));
+			if (n)
+				notify (QGAMES::Event (__PACMANII_BALLEATEN__, this));
 		}
 		else
 		{

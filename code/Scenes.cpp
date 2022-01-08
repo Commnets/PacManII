@@ -38,6 +38,10 @@ QGAMES::SetOfOpenValues PacManII::Scene::runtimeValues () const
 	QGAMES::SetOfOpenValues result;
 
 	result.addOpenValue (0, QGAMES::OpenValue (_numberRound));
+	result.addOpenValue (1, QGAMES::OpenValue (_totalNumberBallsToEat));
+	result.addOpenValue (2, QGAMES::OpenValue (_totalNumberBallsEaten));
+	result.addOpenValue (3, QGAMES::OpenValue (_numberBallsEaten));
+	result.addOpenValue (4, QGAMES::OpenValue (_percentageCleaned));
 	result.addSetOfOpenValues (0,
 		(activeMap () == nullptr) ? QGAMES::SetOfOpenValues () : activeMap () -> runtimeValues ());
 
@@ -49,7 +53,8 @@ QGAMES::SetOfOpenValues PacManII::Scene::runtimeValues () const
 // ---
 void PacManII::Scene::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
 {
-	assert (cfg.existOpenValue (0) && 
+	assert (cfg.existOpenValue (0) && cfg.existOpenValue (1) && 
+			cfg.existOpenValue (2) && cfg.existOpenValue (3) && cfg.existOpenValue (4) &&
 			cfg.existSetOfOpenValues (0));
 
 	_numberRound = cfg.openValue (0).intValue ();
@@ -59,15 +64,13 @@ void PacManII::Scene::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues
 	counter (_COUNTERMONSTERSTIMETOLEAVEHOME) -> initialize 
 		((int) (__BD lD.leaveHomeCondition (_numberRound).maxSecondsToLeave () * __BD g -> framesPerSecond ()), 0, true, true);
 
-	if (activeMap ())
-	{
-		activeMap () -> initializeRuntimeValuesFrom (cfg.setOfOpenValues (0));
+	_totalNumberBallsToEat = cfg.openValue (1).intValue ();
+	_totalNumberBallsEaten = cfg.openValue (2).intValue ();
+	_numberBallsEaten = cfg.openValue (3).intValue ();
+	_percentageCleaned = cfg.openValue (4).bdataValue ();
 
-		_totalNumberBallsToEat = maxNumberBallsToEat ();
-		_totalNumberBallsEaten = numberBallsEaten ();
-		_numberBallsEaten = 0;
-		_percentageCleaned = __BD _totalNumberBallsEaten / __BD _totalNumberBallsToEat;
-	}
+	if (activeMap ())
+		activeMap () -> initializeRuntimeValuesFrom (cfg.setOfOpenValues (0));
 }
 
 // ---

@@ -100,6 +100,8 @@ void PacManII::MazeMovement::move (const QGAMES::Vector& d, const QGAMES::Vector
 			// it is time to stop. So, a notification in launched for the owner to execute!
 			else
 			{
+				art -> whatToDoOnCurrentPosition ();
+
 				stopCycle = true;
 
 				_lastDirection = QGAMES::Vector::_cero;

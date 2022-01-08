@@ -315,7 +315,7 @@ namespace PacManII
 							{ return (_originalType == _BALL || _originalType == _POWERBALL); }
 		bool hasPower () const
 							{ return (_originalType == _POWERBALL); }
-		bool eaten (bool s);
+		bool eaten (bool s, bool n = true);
 
 		protected:
 		Type _type;

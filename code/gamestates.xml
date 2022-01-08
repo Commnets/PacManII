@@ -253,7 +253,7 @@
 							<!-- A sound in the background -->
 							<GameState id="500222" type="10010" name="Gameover Sound" main="NO"> <!-- Type SOUND -->
 								<Attributes>
-									<Attribute id="SOUNDID" value="50010"/>
+									<Attribute id="SOUNDID" value="50014"/>
 									<Attribute id="CHANNELID" value="0"/> <!-- Game background channel -->
 								</Attributes>
 							</GameState>
