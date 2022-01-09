@@ -190,7 +190,7 @@ void PacManII::PacMan::whenCollisionWith (QGAMES::Entity* e)
 
 					// The points will be added in the scene obsrving pacman
 					// This is because the number of points to add could depend on (e.g.) the number of eatn monsters.
-					QGAMES::Event (__PACMANII_PACMANEATMONSTER__, mter);
+					notify (QGAMES::Event (__PACMANII_PACMANEATMONSTER__, mter));
 				}
 			}
 		}

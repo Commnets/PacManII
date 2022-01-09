@@ -40,12 +40,17 @@ QGAMES::SetOfOpenValues PacManII::Scene::runtimeValues () const
 	result.addOpenValue (0, QGAMES::OpenValue (_numberRound));
 	result.addOpenValue (1, QGAMES::OpenValue (_totalNumberBallsToEat));
 	result.addOpenValue (2, QGAMES::OpenValue (_totalNumberBallsEaten));
-	result.addOpenValue (3, QGAMES::OpenValue (_numberBallsEaten));
-	result.addOpenValue (4, QGAMES::OpenValue (_percentageCleaned));
+	/** Remember that _numberBallsEaten has not ben saved. */
+	result.addOpenValue (3, QGAMES::OpenValue (_percentageCleaned));
 	result.addSetOfOpenValues (0,
 		(activeMap () == nullptr) ? QGAMES::SetOfOpenValues () : activeMap () -> runtimeValues ());
 
-	// Th information of the action blocks has no status to keep in a pacman game...
+	// Saves also the information of the scene blocks...
+	QGAMES::SetOfOpenValues bVV (__QGAMES_RUNTIMEVALUESBLOCKSTYPE__);
+	for (QGAMES::SceneActionBlocks::const_iterator i = _actionBlocks.begin (); 
+			i != _actionBlocks.end (); i++)
+		bVV.addSetOfOpenValues ((*i) -> id (), (*i) -> runtimeValues ());
+	result.addSetOfOpenValues (1, bVV); 
 
 	return (result);
 }
@@ -54,8 +59,8 @@ QGAMES::SetOfOpenValues PacManII::Scene::runtimeValues () const
 void PacManII::Scene::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
 {
 	assert (cfg.existOpenValue (0) && cfg.existOpenValue (1) && 
-			cfg.existOpenValue (2) && cfg.existOpenValue (3) && cfg.existOpenValue (4) &&
-			cfg.existSetOfOpenValues (0));
+			cfg.existOpenValue (2) && cfg.existOpenValue (3) &&
+			cfg.existSetOfOpenValues (0) && cfg.existSetOfOpenValues (1));
 
 	_numberRound = cfg.openValue (0).intValue ();
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
@@ -66,11 +71,18 @@ void PacManII::Scene::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues
 
 	_totalNumberBallsToEat = cfg.openValue (1).intValue ();
 	_totalNumberBallsEaten = cfg.openValue (2).intValue ();
-	_numberBallsEaten = cfg.openValue (3).intValue ();
-	_percentageCleaned = cfg.openValue (4).bdataValue ();
+	/** _numberBallsEaten is not save because it represents the number of balls of the round. 
+		And everey round starts with 0 ball eatn in it. */
+	_percentageCleaned = cfg.openValue (3).bdataValue ();
 
 	if (activeMap ())
 		activeMap () -> initializeRuntimeValuesFrom (cfg.setOfOpenValues (0));
+
+	QGAMES::SetOfOpenValues bVV = cfg.setOfOpenValues (1);
+	for (QGAMES::SceneActionBlocks::const_iterator i = _actionBlocks.begin ();
+			i != _actionBlocks.end (); i++)
+		if (bVV.existSetOfOpenValues ((*i) -> id ()))
+			(*i) -> initializeRuntimeValuesFrom (bVV.setOfOpenValues ((*i) -> id ()));
 }
 
 // ---
@@ -181,10 +193,12 @@ void PacManII::Scene::initialize ()
 	// The scene has to be initialized just after characters are added...
 	QGAMES::Scene::initialize ();
 
-	_totalNumberBallsToEat = maxNumberBallsToEat ();
-	_totalNumberBallsEaten = numberBallsEaten ();
+	// Very internal variables to speed up the execution...
+	_totalNumberBallsToEat = -1;  // To force the next method to calculat the number of balls to eat!
+	maxNumberBallsToEat (); // It would assigned to _totalNumbrBallsToEat;
+	_totalNumberBallsEaten = 0;
 	_numberBallsEaten = 0;
-	_percentageCleaned = __BD _totalNumberBallsEaten / __BD _totalNumberBallsToEat;
+	_percentageCleaned = __BD 0;
 
 	// This variable is saved, so it could different than 0 later...
 	_numberRound = 0; 

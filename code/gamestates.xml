@@ -212,7 +212,7 @@
 							<!-- A sound in the background -->
 							<GameState id="500192" type="10010" name="Died Sound" main="NO"> <!-- Type SOUND -->
 								<Attributes>
-									<Attribute id="SOUNDID" value="50010"/>
+									<Attribute id="SOUNDID" value="50014"/>
 									<Attribute id="CHANNELID" value="0"/> <!-- Game background channel -->
 								</Attributes>
 							</GameState>
@@ -472,11 +472,20 @@
 			<Attribute id="TIME" value="2.0"/> <!-- Seconds to wait -->
 		</Attributes>
 		<Nested>
-			<GameState id="501090" type="10010" name="When Dieing Sound" main="NO"> <!-- Type SOUND -->
+			<GameState id="501090" type="50105" name="When Dieing Vanish" main="NO"> <!-- Type PacmanElements stopped -->
 				<Attributes>
-					<Attribute id="SOUNDID" value="50002"/>
-					<Attribute id="CHANNELID" value="3"/> <!-- In the background of the scene -->
+					<Attribute id="STOPALL" value="YES"/>
+					<Attribute id="HIDEMONSTERS" value="NO"/>
+					<Attribute id="VANISHPACMAN" value="YES"/>
 				</Attributes>
+				<Nested>
+					<GameState id="501091" type="10010" name="When Dieing Sound" main="NO"> <!-- Type SOUND -->
+						<Attributes>
+							<Attribute id="SOUNDID" value="50002"/>
+							<Attribute id="CHANNELID" value="3"/> <!-- In the background of the scene -->
+						</Attributes>
+					</GameState>
+				</Nested>
 			</GameState>
 		</Nested>
 	</GameState>
@@ -487,9 +496,18 @@
 		<Attributes>
 			<Attribute id="TIME" value="1.0"/> <!-- Seconds to wait -->
 		</Attributes>
+		<Nested>
+			<GameState id="501120" type="50105" name="When Reaching Stop" main="NO"> <!-- Type PacmanElements stopped -->
+				<Attributes>
+					<Attribute id="STOPALL" value="YES"/>
+					<Attribute id="HIDEMONSTERS" value="YES"/>
+					<Attribute id="VANISHPACMAN" value="NO"/>
+				</Attributes>
+			</GameState>
+		</Nested>
 	</GameState>
 
-	<!-- Just a moment doing nothing  when the pacman dies just before starting back again (if possible) -->
+	<!-- Just a moment doing nothing when the pacman dies just before starting back again (if possible) -->
 	<GameState id="50113" type="10000" name="116Wait After Dieing" main="YES"> <!-- Type WAIT -->
 		<Attributes>
 			<Attribute id="TIME" value="1.0"/> <!-- Seconds to wait -->

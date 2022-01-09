@@ -33,7 +33,7 @@ bool PacManII::MonsterSceneActionBlock::timeToStart (int nM)
 // ---
 void PacManII::MonsterSceneActionBlock::initialize ()
 {
-	QGAMES::SceneActionBlock::initialize ();
+	PacManII::SceneActionBlock::initialize ();
 
 	_monster = dynamic_cast <PacManII::Monster*> (game () -> character (_properties._entityId));
 	assert (_monster != nullptr);
@@ -67,7 +67,7 @@ void PacManII::MonsterSceneActionBlock::initialize ()
 // ---
 void PacManII::MonsterSceneActionBlock::updatePositions ()
 {
-	QGAMES::SceneActionBlock::updatePositions ();
+	PacManII::SceneActionBlock::updatePositions ();
 
 	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
 	assert (scn != nullptr);
@@ -116,7 +116,7 @@ void PacManII::MonsterSceneActionBlock::updatePositions ()
 //
 void PacManII::MonsterSceneActionBlock::finalize ()
 {
-	QGAMES::SceneActionBlock::finalize ();
+	PacManII::SceneActionBlock::finalize ();
 
 	unObserve (_monster);
 
@@ -142,7 +142,7 @@ void PacManII::MonsterSceneActionBlock::processEvent (const QGAMES::Event& evnt)
 		_monster -> toChaseDeferred (scn -> chasingMode ());
 	}
 
-	QGAMES::SceneActionBlock::processEvent (evnt);
+	PacManII::SceneActionBlock::processEvent (evnt);
 }
 
 // ---
@@ -229,9 +229,35 @@ PacManII::FruitSceneActionBlock::Properties::Properties (const QGAMES::SceneActi
 }
 
 // ---
+QGAMES::SetOfOpenValues PacManII::FruitSceneActionBlock::runtimeValues () const
+{
+	QGAMES::SetOfOpenValues result;
+
+	// counters and onOffSwitches will return the object already created that at this point could be nullptr
+	result.addOpenValue (0, (onOffSwitches () == nullptr) 
+		? -1 : (QGAMES::OpenValue (onOffSwitch (_SWITCHBLOCKACTIVE) -> isOn () ? 1 : 0)));
+	result.addOpenValue (1, (counters () == nullptr) 
+		? -1 : QGAMES::OpenValue (counter (_COUNTERNUMBERFRUIT) -> value ()));
+	// The number of fruit has to be saved to avoid this to appear twice in several rounds!
+
+	return (result);
+}
+
+// ---
+void PacManII::FruitSceneActionBlock::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
+{
+	assert (cfg.existOpenValue (0) && cfg.existOpenValue (1));
+
+	if (cfg.openValue (0).intValue () != -1)
+		onOffSwitch (_SWITCHBLOCKACTIVE) -> set ((cfg.openValue (0).intValue () == 1) ? true : false);
+	if (cfg.openValue (1).intValue () != -1)
+		counter (_COUNTERNUMBERFRUIT) -> setValue (cfg.openValue (1).intValue ());
+}
+
+// ---
 void PacManII::FruitSceneActionBlock::initialize ()
 {
-	QGAMES::SceneActionBlock::initialize ();
+	PacManII::SceneActionBlock::initialize ();
 
 	_fruit = dynamic_cast <PacManII::Fruit*> (game () -> character (_properties._entityId));
 	assert (_fruit != nullptr);
@@ -261,7 +287,7 @@ void PacManII::FruitSceneActionBlock::initialize ()
 // ---
 void PacManII::FruitSceneActionBlock::updatePositions ()
 {
-	QGAMES::SceneActionBlock::updatePositions ();
+	PacManII::SceneActionBlock::updatePositions ();
 
 	PacManII::Scene* scn = dynamic_cast <PacManII::Scene*> (scene ());
 	if (!scn -> clapperBoard ())
@@ -297,7 +323,7 @@ void PacManII::FruitSceneActionBlock::updatePositions ()
 	else
 	{
 		if (scn -> numberBallsEaten () >= 
-			_properties._ballsEatenToAppear [counter (_COUNTERNUMBERFRUIT) -> value ()])
+			_properties._ballsEatenToAppear [counter (_COUNTERNUMBERFRUIT) -> value ()]) 
 		{
 			PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 			assert (g != nullptr);
@@ -322,7 +348,7 @@ void PacManII::FruitSceneActionBlock::updatePositions ()
 //
 void PacManII::FruitSceneActionBlock::finalize ()
 {
-	QGAMES::SceneActionBlock::finalize ();
+	PacManII::SceneActionBlock::finalize ();
 
 	_fruit -> setMap (nullptr);
 

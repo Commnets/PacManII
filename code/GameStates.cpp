@@ -648,28 +648,25 @@ void PacManII::PlayingGameState::processEvent (const QGAMES::Event& evnt)
 			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 1, __BD 0, __BD 0));
 			break;
 
-		case __PACMANII_MOVINGUPRIGHTEVENT__:
-			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 1, __BD -1, __BD 0));
-			break;
-
 		case __PACMANII_MOVINGDOWNEVENT__:
 			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 0, __BD 1, __BD 0));
-			break;
-
-		case __PACMANII_MOVINGDOWNRIGHTEVENT__:
-			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD 1, __BD 1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGLEFTEVENT__:
 			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD 0, __BD 0));
 			break;
 
+		// This movements are not allowed in pacman...
+		case __PACMANII_MOVINGUPRIGHTEVENT__:
+			break;
+
+		case __PACMANII_MOVINGDOWNRIGHTEVENT__:
+			break;
+
 		case __PACMANII_MOVINGUPLEFTEVENT__:
-			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD -1, __BD 0));
 			break;
 
 		case __PACMANII_MOVINGDOWNLEFTEVENT__:
-			_pacman -> changeDirectionWhenPossibleTo (QGAMES::Vector (__BD -1, __BD 1, __BD 0));
 			break;
 
 		// Doing nothing with the joystick, o keyboard doesn't mean to stop!

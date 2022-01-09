@@ -66,7 +66,6 @@ namespace PacManII
 			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ());
 
 		virtual void initialize () override;
-		virtual void finalize () override;
 	};
 }
 

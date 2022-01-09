@@ -20,8 +20,28 @@
 
 namespace PacManII
 {
+	/** A general behavior of the action blocks. */
+	class SceneActionBlock : public QGAMES::SceneActionBlock
+	{
+		public:
+		SceneActionBlock () = delete;
+
+		SceneActionBlock (int id)
+			: QGAMES::SceneActionBlock (id)
+							{ }
+
+		SceneActionBlock (const SceneActionBlock&) = delete;
+
+		SceneActionBlock& operator = (const SceneActionBlock&) = delete; 
+
+		/** Just to avoid dealing with information of switches and counters that it is not needed to keep in pacman. */
+		virtual QGAMES::SetOfOpenValues runtimeValues () const override 
+							{ return (QGAMES::SetOfOpenValues ()); }
+		virtual void initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg) override { }
+	};
+
 	/** The behaviour of a monster. */
-	class MonsterSceneActionBlock : public QGAMES::SceneActionBlock
+	class MonsterSceneActionBlock : public SceneActionBlock
 	{
 		public:
 		struct Properties
@@ -48,7 +68,7 @@ namespace PacManII
 		MonsterSceneActionBlock () = delete;
 
 		MonsterSceneActionBlock (int id, const Properties& prps)
-			: QGAMES::SceneActionBlock (id),
+			: SceneActionBlock (id),
 			  _properties (prps),
 			  _monster (nullptr)
 							{ }
@@ -57,6 +77,9 @@ namespace PacManII
 
 		MonsterSceneActionBlock& operator = (const MonsterSceneActionBlock&) = delete; 
 
+		// Never change properties after being initialized...
+		void setProperties (const Properties& prps)
+							{ _properties = prps; }
 		const Properties& properties () const
 							{ return (_properties); }
 
@@ -102,7 +125,7 @@ namespace PacManII
 	};
 
 	/** The behaviour of the fruit. */
-	class FruitSceneActionBlock final : public QGAMES::SceneActionBlock
+	class FruitSceneActionBlock final : public SceneActionBlock
 	{
 		public:
 		struct Properties
@@ -144,7 +167,7 @@ namespace PacManII
 		FruitSceneActionBlock () = delete;
 
 		FruitSceneActionBlock (int id, const Properties& prps)
-			: QGAMES::SceneActionBlock (id),
+			: SceneActionBlock (id),
 			  _properties (prps),
 			  _fruit (nullptr)
 							{ }
@@ -153,6 +176,12 @@ namespace PacManII
 
 		FruitSceneActionBlock& operator = (const FruitSceneActionBlock&) = delete; 
 
+		virtual QGAMES::SetOfOpenValues runtimeValues () const override;
+		virtual void initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg) override;
+
+		// Never change properties after being initialized...
+		void setProperties (const Properties& prps)
+							{ _properties = prps; }
 		const Properties& properties () const
 							{ return (_properties); }
 
