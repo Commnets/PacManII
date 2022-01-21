@@ -68,7 +68,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\..\lib;$(SDL_HOME)\lib\x86;$(SDLIMAGE_HOME)\lib\x86;$(SDLMIXER_HOME)\lib\x86;$(SDLGFX_HOME)\Win32\Debug;$(SDLTTF_HOME)\lib\x86;$(FMOD_HOME)\api\lowlevel\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RoomGameLibD.lib;PlatformGameLibD.lib;AdvancedArcadeLibD.lib;ArcadeLibD.lib;CommonlibD.lib;CommonSDLD.lib;tinyxmlD.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;TmxParserD.lib;SDL2_gfx.lib;zpplibD.lib;SDL2_ttf.lib;FMODD.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PacManLikeLibD.lib;RoomGameLibD.lib;PlatformGameLibD.lib;AdvancedArcadeLibD.lib;ArcadeLibD.lib;CommonlibD.lib;CommonSDLD.lib;tinyxmlD.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;TmxParserD.lib;SDL2_gfx.lib;zpplibD.lib;SDL2_ttf.lib;FMODD.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -89,57 +89,18 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\..\lib;$(SDL_HOME)\lib\x86;$(SDLIMAGE_HOME)\lib\x86;$(SDLMIXER_HOME)\lib\x86;$(SDLGFX_HOME)\Win32\Release;$(SDLTTF_HOME)\lib\x86;$(FMOD_HOME)\api\lowlevel\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>RoomGameLib.lib;PlatformGameLib.lib;AdvancedArcadeLib.lib;ArcadeLib.lib;Commonlib.lib;CommonSDL.lib;tinyxml.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;TmxParser.lib;SDL2_mixer.lib;SDL2_gfx.lib;zpplib.lib;SDL2_ttf.lib;FMOD.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PacManLikeLib.lib;RoomGameLib.lib;PlatformGameLib.lib;AdvancedArcadeLib.lib;ArcadeLib.lib;Commonlib.lib;CommonSDL.lib;tinyxml.lib;SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_mixer.lib;TmxParser.lib;SDL2_gfx.lib;zpplib.lib;SDL2_ttf.lib;FMOD.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Artists.cpp" />
-    <ClCompile Include="Builders.cpp" />
-    <ClCompile Include="DataGame.cpp" />
-    <ClCompile Include="Fruit.cpp" />
-    <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameStates.cpp" />
-    <ClCompile Include="GUISystem.cpp" />
-    <ClCompile Include="InputHandler.cpp" />
-    <ClCompile Include="Letters.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Maps.cpp" />
-    <ClCompile Include="Maze.cpp" />
-    <ClCompile Include="Monsters.cpp" />
-    <ClCompile Include="Movements.cpp" />
-    <ClCompile Include="PacMan.cpp" />
-    <ClCompile Include="SceneActionBlocks.cpp" />
-    <ClCompile Include="Scenes.cpp" />
-    <ClCompile Include="ScoreObjects.cpp" />
-    <ClCompile Include="StandardScenes.cpp" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="Worlds.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Artists.hpp" />
-    <ClInclude Include="Builders.hpp" />
-    <ClInclude Include="DataGame.hpp" />
-    <ClInclude Include="Defs.hpp" />
     <ClInclude Include="doxy.hpp" />
-    <ClInclude Include="Fruit.hpp" />
-    <ClInclude Include="Game.hpp" />
-    <ClInclude Include="GameStates.hpp" />
-    <ClInclude Include="GUISystem.hpp" />
-    <ClInclude Include="InputHandler.hpp" />
-    <ClInclude Include="Letters.hpp" />
-    <ClInclude Include="Maps.hpp" />
-    <ClInclude Include="Maze.hpp" />
-    <ClInclude Include="Monsters.hpp" />
-    <ClInclude Include="Movements.hpp" />
-    <ClInclude Include="PacMan.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="SceneActionBlocks.hpp" />
-    <ClInclude Include="Scenes.hpp" />
-    <ClInclude Include="ScoreObjects.hpp" />
-    <ClInclude Include="StandardScenes.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="Worlds.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QGAMESEmptyTemplate.rc" />

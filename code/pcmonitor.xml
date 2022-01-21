@@ -2,6 +2,6 @@
 <Monitors>
 	
 	<!-- Includes -->
-	<Include file="pcmonitor.xml"/>
+	<Include file="admonitor.xml"/>
 	
 </Monitors>

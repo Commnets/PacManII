@@ -100,7 +100,7 @@
 			</Attributes>
 		</Widget>
 		
-		<!-- Option 7: To determinate whether the music is on or off  -->
+		<!-- Option 7: To determinate whether the music is on or off  (in this case background sound) -->
 		<Widget id="10008" type="3" position="0,360,0">
 			<Attributes>
 				<Attribute id="Form" value="60013"/>
@@ -109,8 +109,8 @@
 				<Attribute id="AlphaOff" value="255"/>
 				<Attribute id="PixelsAmong" value="0"/>
 				<Attribute id="Direction" value="HORIZONTALRIGHT"/>
-				<Attribute id="StringValues" value="Music On,Music Off"/>
-				<Attribute id="Text" value="Music On"/>
+				<Attribute id="StringValues" value="Siren On,Siren Off"/>
+				<Attribute id="Text" value="Siren On"/>
 			</Attributes>
 		</Widget>
 		

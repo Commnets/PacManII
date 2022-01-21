@@ -1,7 +1,7 @@
 /**	
  *	@file	
  *	File: main.cpp \n
- *	Framework: Commty Game Library (CGL) \n
+ *	Framework: PacManII \n
  *	Author: Ignacio Cea Forniés (Community Networks) \n
  *	Creation Date: 21/08/2021 \n
  *	Description: Main programm for PacManII game
@@ -9,10 +9,10 @@
  */
 
 #include "stdafx.h"
-#include "Defs.hpp"
-#include "Game.hpp"
 
-using namespace PacManII;
+#include <PacManLike/pcinclude.hpp>
+
+using namespace PACMAN;
 
 #ifndef _CONSOLE
 #include <SDL.h>

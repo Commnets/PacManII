@@ -2,6 +2,6 @@
 <Objects>
 
 	<!-- Includes -->
-	<Include file="pcobjects.xml"/>
+	<Include file="adobjects.xml"/>
 
 </Objects>
