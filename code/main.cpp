@@ -10,9 +10,9 @@
 
 #include "stdafx.h"
 
-#include <PacManLike/pcinclude.hpp>
+#include "Game.hpp"
 
-using namespace PACMAN;
+using namespace PacManII;
 
 #ifndef _CONSOLE
 #include <SDL.h>
@@ -38,7 +38,7 @@ int _tmain (int argc, char *argv [])
 			property (std::string (__GAME_DATADIRPROPERTYNAME__)));
 #endif
 
-	Game game (DataGame::standardDataGame ());
+	Game game ({ PACMAN::DataGame::standardDataGame () });
 	game.setLinkDrawToFrameRate (true); 
 	game.setPreLoad (false); 
 	game.exec ();
