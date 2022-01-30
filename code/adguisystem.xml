@@ -95,8 +95,8 @@
 				<Attribute id="AlphaOff" value="255"/>
 				<Attribute id="PixelsAmong" value="0"/>
 				<Attribute id="Direction" value="HORIZONTALRIGHT"/>
-				<Attribute id="StringValues" value="Easy,Medium,Difficult"/>
-				<Attribute id="Text" value="Easy"/>
+				<Attribute id="StringValues" value="Classic,Mine,Hard"/>
+				<Attribute id="Text" value="Classic"/>
 			</Attributes>
 		</Widget>
 		

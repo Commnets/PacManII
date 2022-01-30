@@ -94,21 +94,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Builders.cpp" />
+    <ClCompile Include="DataGame.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Monsters.cpp" />
     <ClCompile Include="Pacman.cpp" />
+    <ClCompile Include="SceneActionBlocks.cpp" />
+    <ClCompile Include="Scenes.cpp" />
     <ClCompile Include="Shield.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Builders.hpp" />
+    <ClInclude Include="DataGame.hpp" />
     <ClInclude Include="Defs.hpp" />
     <ClInclude Include="doxy.hpp" />
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="Monsters.hpp" />
     <ClInclude Include="Pacman.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SceneActionBlocks.hpp" />
+    <ClInclude Include="Scenes.hpp" />
     <ClInclude Include="Shield.hpp" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

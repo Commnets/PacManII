@@ -11,6 +11,7 @@
 #include "stdafx.h"
 
 #include "Game.hpp"
+#include "DataGame.hpp"
 
 using namespace PacManII;
 
@@ -38,7 +39,9 @@ int _tmain (int argc, char *argv [])
 			property (std::string (__GAME_DATADIRPROPERTYNAME__)));
 #endif
 
-	Game game ({ PACMAN::DataGame::standardDataGame () });
+	Game game ({ PACMAN::DataGame::basicDataGame (), 
+				 DataGame::mineDataGame (),
+				 DataGame::hardDataGame () });
 	game.setLinkDrawToFrameRate (true); 
 	game.setPreLoad (false); 
 	game.exec ();

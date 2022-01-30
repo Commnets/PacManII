@@ -2,6 +2,8 @@
 #include "Pacman.hpp"
 #include "Monsters.hpp"
 #include "Shield.hpp"
+#include "Scenes.hpp"
+#include "SceneActionBlocks.hpp"
 #include "Defs.hpp"
 
 // ---
@@ -21,8 +23,8 @@ QGAMES::Movement* PacManII::MovementBuilder::createMovement
 		result = new QGAMES::NoMovement (def._id, def._variables);
 	else
 	// Shield's staying movement
-	if (def._id >= __PACMAN_SHIELDSTAYINGMOVEMENTBASEID__ &&
-		 def._id < (__PACMAN_SHIELDSTAYINGMOVEMENTBASEID__ + __PACMAN_NUMBERENTITIES__))
+	if (def._id >= __PACMANII_SHIELDSTAYINGMOVEMENTBASEID__ &&
+		 def._id < (__PACMANII_SHIELDSTAYINGMOVEMENTBASEID__ + __PACMAN_NUMBERENTITIES__))
 		result = new QGAMES::NoMovement (def._id, def._variables);
 	// For th rest of the movements the system relies in the standard framework...
 	else
@@ -43,13 +45,13 @@ QGAMES::Entity* PacManII::EntityBuilder::createEntity (const QGAMES::EntityBuild
 			result = new PacManII::PacMan (def._id);
 	else 
 	// To create the new pacman monster for this version
-	if (def._id >= __PACMAN_WORMYBASEENTITYID__ && 
-		def._id < (__PACMAN_WORMYBASEENTITYID__ + __PACMAN_NUMBERENTITIES__)) 
+	if (def._id >= __PACMANII_WORMYBASEENTITYID__ && 
+		def._id < (__PACMANII_WORMYBASEENTITYID__ + __PACMAN_NUMBERENTITIES__)) 
 			result = new PacManII::Wormy (def._id);
 	else
 	// To create th shields
-	if (def._id >= __PACMAN_SHIELDBASEENTITYID__ &&
-		def._id < (__PACMAN_SHIELDBASEENTITYID__ + __PACMAN_NUMBERENTITIES__))
+	if (def._id >= __PACMANII_SHIELDBASEENTITYID__ &&
+		def._id < (__PACMANII_SHIELDBASEENTITYID__ + __PACMAN_NUMBERENTITIES__))
 			result = new PacManII::Shield (def._id);
 	// For any other entity the default implementation can be usd...
 	else 
@@ -64,8 +66,11 @@ QGAMES::Scene* PacManII::WorldBuilder::createSceneObject (int ns, const QGAMES::
 {
 	QGAMES::Scene* result = nullptr;
 
-	// TODO
-	result = PACMAN::WorldBuilder::createSceneObject (ns, m, cn, p, ePL);
+	if (ns >= __PACMANII_EXTENDEDWORLD__ &&
+		ns < (__PACMANII_EXTENDEDWORLD__ + __PACMANII_EXTENDEDSCENENUMBER__))
+		result = new PacManII::ExtendedScene (ns, m, cn, p, ePL);
+	else
+		result = PACMAN::WorldBuilder::createSceneObject (ns, m, cn, p, ePL);
 
 	return (result);
 }
@@ -76,8 +81,12 @@ QGAMES::SceneActionBlock* PacManII::WorldBuilder::createSceneActionBlockObject (
 {
 	QGAMES::SceneActionBlock* result = nullptr;
 
-	// TODO
-	result = PACMAN::WorldBuilder::createSceneActionBlockObject (nAB, prps);
+	if (nAB >= __PACMANII_MONSTERAPPRANDMOVESCENEBLOCKBASEID__ && 
+		nAB < (__PACMANII_MONSTERAPPRANDMOVESCENEBLOCKBASEID__ + __PACMANII_MONSTERAPPRANDMOVESCENEBLOCKNUMBEER__))
+		result = new PacManII::MonsterToAppearAndMoveSceneActionBlock 
+			(nAB, PacManII::MonsterToAppearAndMoveSceneActionBlock::Properties (prps));
+	else
+		result = PACMAN::WorldBuilder::createSceneActionBlockObject (nAB, prps);
 
 	return (result);
 }

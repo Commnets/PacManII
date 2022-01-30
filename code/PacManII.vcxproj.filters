@@ -22,6 +22,15 @@
     <ClCompile Include="Shield.cpp">
       <Filter>Archivos de código fuente\Artists</Filter>
     </ClCompile>
+    <ClCompile Include="SceneActionBlocks.cpp">
+      <Filter>Archivos de código fuente\Action Blocks</Filter>
+    </ClCompile>
+    <ClCompile Include="Scenes.cpp">
+      <Filter>Archivos de código fuente\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="DataGame.cpp">
+      <Filter>Archivos de código fuente</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -53,6 +62,15 @@
     </ClInclude>
     <ClInclude Include="Shield.hpp">
       <Filter>Archivos de encabezado\Artists</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneActionBlocks.hpp">
+      <Filter>Archivos de encabezado\Action Blocks</Filter>
+    </ClInclude>
+    <ClInclude Include="Scenes.hpp">
+      <Filter>Archivos de encabezado\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="DataGame.hpp">
+      <Filter>Archivos de encabezado</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
