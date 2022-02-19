@@ -5,23 +5,16 @@
 	<Include file="adworlds.xml"/>
 
 	<World id="50000">
-		<SetOfScenes>
-			<!-- The standards scene
-				 It is not needed to define neithr monster action blocks nor fruit ones
-				 They are included in the constructor of the scene -->
-			<!-- The blue ones -->
-			<SceneTemplate baseId="50000" number="25"> 
-				<Actions>
-				</Actions>
-				
-				<Attributes>
-				</Attributes>
-
-				<Conexions>
-				</Conexions>
-
+		<Scenes>
+			<!-- The standard scene
+				 It is not needed to define neither monster action blocks nor fruit ones
+				 because they will be added in the constructor of the scene -->
+			<Scene id="50000"> 
 				<Maps>
 					<Map id="50000" file="maps/normalmap_blue.tmx"/>
+					<Map id="50100" file="maps/normalmap_green.tmx"/>
+					<Map id="50200" file="maps/normalmap_yellow.tmx"/>
+					<Map id="50300" file="maps/normalmap_red.tmx"/>
 				</Maps>
 
 				<Entities>  
@@ -31,93 +24,12 @@
 					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
 					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
 				</Entities>
-			</SceneTemplate>
-
-			<!-- The red ones -->
-			<SceneTemplate baseId="50025" number="25"> 
-				<Actions>
-				</Actions>
-				
-				<Attributes>
-				</Attributes>
-
-				<Conexions>
-				</Conexions>
-
-				<Maps>
-					<Map id="50025" file="maps/normalmap_red.tmx"/>
-				</Maps>
-
-				<Entities>  
-					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
-				</Entities>
-			</SceneTemplate>
-
-			<!-- The green ones -->
-			<SceneTemplate baseId="50050" number="25"> 
-				<Actions>
-				</Actions>
-				
-				<Attributes>
-				</Attributes>
-
-				<Conexions>
-				</Conexions>
-
-				<Maps>
-					<Map id="50050" file="maps/normalmap_green.tmx"/>
-				</Maps>
-
-				<Entities>  
-					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
-				</Entities>
-			</SceneTemplate>
-
-			<!-- The yellow ones -->
-			<SceneTemplate baseId="50075" number="25"> 
-				<Actions>
-				</Actions>
-				
-				<Attributes>
-				</Attributes>
-
-				<Conexions>
-				</Conexions>
-
-				<Maps>
-					<Map id="50075" file="maps/normalmap_yellow.tmx"/>
-				</Maps>
-
-				<Entities>  
-					<SetOfEntities fromId="50000" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50010" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50020" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
-					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
-				</Entities>
-			</SceneTemplate>
+			</Scene>
 			
 			<!-- Just for testing purposes -->
-			<SceneTemplate baseId="50100" number="2"> 
-				<Actions>
-				</Actions>
-				
-				<Attributes>
-				</Attributes>
-
-				<Conexions>
-				</Conexions>
-
+			<Scene id="50100"> 
 				<Maps>
-					<Map id="50100" file="maps/maptest.tmx"/>
+					<Map id="52000" file="maps/maptest.tmx"/>
 				</Maps>
 
 				<Entities>  
@@ -127,13 +39,11 @@
 					<SetOfEntities fromId="50030" number="10" layer="Maze"/>
 					<SetOfEntities fromId="50040" number="10" layer="Maze"/>
 				</Entities>
-			</SceneTemplate>
-		</SetOfScenes>
+			</Scene>
 
-		<Scenes>
 			<!-- A no standard scene
 				 but it behaves quite similar to the standard one -->
-			<Scene id="50200"> 
+			<Scene id="53000"> 
 				<Actions>
 					<!-- The monsters -->
 					<!-- Inky -->
@@ -180,15 +90,9 @@
 						</Attributes>
 					</Action>
 				</Actions>
-				
-				<Attributes>
-				</Attributes>
-
-				<Conexions>
-				</Conexions>
 
 				<Maps>
-					<Map id="50000" file="maps/map.tmx"/>
+					<Map id="51000" file="maps/map.tmx"/>
 				</Maps>
 
 				<Entities>  
@@ -200,9 +104,6 @@
 				</Entities>
 			</Scene>
 		</Scenes>
-
-		<Attributes>
-		</Attributes>
 
 	</World>
 </Worlds>

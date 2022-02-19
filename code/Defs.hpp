@@ -16,6 +16,9 @@
 
 #include <PacManLike/pcdefs.hpp>
 
+// Number of extended levels...
+#define __PACMANII_MAXNUMBERXTENDEDLEVELS__						20
+
 // Sounds
 #define __PACMANII_ENERGYAROUNDPACMAN__							60000
 #define __PACMANII_SOUNDSHIELDCAUGHT__							60001
@@ -50,9 +53,33 @@
 
 // The World and Scenes used for PacManII
 #define __PACMANII_EXTENDEDWORLD__								60000
-#define __PACMANII_EXTENDEDSCENE__								60000
-#define __PACMANII_EXTENDEDMAP__								60000
-#define __PACMANII_EXTENDEDSCENENUMBER__						1000
+// The Scenes...
+#define __PACMANII_BLOCKSCENES1__								60000 // With monsters appearing...
+#define __PACMANII_BLOCKSCENES2__								70000 // Without monsters appearing...
+#define __PACMANII_BLOCKSCENES3__								71000 // With monsters appearing...
+// The Maps...
+// The Ms. Pacman maps
+#define __PACMANII_MISSPACMANTYPEMAPS__							4
+// Maps with ms. Pacman 1 maze
+#define __PACMANII_MISSPACMAN1BLUEMAP__							60000
+#define __PACMANII_MISSPACMAN1REDMAP__							60200
+#define __PACMANII_MISSPACMAN1GREENMAP__						60400
+#define __PACMANII_MISSPACMAN1YELLOWMAP__						60600
+// Maps with ms. Pacman 2 maze
+#define __PACMANII_MISSPACMAN2BLUEMAP__							61000
+#define __PACMANII_MISSPACMAN2REDMAP__							61200
+#define __PACMANII_MISSPACMAN2GREENMAP__						61400
+#define __PACMANII_MISSPACMAN2YELLOWMAP__						61600
+// Maps with ms. Pacman 3 maze
+#define __PACMANII_MISSPACMAN3BLUEMAP__							62000
+#define __PACMANII_MISSPACMAN3REDMAP__							62200
+#define __PACMANII_MISSPACMAN3GREENMAP__						62400
+#define __PACMANII_MISSPACMAN3YELLOWMAP__						62600
+// Maps with ms. Pacman 4 maze
+#define __PACMANII_MISSPACMAN4BLUEMAP__							63000
+#define __PACMANII_MISSPACMAN4REDMAP__							63200
+#define __PACMANII_MISSPACMAN4GREENMAP__						63400
+#define __PACMANII_MISSPACMAN4YELLOWMAP__						63600
 
 #endif
   

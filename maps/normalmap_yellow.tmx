@@ -19,7 +19,7 @@
  </layer>
  <layer id="2" name="Maze" width="21" height="24">
   <data encoding="base64" compression="zlib">
-   eJy9VF0PgjAMrIpDUAk8oKLE+Oz//4FuyZocTUcXQZtcwtqtXK4fRL+xwqMysM+44yBn5/E0kHsHc46Rr4tx5u5ETunnN6OSM8RvHnf4ruD8SPjxjZZzKbScB486fpfgwxpp8Xom51xNrLPMyRqh9o3gxXoy75amNWONNeP/d4l47j3sW6xzsI3HFrCLftkHjGAvStcx2NHjBDhHf+rNW+HJepYx1ntcANfo57rLudZsLT1l7bQ6y/7U9PzHDmFOjqb8Uv3J/oLSczQafMjgL/dSo/DJnXfk3xp6Lp131JNrOBh6DnA3dy8t3Z9yZr9Fai+tYR829B7L
+   eJy9VF0PgjAMrIpDUAk8+IEsxGf//w+0JGtyNh1bBG1yyWi7crmuJfqNFYwqgX1GjoOaHWNMIDcHa/rA14W4cHeqpvbLHW/UnOJ3xgPOFXwPET/esWouhVXzwKjDuQQf9siK1zM153qS+tY1RSPUvgFeFPQk4N3SZ89EY8vk/10knpuH7xb7PNmGsQXsgDe+A8FkT+MfI5yPjBPgHMkTexk8Rc8yxC6MK+AW/NJ3PdeWraWn7h3qab1PIlvPf+wQmQkHZ5ybIeIvKD5HPsGHEvz1XmoMPrnzjvzbhJ5L5x31lB72CT17yM3dS0v3p57ZbxHbS2vYG3ibHSc=
   </data>
  </layer>
  <layer id="4" name="Directions" width="21" height="24">

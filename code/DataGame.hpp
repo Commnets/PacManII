@@ -81,14 +81,18 @@ namespace PacManII
 					const LeaveHomeConditions& lHC,
 					double pS, double pED, double pWF, double pWEFD, 
 					double gS, double gWF, double gWE, double gWT,
-					const ElroyConditions& eC)
-				: PACMAN::DataGame::LevelDefinition (wT, sT, mT, pB, pPB, mSC, fC, sC, lHC, pS, pED, pWF, pWEFD, gS, gWF, gWE, gWT, eC),
-				  _additionalMonsters ()
+					const ElroyConditions& eC,
+				    const AdditionalMonsters& aM)
+				: PACMAN::DataGame::LevelDefinition (wT, sT, mT, pB, pPB, mSC, fC, sC, lHC, 
+						pS, pED, pWF, pWEFD, gS, gWF, gWE, gWT, eC),
+				  _additionalMonsters (aM)
 							{ }
 
 			LevelDefinition (const LevelDefinition&) = default;
 
 			LevelDefinition& operator = (const LevelDefinition&) = default;
+
+			virtual PACMAN::DataGame::LevelDefinition* cloneFor (int wId, int sId, int mId) override;
 
 			const AdditionalMonsters& additionalMonsters () const
 							{ return (_additionalMonsters); }
@@ -100,6 +104,8 @@ namespace PacManII
 			AdditionalMonsters _additionalMonsters;
 		};
 
+		static DataGame* trainingDataGame ();
+		static DataGame* missDataGame (int nL = __PACMAN_MAXNUMBERLEVELS__);
 		static DataGame* mineDataGame (int nL = __PACMAN_MAXNUMBERLEVELS__);
 		static DataGame* hardDataGame (int nL = __PACMAN_MAXNUMBERLEVELS__);
 

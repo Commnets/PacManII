@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="21" height="24" tilewidth="32" tileheight="32" infinite="0" nextlayerid="7" nextobjectid="1">
  <tileset firstgid="1" name="corners" tilewidth="32" tileheight="32" tilecount="80" columns="10">
-  <image source="maps/chompermazetiles.png" width="320" height="256"/>
+  <image source="maps/chompermazetilesfull_green.png" width="320" height="256"/>
  </tileset>
  <tileset firstgid="81" name="location" tilewidth="32" tileheight="32" tilecount="100" columns="10">
   <image source="maps/location.png" trans="000000" width="320" height="320"/>
@@ -14,17 +14,17 @@
  </tileset>
  <layer id="1" name="Background" width="21" height="24">
   <data encoding="base64" compression="zlib">
-   eJxjYKAN4KEiHjVz1MxRM0fNHDVz1Mzhbia1AQBaExOZ
+   eJxjYKANkKciHjVz1MxRM0fNHDVz1Mzhbia1AQDG5TKf
   </data>
  </layer>
  <layer id="2" name="Maze" width="21" height="24">
   <data encoding="base64" compression="zlib">
-   eJy1VUkOwjAMDFB1YecAdFMPnPn/+0gkj7AGp4nUYmkUcJzxyIld5/5jhUezAkrFefMYPaYFGIVHcwZ/JWshOfGbtXAMzlmcWFuPnnxTRswcp8VRZcRYnCH3njgGOjfQfk16mdPKnfufOVtV75A33MVFVugeEvuF6IU1Sr+V0zLW2QpPsBft6ToG23hsFXbi57oCb6UTuKr9YAePo8JJ/Ig503lLp84f7O7xUHiKn9+FpbN0y+qJfrNikB815/eKe+/Jb2mY66UcP3Pibc3ps/qnoXM862IzDHsuoTfWm4WhD7oBrmPtvvebmktzemKxFqfu6S5SV9Sxc7+zgDlT346Ubv52cM0sdBkxei6tbR/sgCDm
+   eJy1VF0PgjAQm0oE/OZBBWZ48Nn///vckjU09ZDF4CUN6nV3tcfOuf9EEVAvgC3VbAKGBdBIzUdAmXJF6onPqkU5ZTqvNQd6tgG9/DZkcL7VtGqUGRyrZuy9kxpeznnJV6JXa1q9c79rzZb8jn3jLM7puUscn55WHjPrqWZN+q2eVqjONtWJ8RQu+xhjFbAmbEg3fOV4kU7gkriIfcCBcKRc5J3kvKVT+18DboT7xP+xdGJGv/qJ+2Zx0B+eY+7Qjbn3wrc0TN0lziPm7pBz47ul+thX+Mb3p5ZzubtO++dywSvc532HbkB9rNw437m9NLenLa61k/Fuxt6d4Sv72FHOu+mdnKsrx0/1zEKXweG9tHS8AdybHdo=
   </data>
  </layer>
  <layer id="4" name="Directions" width="21" height="24">
   <data encoding="base64" compression="zlib">
-   eJzVlOEKhTAIhX3/96kgort6sgo65D0dN+tfwnCos2/qMvuWdPsa99WfmvdjYMd+EDl/pHmvYqNzmZy4w1CJqeUsdt1nDs5Ndt17TeRUOVo6yun5VmfzvFPg97w1VmXP9IwFHOgFerOQZv9sd8Gscb2z3MXlaPGq72f8npPnL8uJGihO/n6x//fHc5Hhjfie2lUM8/F8Mm8mZ8TR4mU56oz5Yz5wcx0Rh3M1xqd9j2L9XKj3rOp4+NX/L8P21gcm1MYv5vZroZgvyQZ/M5SY
+   eJzVlOEOgyAMhHn/95lmzjDhyaaJF85LC53/bEIgtD0+WjSlZ9lrH8s+pnPW9eLsYz0bml+ZdW3FenkRTdxh7sT0NLfU7pOdvDW1e9eApqUxmj1N5qu0x7yr42feHqu1H+mZGjjQC/SmnCzF8eerTHqn9ta03l691L+RxmfAm+nMQjnst4w59f1F64saWJx6Pu40yVyd+Mj5d/etGOXT96m8EU2PY8SrdtQZvVU+cGsdEYe8HuO/ffdi+V1Y37NVx8Nv/f8ibHd9YEJteCg3jyIxT7IfuKGb5A==
   </data>
  </layer>
  <layer id="6" name="MazeZones" width="21" height="24">
@@ -39,7 +39,7 @@
  </layer>
  <layer id="5" name="ArtistsLocations" width="21" height="24">
   <data encoding="base64" compression="zlib">
-   eJwLYqAuCKSyeaNgFAwUiB5oBxABYoE4BojjBtohRID8gXbAKCAIUgfaASMYhFDZvGAgBgByVwOR
+   eJwLYqAuCKSyeaNgFAwUiCZBbT6V7S4gUl0sEMcAcRyR6gvJcw5OUERl80YB8SB1oB0wCqgKQqhsXjAQAwBMIQTk
   </data>
  </layer>
 </map>

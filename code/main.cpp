@@ -39,9 +39,12 @@ int _tmain (int argc, char *argv [])
 			property (std::string (__GAME_DATADIRPROPERTYNAME__)));
 #endif
 
-	Game game ({ PACMAN::DataGame::basicDataGame (), 
+	// 5 types of game...
+	Game game ({ PACMAN::DataGame::basicDataGame (),
+				 DataGame::missDataGame (),
 				 DataGame::mineDataGame (),
-				 DataGame::hardDataGame () });
+				 DataGame::hardDataGame (),
+				 DataGame::trainingDataGame () });
 	game.setLinkDrawToFrameRate (true); 
 	game.setPreLoad (false); 
 	game.exec ();

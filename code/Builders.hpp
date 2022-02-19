@@ -18,7 +18,7 @@
 
 namespace PacManII
 {
-	class MovementBuilder : public PACMAN::MovementBuilder
+	class MovementBuilder final : public PACMAN::MovementBuilder
 	{
 		public:
 		MovementBuilder () = delete;
@@ -36,7 +36,7 @@ namespace PacManII
 			(const QGAMES::MovementBuilder::MovementDefinition& def) override;
 	};
 
-	class EntityBuilder : public PACMAN::EntityBuilder
+	class EntityBuilder final : public PACMAN::EntityBuilder
 	{
 		public:
 		EntityBuilder () = delete;
@@ -53,7 +53,7 @@ namespace PacManII
 		virtual QGAMES::Entity* createEntity (const QGAMES::EntityBuilder::EntityDefinition& def) override;
 	};
 
-	class WorldBuilder : public PACMAN::WorldBuilder
+	class WorldBuilder final : public PACMAN::WorldBuilder
 	{
 		public: 
 		WorldBuilder () = delete;

@@ -95,7 +95,7 @@
 				<Attribute id="AlphaOff" value="255"/>
 				<Attribute id="PixelsAmong" value="0"/>
 				<Attribute id="Direction" value="HORIZONTALRIGHT"/>
-				<Attribute id="StringValues" value="Classic,Mine,Hard"/>
+				<Attribute id="StringValues" value="Classic,Miss Pacman,Mine,Hard,Training"/>
 				<Attribute id="Text" value="Classic"/>
 			</Attributes>
 		</Widget>

@@ -66,11 +66,14 @@ QGAMES::Scene* PacManII::WorldBuilder::createSceneObject (int ns, const QGAMES::
 {
 	QGAMES::Scene* result = nullptr;
 
-	if (ns >= __PACMANII_EXTENDEDWORLD__ &&
-		ns < (__PACMANII_EXTENDEDWORLD__ + __PACMANII_EXTENDEDSCENENUMBER__))
-		result = new PacManII::ExtendedScene (ns, m, cn, p, ePL);
+	if (ns == __PACMANII_BLOCKSCENES1__ ||
+		ns == __PACMANII_BLOCKSCENES3__)
+		result = new PacManII::ExtendedScene (ns, m, cn, p, ePL); // With wormy...
 	else
-		result = PACMAN::WorldBuilder::createSceneObject (ns, m, cn, p, ePL);
+	if (ns == __PACMANII_BLOCKSCENES2__)
+		result = new PACMAN::BasicScene (ns, m, cn, p, ePL); // Without wormy
+	else
+		result = PACMAN::WorldBuilder::createSceneObject (ns, m, cn, p, ePL); // The classical ones...
 
 	return (result);
 }

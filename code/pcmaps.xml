@@ -4,14 +4,16 @@
 	<!-- Includes -->
 	<Include file="admaps.xml"/>
 
-	<SetOfMaps baseId="50000" number="25" type="1" file="maps/normalmap_blue.tmx"/>
-	<SetOfMaps baseId="50025" number="25" type="1" file="maps/normalmap_red.tmx"/>
-	<SetOfMaps baseId="50050" number="25" type="1" file="maps/normalmap_green.tmx"/>
-	<SetOfMaps baseId="50075" number="25" type="1" file="maps/normalmap_yellow.tmx"/>
+	<!-- The maps with different colors -->
+	<Map id="50000" type="1" file="maps/normalmap_blue.tmx"/>
+	<Map id="50100" type="1" file="maps/normalmap_green.tmx"/>
+	<Map id="50200" type="1" file="maps/normalmap_yellow.tmx"/>
+	<Map id="50300" type="1" file="maps/normalmap_red.tmx"/>
 	
-	<Map id="50200" type="1" file="maps/map.tmx"/>
+	<!-- Simple very classic map -->
+	<Map id="51000" type="1" file="maps/map.tmx"/>
 	
-	<!-- For testing purposes -->
-	<SetOfMaps baseId="50100" number="2" type="1" file="maps/maptest.tmx"/>
+	<!-- A simple blue map with a couple of balls to eat and just for testing purposes -->
+	<SetOfMaps baseId="52000" number="2" type="1" file="maps/maptest.tmx"/>
 
 </Maps>

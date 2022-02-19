@@ -76,6 +76,8 @@ namespace PacManII
 		virtual void updatePositions () override;
 		virtual void finalize () override;
 
+		virtual void processEvent (const QGAMES::Event& evnt) override;
+
 		protected:
 		/** To create the action block after appearing. \n 
 			It has to be redefined later. */

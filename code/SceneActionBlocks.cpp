@@ -84,6 +84,8 @@ void PacManII::ElementToAppearSceneActionBlock::initialize ()
 
 	observe (_element);
 
+	observe (scn -> activeMap ());
+
 	reStartAllCounters ();
 	reStartAllOnOffSwitches ();
 
@@ -153,11 +155,24 @@ void PacManII::ElementToAppearSceneActionBlock::finalize ()
 
 	_afterAppearingActionBlock = nullptr;
 
+	unObserve (_element);
+
+	unObserve (scene () -> activeMap ());
+
 	_element -> setMap (nullptr);
 
 	scene () -> removeCharacter (_element); // It could also be already removed by the _afterAppearingActionBlock block!
 
 	_element = nullptr;
+}
+
+// ---
+void PacManII::ElementToAppearSceneActionBlock::processEvent (const QGAMES::Event& evnt)
+{
+	if (evnt.code () == __PACMAN_BALLEATEN__)
+		counter (_COUNTERTOAPPEAR) -> initialize (); // Starts back to count the max seconds to appear...
+
+	PACMAN::SceneActionBlock::processEvent (evnt);
 }
 
 // ---			
@@ -173,4 +188,5 @@ __IMPLEMENTONOFFSWITCHES__ (PacManII::ElementToAppearSceneActionBlock::OnOffSwit
 {
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHBLOCKACTIVE, false));
 	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHAPPEARING, false));
+	addOnOffSwitch (new QGAMES::OnOffSwitch (_SWITCHAPPEARED, false));
 }
