@@ -13,7 +13,7 @@
 			<!-- Moving through the maze -->
 			<Movement id="600000"/>
 			<!-- At home -->
-			<Movement id="610000"/>
+			<Movement id="600010"/>
 		</MovementsBase>
 		<Animations>
 			<!-- Looking to the right -->

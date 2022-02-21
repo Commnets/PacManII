@@ -85,9 +85,14 @@ QGAMES::SceneActionBlock* PacManII::WorldBuilder::createSceneActionBlockObject (
 	QGAMES::SceneActionBlock* result = nullptr;
 
 	if (nAB >= __PACMANII_MONSTERAPPRANDMOVESCENEBLOCKBASEID__ && 
-		nAB < (__PACMANII_MONSTERAPPRANDMOVESCENEBLOCKBASEID__ + __PACMANII_MONSTERAPPRANDMOVESCENEBLOCKNUMBEER__))
-		result = new PacManII::MonsterToAppearAndMoveSceneActionBlock 
-			(nAB, PacManII::MonsterToAppearAndMoveSceneActionBlock::Properties (prps));
+		nAB < (__PACMANII_MONSTERAPPRANDMOVESCENEBLOCKBASEID__ + __PACMANII_MONSTERAPPRANDMOVESCENEBLOCKNUMBER__))
+		result = new PacManII::ElementToAppearSceneActionBlock
+			(nAB, PacManII::ElementToAppearSceneActionBlock::Properties (prps));
+	else
+	if (nAB >= __PACMANII_WORMYSCENEBLOCKBASEID__ && 
+		nAB < (__PACMANII_WORMYSCENEBLOCKBASEID__ + __PACMANII_WORMYSCENEBLOCKNUMBER__))
+		result = new PacManII::ElementToAppearSceneActionBlock
+			(nAB, PacManII::ElementToAppearSceneActionBlock::Properties (prps));
 	else
 		result = PACMAN::WorldBuilder::createSceneActionBlockObject (nAB, prps);
 

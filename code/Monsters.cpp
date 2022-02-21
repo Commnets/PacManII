@@ -37,11 +37,14 @@ void PacManII::Wormy::initialize ()
 // ---
 void PacManII::Wormy::updatePositions ()
 {
+	if (!isVisible ())
+		return;
+
 	QGAMES::Position p = position ();
 
 	PACMAN::StandardMonster::updatePositions ();
 
-	for (int i = (_trailLength - 1); i >= 0; i --)
+	for (int i = (_trailLength - 2); i >= 0; i --)
 		_trailPositions [i + 1] = _trailPositions [i];
 	_trailPositions [0] = p;
 }
@@ -49,12 +52,13 @@ void PacManII::Wormy::updatePositions ()
 // ---
 void PacManII::Wormy::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
 {
-	int tW = pMap () -> tileWidth () >> 1; int tH = pMap () -> tileHeight () >> 1;
+	if (!isVisible ())
+		return;
 
 	auto tileRectangleFor = [=](const QGAMES::Position& p, int i) -> QGAMES::Rectangle
 		{ 
-			QGAMES::Vector v (__BD tW, __BD tH, __BD 0);
-			QGAMES::Rectangle result = QGAMES::Rectangle (p - v, p + v, QGAMES::Vector::_zNormal);
+			QGAMES::Rectangle result = QGAMES::Rectangle 
+				(p, p + QGAMES::Vector (__BD pMap () -> tileWidth (), __BD pMap () -> tileHeight (), __BD 0), QGAMES::Vector::_zNormal);
 
 			return (result.scale ((__BD (_trailLength - (i >> 1))) / __BD _trailLength));
 		};
@@ -62,14 +66,15 @@ void PacManII::Wormy::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
 	auto colorFor = [=](int i) -> QGAMES::Color
 		{
 			QGAMES::Color tC = trackingColor ();
-			tC.setAlpha ((int) (__BD (_trailLength - i) / __BD _trailLength) * 255);
+			tC.setAlpha ((int) ((__BD (_trailLength - i) / __BD _trailLength) * __BD 255 * (__BD alphaLevel () / __BD 255)));
+			// Proportional to the alpha level of the element outside...
 
 			return (tC);
 		};
 
-	for (int i = 0; i < _trailLength; i++)
+	for (int i = (_trailLength - 1); i >= 0; i--)
 		if (_trailPositions [i] != QGAMES::Position::_noPoint)
-			scr -> drawRectangle (tileRectangleFor (_trailPositions [i], i), colorFor (i), true); 
+			currentForm () -> frame (currentAspect ()) -> drawOn (scr, _trailPositions [i], colorFor (i).alpha ());
 
 	// The monster is drawn always on top...
 	PACMAN::StandardMonster::drawOn (scr, p);
@@ -104,9 +109,9 @@ QGAMES::MazeModel::PositionInMaze PacManII::Wormy::targetMazePosition () const
 		case PACMAN::Monster::Status::_CHASING:
 			if (_referenceArtists [0] != nullptr && _referenceArtists [1] != nullptr)
 			{
-				if ((result = mapPositionToMazePosition 
-						((_referenceArtists [0] -> currentMazePosition ().asVector () + 
-						  _referenceArtists [1] -> currentMazePosition ().asVector ()) / __BD 2)) == currentMazePosition ())
+				if ((result = QGAMES::MazeModel::PositionInMaze (
+						(_referenceArtists [0] -> currentMazePosition ().asVector () + 
+						 _referenceArtists [1] -> currentMazePosition ().asVector ()) / __BD 2)) == currentMazePosition ())
 					result = nextXGridPosition (1);
 			}
 			// When there is no references enough...go home!
@@ -120,6 +125,13 @@ QGAMES::MazeModel::PositionInMaze PacManII::Wormy::targetMazePosition () const
 	}
 
 	return (result);
+}
+
+// ---
+QGAMES::MazeModel::PositionInMaze PacManII::Wormy::runAwayMazePosition () const
+{
+	return ((pMap () == nullptr) 
+		? QGAMES::MazeModel::_noPosition : pMap () -> oneHomePosition ()); 
 }
 
 // ---

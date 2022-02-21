@@ -32,15 +32,20 @@ namespace PacManII
 					  _monsterNumber (0),
 					  _position (QGAMES::MazeModel::_noPosition),
 					  _numberBallsEatenToAppear (100),
-					  _maxSecondsToAppear (__BD 5.0)
+					  _maxSecondsToAppear (__BD 5.0),
+					  _points (600),
+					  _trailLength (12)
 							{ }
 
-				AdditionalMonster (int mId, int mN, const QGAMES::MazeModel::PositionInMaze& p, int nB, QGAMES::bdata sM)
+				AdditionalMonster (int mId, int mN, const QGAMES::MazeModel::PositionInMaze& p, int nB, 
+						QGAMES::bdata sM, int pts, int tL)
 					: _monsterId (mId), 
 					  _monsterNumber (mN),
 					  _position (p),
 					  _numberBallsEatenToAppear (nB),
-					  _maxSecondsToAppear (sM)
+					  _maxSecondsToAppear (sM),
+					  _points (pts),
+					  _trailLength (tL)
 							{ }
 
 				AdditionalMonster (const AdditionalMonster&) = default;
@@ -57,6 +62,10 @@ namespace PacManII
 							{ return (_numberBallsEatenToAppear); }
 				QGAMES::bdata maxSecondsToAppear () const
 							{ return (_maxSecondsToAppear); }
+				int points () const
+							{ return (_points); }
+				int trailLength () const
+							{ return (_trailLength); }
 				
 				private:
 				int _monsterId;
@@ -64,7 +73,8 @@ namespace PacManII
 				QGAMES::MazeModel::PositionInMaze _position;
 				int _numberBallsEatenToAppear;
 				QGAMES::bdata _maxSecondsToAppear;
-
+				int _points;
+				int _trailLength;
 			};
 
 			typedef std::vector <AdditionalMonster> AdditionalMonsters;

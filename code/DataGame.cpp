@@ -35,19 +35,24 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 	DataGame::LevelDefinition::ElroyConditions eC =
 		{ { { true /** No more monsters. */, false }, { 10, 0 }, { 0.8f, 0.0f } }, 
 		  { { true, false }, { 5, 0 }, { 0.85f, 0.0f } } };
+	PacManII::DataGame::LevelDefinition::AdditionalMonster aM1 
+		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 10, __BD 5.0, 600, 20); // Wormy 1...
+	PacManII::DataGame::LevelDefinition::AdditionalMonster aM2
+		(__PACMANII_WORMYBASEENTITYID__ + 1, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 20, __BD 7.0, 600, 20); // Wormy 2...
 
 	// Just 4 levels to train...
 	DataGame::LevelDefinitions result =
 		{ 
 		  // Level 1
-		  new PACMAN::DataGame::LevelDefinition (
-		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1BLUEMAP__,
+		  new PacManII::DataGame::LevelDefinition (
+		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES3__, __PACMANII_MISSPACMAN1BLUEMAP__,
 			15, 75, 4.0,
 			{ { 0, 200, 40, 10.0 } }, 
 			sC, lH,
 			0.80, 0.71, 0.90, 0.79, 
 			0.75, 0.50, 0.40, 0.40,
-			eC }),
+			eC,
+			{ aM1, aM2 } }),
 		  // Level 2
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1REDMAP__,
@@ -143,7 +148,7 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 	if (nELA > __PACMANII_MAXNUMBERXTENDEDLEVELS__) nELA = __PACMANII_MAXNUMBERXTENDEDLEVELS__;
 	std::vector <int> wL (nELA, -1); // -1 means not used...
 	PacManII::DataGame::LevelDefinition::AdditionalMonster aM1 
-		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0); // Wormy...
+		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0, 600, 12); // Wormy...
 	for (int i = 0; i < nELA; i++) 
 	{
 		int pWL = rand () % (int) lD.size ();
@@ -261,11 +266,11 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 
 	// To add even more difficult additional monsters will be considered
 	PacManII::DataGame::LevelDefinition::AdditionalMonster aM1 
-		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0);
+		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0, 600, 12);
 	PacManII::DataGame::LevelDefinition::AdditionalMonster aM2 
-		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 70, __BD 4.0);
+		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 70, __BD 4.0, 600, 20);
 	PacManII::DataGame::LevelDefinition::AdditionalMonster aM3 
-		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 50, __BD 3.0);
+		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 50, __BD 3.0, 600, 30);
 
 	// In just this templates...
 	PacManII::DataGame::LevelDefinition* eLD = // Just a template...

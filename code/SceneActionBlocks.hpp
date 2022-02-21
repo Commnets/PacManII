@@ -20,6 +20,49 @@
 
 namespace PacManII
 {
+	/** To move Wormy. */
+	class WormyMonsterSceneActionBlock : public PACMAN::MonsterSceneActionBlock
+	{
+		public:
+		struct Properties
+		{
+			Properties ()
+				: _monsterProperties (), _trailLength (12)
+							{ }
+
+			Properties (PACMAN::MonsterSceneActionBlock::Properties mprps, int tL)
+				: _monsterProperties (mprps),
+				  _trailLength (tL)
+							{ }
+
+			Properties (const QGAMES::SceneActionBlockProperties& prps);
+
+			Properties (const Properties&) = default;
+
+			Properties& operator = (const Properties&) = default;
+
+			PACMAN::MonsterSceneActionBlock::Properties _monsterProperties;
+			int _trailLength;
+		};
+
+		WormyMonsterSceneActionBlock (int id, const Properties& prps)
+			: PACMAN::MonsterSceneActionBlock (id, prps._monsterProperties),
+			  _properties (prps)
+							{ }
+
+		// Never change properties after being initialized...
+		void setProperties (const Properties& prps)
+							{ _properties = prps; 
+							  PACMAN::MonsterSceneActionBlock::_properties = prps._monsterProperties; } // To be compatible...
+		const Properties& properties () const
+							{ return (_properties); }
+
+		virtual void initialize () override;
+
+		protected:
+		Properties _properties;
+	};
+
 	/** An element to appear in a random place of the maze and then anothr action block takes the control. */
 	class ElementToAppearSceneActionBlock : public PACMAN::SceneActionBlock
 	{
@@ -31,17 +74,16 @@ namespace PacManII
 				  _position (QGAMES::MazeModel::_noPosition),
 				  _ballsEatenToAppear (40),
 				  _secondsMaxToAppear (__BD 2.0),
-				  _otherProperties ()
+				  _blockToControlElement (-1) // Meaning not defined
 							{ }
 
-			Properties (int eId, const QGAMES::MazeModel::PositionInMaze& p, int bA, QGAMES::bdata sA,
-					const QGAMES::SceneActionBlockProperties& prps)
+			Properties (int eId, const QGAMES::MazeModel::PositionInMaze& p, int bA, QGAMES::bdata sA, int bAc)
 				: _entityId (eId),
 				  _position (p),
 				  _ballsEatenToAppear (bA), 
 				  _secondsMaxToAppear (sA),
-				  _otherProperties (prps)
-							{ assert (_position != QGAMES::MazeModel::_noPosition); }
+				  _blockToControlElement (bAc)
+							{ }
 
 			Properties (const QGAMES::SceneActionBlockProperties& prps);
 
@@ -53,14 +95,13 @@ namespace PacManII
 			QGAMES::MazeModel::PositionInMaze _position;
 			int _ballsEatenToAppear;
 			QGAMES::bdata _secondsMaxToAppear;
-			QGAMES::SceneActionBlockProperties _otherProperties;
+			int _blockToControlElement;
 		};
 
 		ElementToAppearSceneActionBlock (int id, const Properties& prps)
 			: PACMAN::SceneActionBlock (id),
 			  _properties (prps),
-			  _element (nullptr),
-			  _afterAppearingActionBlock (nullptr)
+			  _element (nullptr)
 							{ }
 
 		virtual QGAMES::SetOfOpenValues runtimeValues () const override;
@@ -79,10 +120,6 @@ namespace PacManII
 		virtual void processEvent (const QGAMES::Event& evnt) override;
 
 		protected:
-		/** To create the action block after appearing. \n 
-			It has to be redefined later. */
-		virtual PACMAN::SceneActionBlock* createAfterAppearingActionBlock () = 0;
-
 		__DECLARECOUNTERS__ (Counters)
 		virtual QGAMES::Counters* createCounters () override
 							{ return (new Counters); }
@@ -98,43 +135,12 @@ namespace PacManII
 		static const int _COUNTERTOAPPEAR = 0;
 		static const int _COUNTERTOFADE = 1;
 		static const int _COUNTERFADE = 2;
-		static const int _SWITCHBLOCKACTIVE = 0;
-		static const int _SWITCHAPPEARING = 1;
-		static const int _SWITCHAPPEARED = 2;
+		static const int _SWITCHAPPEARING = 0;
+		static const int _SWITCHAPPEARED = 1;
 		static const int _FADE [14];
 
 		// Implementation
 		PACMAN::PacmanElement* _element;
-		PACMAN::SceneActionBlock* _afterAppearingActionBlock;
-	};
-
-	/** An action block to appear and move a monster in a random plac of the maze. 
-		avoiding always the home of the monsters. */
-	class MonsterToAppearAndMoveSceneActionBlock final : public ElementToAppearSceneActionBlock
-	{
-		public:
-		MonsterToAppearAndMoveSceneActionBlock (int id, const Properties& prps)
-			: ElementToAppearSceneActionBlock (id, prps)
-							{ }
-
-		private:
-		virtual PACMAN::SceneActionBlock* createAfterAppearingActionBlock () override
-							{ return (new PACMAN::MonsterSceneActionBlock (id () * 1000, 
-								PACMAN::MonsterSceneActionBlock::Properties (_properties._otherProperties))); }
-	};
-
-	/** To appear a shield. */
-	class ShieldToAppearSceneActionBlock final : public ElementToAppearSceneActionBlock
-	{
-		public:
-		ShieldToAppearSceneActionBlock (int id, const Properties& prps)
-			: ElementToAppearSceneActionBlock (id, prps)
-							{ }
-
-		private:
-		virtual PACMAN::SceneActionBlock* createAfterAppearingActionBlock () override
-							{ return (new PACMAN::ThingSceneActionBlock (id () * 1000, 
-								PACMAN::ThingSceneActionBlock::Properties (_properties._otherProperties))); }
 	};
 }
 

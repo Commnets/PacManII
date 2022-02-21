@@ -28,8 +28,8 @@ namespace PacManII
 		Wormy (int cId, const QGAMES::Forms& f = QGAMES::Forms (), 
 			const QGAMES::Entity::Data& d = QGAMES::Entity::Data ())
 			: StandardMonster (cId, _NUMBER, f, d),
-			  _trailLength (6), // By default...
-			  _trailPositions (6, QGAMES::Position::_noPoint)
+			  _trailLength (12), // By default...
+			  _trailPositions (12, QGAMES::Position::_noPoint)
 							{ }
 
 		virtual Entity* clone () const override
@@ -56,6 +56,9 @@ namespace PacManII
 
 		virtual QGAMES::Color trackingColor () const override
 							{ return (QGAMES::Color (0x64, 0x00, 0x64, 0x80)); /** Purple. */ }
+
+		// Implementation
+		virtual QGAMES::MazeModel::PositionInMaze runAwayMazePosition () const override;
 
 		private:
 		// Implementation
