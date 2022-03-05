@@ -476,6 +476,7 @@
 				<Attributes>
 					<Attribute id="STOPALL" value="YES"/>
 					<Attribute id="HIDEMONSTERS" value="NO"/>
+					<Attribute id="HIDETHINGS" value="YES"/>
 					<Attribute id="VANISHPACMAN" value="YES"/>
 				</Attributes>
 				<Nested>
@@ -501,6 +502,7 @@
 				<Attributes>
 					<Attribute id="STOPALL" value="YES"/>
 					<Attribute id="HIDEMONSTERS" value="YES"/>
+					<Attribute id="HIDETHINGS" value="YES"/>
 					<Attribute id="VANISHPACMAN" value="NO"/>
 				</Attributes>
 			</GameState>
@@ -517,6 +519,7 @@
 				<Attributes>
 					<Attribute id="STOPALL" value="YES"/>
 					<Attribute id="HIDEMONSTERS" value="NO"/>
+					<Attribute id="HIDETHINGS" value="YES"/>
 					<Attribute id="VANISHPACMAN" value="NO"/>
 				</Attributes>
 			</GameState>
