@@ -98,7 +98,8 @@ void PacManII::ElementToAppearSceneActionBlock::initialize ()
 	PACMAN::Scene* scn = pScene ();
 	assert (scn != nullptr);
 	_element -> setPositionFromMazePosition 
-		((_properties._position == QGAMES::MazeModel::_noPosition) ? scn -> randomMazePosition () : _properties._position);
+		((_properties._position == QGAMES::MazeModel::_noPosition) 
+			? scn -> randomMazePosition ({ __PACMAN_MAZEMONSTERSHOMEZONE__ }) : _properties._position);
 
 	observe (_element);
 
@@ -106,6 +107,8 @@ void PacManII::ElementToAppearSceneActionBlock::initialize ()
 
 	reStartAllCounters ();
 	reStartAllOnOffSwitches ();
+
+	scene () -> actionBlock (_properties._blockToControlElement) -> setActive (false);
 
 	counter (_COUNTERTOAPPEAR) -> initialize 
 		((int) (_properties._secondsMaxToAppear * __BD game () -> framesPerSecond ()), 0, true, false);
@@ -135,7 +138,7 @@ void PacManII::ElementToAppearSceneActionBlock::updatePositions ()
 		{
 			_element -> setVisible (true);
 
-			_element -> setAlphaLevel (_FADE [0]); // The veery basic level of fade...
+			_element -> setAlphaLevel (_FADE [0]); // The very basic level of fade...
 
 			onOffSwitch (_SWITCHAPPEARING) -> set (true);
 		}

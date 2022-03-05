@@ -2,13 +2,31 @@
 #include "Defs.hpp"
 
 // ---
-void PacManII::Shield::setType (int t)
+void PacManII::Shield::setStateToStandLookingTo (const QGAMES::Vector&)
 {
-	assert (t < __PACMANII_NUMBERTYPESSHIELD__);
+	switch (type ())
+	{
+		case 0:
+			setCurrentState (__PACMANII_SHIELDTYPE1__);
+			break;
 
-	_type = t;
+		case 1:
+			setCurrentState (__PACMANII_SHIELDTYPE2__);
+			break;
 
-	switch (_type)
+		case 2:
+			setCurrentState (__PACMANII_SHIELDTYPE3__);
+			break;
+
+		default:
+			assert (false);
+	};
+}
+
+// ---
+void PacManII::Shield::setStateToMoveTo (const QGAMES::Vector&)
+{
+	switch (type ())
 	{
 		case 0:
 			setCurrentState (__PACMANII_SHIELDTYPE1__);

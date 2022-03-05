@@ -72,7 +72,7 @@ void PacManII::Wormy::drawOn (QGAMES::Screen* scr, const QGAMES::Position& p)
 			return (tC);
 		};
 
-	for (int i = (_trailLength - 1); i >= 0; i--)
+	for (int i = (_trailLength - 1); i >= 0; i -= 2)
 		if (_trailPositions [i] != QGAMES::Position::_noPoint)
 			currentForm () -> frame (currentAspect ()) -> drawOn (scr, _trailPositions [i], colorFor (i).alpha ());
 

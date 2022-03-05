@@ -632,6 +632,8 @@
 		<MovementsBase>
 			<!-- Just staying -->
 			<Movement id="550050"/>
+			<!-- Moving along the maze -->
+			<Movement id="580050"/>
 		</MovementsBase>
 		<Animations>
 			<!-- Fruit 1 -->
@@ -768,30 +770,57 @@
 			</Animation>
 		</Animations>
 		<States>
-			<!-- Fruit 1 staying -->
+			<!-- Staying -->
+			<!-- Fruit 1 -->
 			<State id="0" animation="0" movementBase="550050"/>
-			<!-- Fruit 2 staying -->
+			<!-- Fruit 2 -->
 			<State id="1" animation="1" movementBase="550050"/>
-			<!-- Fruit 3 staying -->
+			<!-- Fruit 3 -->
 			<State id="2" animation="2" movementBase="550050"/>
-			<!-- Fruit 4 staying -->
+			<!-- Fruit 4 -->
 			<State id="3" animation="3" movementBase="550050"/>
-			<!-- Fruit 5 staying -->
+			<!-- Fruit 5 -->
 			<State id="4" animation="4" movementBase="550050"/>
-			<!-- Fruit 6 staying -->
+			<!-- Fruit 6 -->
 			<State id="5" animation="5" movementBase="550050"/>
-			<!-- Fruit 7 staying -->
+			<!-- Fruit 7 -->
 			<State id="6" animation="6" movementBase="550050"/>
-			<!-- Fruit 8 staying -->
+			<!-- Fruit 8 -->
 			<State id="7" animation="7" movementBase="550050"/>
-			<!-- Fruit 9 staying -->
+			<!-- Fruit 9 -->
 			<State id="8" animation="8" movementBase="550050"/>
-			<!-- Fruit 10 staying -->
+			<!-- Fruit 10 -->
 			<State id="9" animation="9" movementBase="550050"/>
-			<!-- Fruit 11 staying -->
+			<!-- Fruit 11 -->
 			<State id="10" animation="10" movementBase="550050"/>
-			<!-- Fruit 12 staying -->
+			<!-- Fruit 12 -->
 			<State id="11" animation="11" movementBase="550050"/>
+
+			<!-- Moving -->
+			<!-- Fruit 1 -->
+			<State id="20" animation="0" movementBase="580050"/>
+			<!-- Fruit 2 -->
+			<State id="21" animation="1" movementBase="580050"/>
+			<!-- Fruit 3 -->
+			<State id="22" animation="2" movementBase="580050"/>
+			<!-- Fruit 4 -->
+			<State id="23" animation="3" movementBase="580050"/>
+			<!-- Fruit 5 -->
+			<State id="24" animation="4" movementBase="580050"/>
+			<!-- Fruit 26 -->
+			<State id="25" animation="5" movementBase="580050"/>
+			<!-- Fruit 27 -->
+			<State id="26" animation="6" movementBase="580050"/>
+			<!-- Fruit 28 -->
+			<State id="27" animation="7" movementBase="580050"/>
+			<!-- Fruit 29 -->
+			<State id="28" animation="8" movementBase="580050"/>
+			<!-- Fruit 210 -->
+			<State id="29" animation="9" movementBase="580050"/>
+			<!-- Fruit 11 -->
+			<State id="30" animation="10" movementBase="580050"/>
+			<!-- Fruit 12 -->
+			<State id="31" animation="11" movementBase="580050"/>
 		</States>
 	</SetOfEntities>
 

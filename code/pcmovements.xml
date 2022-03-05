@@ -29,7 +29,9 @@
 	<!-- Clide's at-home movements -->
 	<SetOfMovements fromId="580040" number="10"/>
 
-	<!-- Fruits movements -->
+	<!-- Fruits stays at any position -->
 	<SetOfMovements fromId="550050" number="10"/>
+	<!-- Fruits moves across the maze -->
+	<SetOfMovements fromId="580050" number="10"/>
 
 </Movements>

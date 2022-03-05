@@ -47,7 +47,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  new PacManII::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES3__, __PACMANII_MISSPACMAN1BLUEMAP__,
 			15, 75, 4.0,
-			{ { 0, 200, 40, 10.0 } }, 
+			{ { 0, 200, 40, 10.0, 0.0 } }, 
 			sC, lH,
 			0.80, 0.71, 0.90, 0.79, 
 			0.75, 0.50, 0.40, 0.40,
@@ -57,7 +57,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1REDMAP__,
 			15, 75, 4.0,
-			{ { 1, 300, 40, 10.0 }, { 0, 300, 100, 10.0 } }, // two fruits... 
+			{ { 1, 300, 40, 10.0, 0.0 }, { 0, 300, 100, 10.0, 0.0 } }, // two fruits... 
 			sC, lH,
 			0.90, 0.79, 0.95, 0.83, 
 			0.85, 0.55, 0.40, 0.45,
@@ -66,7 +66,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1GREENMAP__,
 			15, 75, 4.0,
-			{ { 2, 400, 50, 10.0 } },
+			{ { 2, 400, 50, 10.0, 0.0 } },
 			sC, lH, 
 			0.90, 0.79, 0.95, 0.83, 
 			0.85, 0.55, 0.40, 0.45,
@@ -75,7 +75,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1YELLOWMAP__,
 			15, 75, 4.0,
-			{ { 2, 400, 50, 10.0 } },
+			{ { 2, 400, 50, 10.0, 0.0 } },
 			sC, lH, 
 			0.90, 0.79, 0.95, 0.83, 
 			0.85, 0.55, 0.40, 0.45,
@@ -258,7 +258,7 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 		  new PACMAN::DataGame::LevelDefinition (
 			  { 0, 0, 0, // To define better later...
 				15, 75, 4.0,
-				{ { 0, 200, 40, 10.0 } }, 
+				{ { 0, 200, 40, 10.0, 0.0 } }, 
 				sC, lH,
 				1.00, 0.87, 1.00, 0.87, 
 				0.95, 0.60, 0.40, 0.50, 
@@ -277,7 +277,7 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 		  new PacManII::DataGame::LevelDefinition (
 			  { 0, 0, 0, // To define better later...
 				15, 75, 4.0,
-				{ { 0, 200, 40, 10.0 } }, 
+				{ { 0, 200, 40, 10.0, 0.0 } }, 
 				sC, lH,
 				1.00, 0.87, 1.00, 0.87, 
 				0.95, 0.60, 0.40, 0.50,

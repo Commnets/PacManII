@@ -31,7 +31,9 @@ namespace PacManII
 		virtual QGAMES::Entity* clone () const override
 							{ return (new Shield (id (), forms (), data ())); }
 
-		virtual void setType (int t) override;
+		protected:
+		virtual void setStateToStandLookingTo (const QGAMES::Vector&) override;
+		virtual void setStateToMoveTo (const QGAMES::Vector&) override;
 	};
 }
 
