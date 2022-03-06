@@ -45,7 +45,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		{ 
 		  // Level 1
 		  new PacManII::DataGame::LevelDefinition (
-		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES3__, __PACMANII_MISSPACMAN1BLUEMAP__,
+		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES3MS1__, __PACMANII_MISSPACMAN1BLUEMAP__,
 			15, 75, 8.0,
 			{ { 0, 200, 40, 10.0, 0.25, 0 } }, 
 			sC, lH,
@@ -55,7 +55,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 			{ aM1, aM2 } }),
 		  // Level 2
 		  new PACMAN::DataGame::LevelDefinition (
-		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1REDMAP__,
+		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2MS2__, __PACMANII_MISSPACMAN2REDMAP__,
 			15, 75, 8.0,
 			{ { 1, 300, 40, 10.0, 0.25, 1 }, { 0, 300, 100, 10.0, 0.25, 2 } }, // two fruits... 
 			sC, lH,
@@ -64,7 +64,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 			eC }),
 		  // Level 3
 		  new PACMAN::DataGame::LevelDefinition (
-		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1GREENMAP__,
+		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2MS3__, __PACMANII_MISSPACMAN3GREENMAP__,
 			15, 75, 8.0,
 			{ { 2, 400, 50, 10.0, 0.25, 0 } },
 			sC, lH, 
@@ -73,7 +73,7 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 			eC }),
 		  // Level 4
 		  new PACMAN::DataGame::LevelDefinition (
-		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1YELLOWMAP__,
+		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2MS4__, __PACMANII_MISSPACMAN4YELLOWMAP__,
 			15, 75, 8.0,
 			{ { 2, 400, 50, 10.0, 0.25, 1 } },
 			sC, lH, 
@@ -109,6 +109,20 @@ PacManII::DataGame* PacManII::DataGame::missDataGame (int nL)
 		int eNB = (i + 1) % 3; // The element in that block (0, 1, 2, 0, 1, 2, ...) 
 		int tB = nB % 4; 
 
+		// The number of scene to apply
+		int nScn = 
+			(nB == 0) 
+				? ((eNB == 1) 
+					? __PACMANII_BLOCKSCENES2MS1__  
+					: __PACMANII_BLOCKSCENES2MS2__)
+				: ((tB == 0) 
+							? __PACMANII_BLOCKSCENES2MS1__ 
+							: ((tB == 1) 
+								? __PACMANII_BLOCKSCENES2MS2__ 
+								: ((tB == 2)
+									? __PACMANII_BLOCKSCENES2MS3__  
+									: __PACMANII_BLOCKSCENES2MS4__))); 
+
 		// The number of map to apply...
 		int nM = 
 			(nB == 0) 
@@ -124,7 +138,33 @@ PacManII::DataGame* PacManII::DataGame::missDataGame (int nL)
 									: __PACMANII_MISSPACMAN4YELLOWMAP__))); // ...and type 4 always in red...
 
 		// Th first levels are like classic ones in terms of difficulty,...
-		nLD.push_back (((i < lLD) ? lD [i] : lD [lLD - 1]) -> cloneFor (__PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, nM));
+		PACMAN::DataGame::LevelDefinition* oLD = (i < lLD) ? lD [i] : lD [lLD - 1];
+		if (i < lLD)
+		{
+			nLD.push_back ( 
+				new PACMAN::DataGame::LevelDefinition (
+					__PACMANII_EXTENDEDWORLD__, 
+					nScn, 
+					nM,
+					(*oLD).pointsBall (), 
+					(*oLD).pointsPowerBall (),
+					(*oLD).secondsChasing (),
+					changeTimeSpeedAndPosition 
+						((*oLD).fruitConditions (), 100.0f, 0.25f, 1 /** Meaning sequential if more than one */),
+					(*oLD).scatterChaseCycles (),
+					(*oLD).leaveHomeConditions (),
+					(*oLD).pacmanSpeed (), 
+					(*oLD).pacmanSpeedWhenEatingDots (), 
+					(*oLD).pacmanSpeedWhenFrighting (), 
+					(*oLD).pacmanSpeedWhenEatingFrightingDots (),
+					(*oLD).ghostSpeed (), 
+					(*oLD).ghostSpeedWhenBeingFrighten (), 
+					(*oLD).ghostSpeedWhenExitingHome (), 
+					(*oLD).ghostSpeedWhenCrossingTunnel (),
+					(*oLD).elroyConditions ()));
+		}
+		else
+			nLD.push_back (oLD -> cloneFor (__PACMANII_EXTENDEDWORLD__, nScn, nM));
 	}
 
 	// The classical levels are no longer used...
@@ -161,11 +201,9 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 		PACMAN::DataGame::LevelDefinition* oLD = lD [pWL];
 		lD [pWL] = new PacManII::DataGame::LevelDefinition
 			(
+				// Some conditions of the level, but with Wormy...
 				__PACMANII_EXTENDEDWORLD__,
-				// Scene with monsters control...
 				__PACMANII_BLOCKSCENES1__, 
-				// Classic maze and random color...
-				// The old map id can't not be reused because it would have to be defined within the scene with monsters and it isn't... 
 				__PACMAN_BASICBLUEMAP__ + ((rand () % __PACMAN_BASICMAPNUMBERCOLORS__) * 100), 
 				(*oLD).pointsBall (), 
 				(*oLD).pointsPowerBall (),
@@ -210,13 +248,72 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 					: std::vector <int> ({ __PACMANII_MISSPACMAN4BLUEMAP__, __PACMANII_MISSPACMAN4REDMAP__, 
 										   __PACMANII_MISSPACMAN4GREENMAP__, __PACMANII_MISSPACMAN4YELLOWMAP__ });
 
-		// Select the map to be considerer 
+		// Select the scene to be considered
+		int nScn = ((dynamic_cast <PacManII::DataGame::LevelDefinition*> (lDR) == nullptr)
+			? std::vector <int> 
+				({ __PACMANII_BLOCKSCENES2MS1__, 
+				   __PACMANII_BLOCKSCENES2MS2__, 
+				   __PACMANII_BLOCKSCENES2MS3__, 
+				   __PACMANII_BLOCKSCENES2MS4__ })[nTMM]
+			: std::vector <int> 
+				({ __PACMANII_BLOCKSCENES3MS1__, 
+				   __PACMANII_BLOCKSCENES3MS2__, 
+				   __PACMANII_BLOCKSCENES3MS3__, 
+				   __PACMANII_BLOCKSCENES3MS4__ })[nTMM]);
+
+		// Select the map to be considered
 		int nMP = tMM [nCMM];
 
 		// Clone the scene taking into account whether the original one has or nor monsters!
-		lD.push_back (lDR -> cloneFor (__PACMANII_EXTENDEDWORLD__, 
-			(dynamic_cast <PacManII::DataGame::LevelDefinition*> (lDR) == nullptr) 
-				? __PACMANII_BLOCKSCENES2__ : __PACMANII_BLOCKSCENES3__, nMP));
+		if (dynamic_cast <PACMAN::DataGame::LevelDefinition*> (lDR) != nullptr)
+		{
+			lD.push_back 
+				(new PACMAN::DataGame::LevelDefinition (
+					__PACMANII_EXTENDEDWORLD__, 
+					nScn, 
+					nMP,
+					(*lDR).pointsBall (), 
+					(*lDR).pointsPowerBall (),
+					(*lDR).secondsChasing (),
+					changeTimeSpeedAndPosition 
+						((*lDR).fruitConditions (), 100.0f, 0.25f, 1 /** Meaning sequential from 0 if more than 1. */),
+					(*lDR).scatterChaseCycles (),
+					(*lDR).leaveHomeConditions (),
+					(*lDR).pacmanSpeed (), 
+					(*lDR).pacmanSpeedWhenEatingDots (), 
+					(*lDR).pacmanSpeedWhenFrighting (), 
+					(*lDR).pacmanSpeedWhenEatingFrightingDots (),
+					(*lDR).ghostSpeed (), 
+					(*lDR).ghostSpeedWhenBeingFrighten (), 
+					(*lDR).ghostSpeedWhenExitingHome (), 
+					(*lDR).ghostSpeedWhenCrossingTunnel (),
+					(*lDR).elroyConditions ()));
+		}
+		else
+		{
+			lD.push_back 
+				(new PacManII::DataGame::LevelDefinition (
+					__PACMANII_EXTENDEDWORLD__, 
+					nScn, 
+					nMP,
+					(*lDR).pointsBall (), 
+					(*lDR).pointsPowerBall (),
+					(*lDR).secondsChasing (),
+					changeTimeSpeedAndPosition 
+						((*lDR).fruitConditions (), 100.0f, 0.25f, 1 /** Meaning sequential from 0 if more than 1. */),
+					(*lDR).scatterChaseCycles (),
+					(*lDR).leaveHomeConditions (),
+					(*lDR).pacmanSpeed (), 
+					(*lDR).pacmanSpeedWhenEatingDots (), 
+					(*lDR).pacmanSpeedWhenFrighting (), 
+					(*lDR).pacmanSpeedWhenEatingFrightingDots (),
+					(*lDR).ghostSpeed (), 
+					(*lDR).ghostSpeedWhenBeingFrighten (), 
+					(*lDR).ghostSpeedWhenExitingHome (), 
+					(*lDR).ghostSpeedWhenCrossingTunnel (),
+					(*lDR).elroyConditions (),
+					static_cast <PacManII::DataGame::LevelDefinition*> (lDR) ->additionalMonsters ()));
+		}
 	}
 
 	// and now it is time to mix all of them...
@@ -284,7 +381,7 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 				eC,
 			    { aM1 }});
 
-	// No it is time to buid up the different levels...
+	// Now it is time to buid up the different levels...
 	PACMAN::DataGame::LevelDefinitions lD;
 	for (int i = 0; i < nL && i < __PACMAN_MAXNUMBERLEVELS__; i++)
 	{
@@ -394,6 +491,21 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 			int eNB = i % 3; // The element in that block (0, 1, 2, 0, 1, 2, ...) 
 			int tB = nB % 4; 
 
+			// The number of scene to apply
+			int nScn = ( 
+				(nB == 0) 
+					? ((eNB == 1) 
+						? std::vector <int> ({ __PACMANII_BLOCKSCENES2MS1__, __PACMANII_BLOCKSCENES3MS1__ })   
+						: std::vector <int> ({ __PACMANII_BLOCKSCENES2MS2__, __PACMANII_BLOCKSCENES3MS2__ }))
+					: ((tB == 0) 
+						? std::vector <int> ({ __PACMANII_BLOCKSCENES2MS2__, __PACMANII_BLOCKSCENES3MS2__ }) 
+								: ((tB == 1) 
+									? std::vector <int> ({ __PACMANII_BLOCKSCENES2MS2__, __PACMANII_BLOCKSCENES3MS2__ }) 
+									: ((tB == 2)
+										? std::vector <int> ({ __PACMANII_BLOCKSCENES2MS3__, __PACMANII_BLOCKSCENES3MS3__ }) 
+										: std::vector <int> ({__PACMANII_BLOCKSCENES2MS4__, __PACMANII_BLOCKSCENES2MS4__ }))))
+				)[__1IN2PROBABLE__]; 
+
 			// The number of map to apply...
 			int nM = 
 				(nB == 0) 
@@ -409,8 +521,27 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 										: __PACMANII_MISSPACMAN4YELLOWMAP__))); // ...and type 4 always in red...
 																				
 			// With or without monsters... (no so difficult)
-			lD.push_back (slD -> cloneFor (__PACMANII_EXTENDEDWORLD__, 
-				__1IN2PROBABLE__ ? __PACMANII_BLOCKSCENES2__ : __PACMANII_BLOCKSCENES3__, nM));
+			lD.push_back (
+				new PACMAN::DataGame::LevelDefinition (
+					__PACMANII_EXTENDEDWORLD__, 
+					nScn, 
+					nM,
+					(*slD).pointsBall (), 
+					(*slD).pointsPowerBall (),
+					(*slD).secondsChasing (),
+					changeTimeSpeedAndPosition 
+						((*slD).fruitConditions (), 100.0f, 0.25f, 1 /** Meaning sequential if more than 1. */),
+					(*slD).scatterChaseCycles (),
+					(*slD).leaveHomeConditions (),
+					(*slD).pacmanSpeed (), 
+					(*slD).pacmanSpeedWhenEatingDots (), 
+					(*slD).pacmanSpeedWhenFrighting (), 
+					(*slD).pacmanSpeedWhenEatingFrightingDots (),
+					(*slD).ghostSpeed (), 
+					(*slD).ghostSpeedWhenBeingFrighten (), 
+					(*slD).ghostSpeedWhenExitingHome (), 
+					(*slD).ghostSpeedWhenCrossingTunnel (),
+					(*slD).elroyConditions ()));
 		}
 	}
 
@@ -442,4 +573,24 @@ PacManII::DataGame::DataGame (const PacManII::DataGame& d)
 		 d.everyToGetAnExtraLive ())
 {
 	// Nothing special to build up here...
+}
+
+// ---
+PACMAN::DataGame::LevelDefinition::FruitConditions PacManII::DataGame::changeTimeSpeedAndPosition
+	(const PACMAN::DataGame::LevelDefinition::FruitConditions& fC, double t, double spd, int p)
+{
+	PACMAN::DataGame::LevelDefinition::FruitConditions result;
+
+	int ct = 0;
+	for (auto i : fC)
+		result.push_back (
+			PACMAN::DataGame::LevelDefinition::FruitCondition (
+				i.bonusSymbolId (),
+				i.bonusPoints (),
+				i.numberBallsEatenToAppear (),
+				t,
+				spd,
+				(p == 0) ? i.positionId () : ct++));
+
+	return (result);
 }

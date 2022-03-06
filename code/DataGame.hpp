@@ -126,6 +126,10 @@ namespace PacManII
 		DataGame (const DataGame& d);
 
 		DataGame& operator = (const DataGame& d) = delete;
+
+		private:
+		static PACMAN::DataGame::LevelDefinition::FruitConditions changeTimeSpeedAndPosition
+			(const PACMAN::DataGame::LevelDefinition::FruitConditions& fC, double t, double spd, int p);
 	};
 }
 
