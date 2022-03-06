@@ -46,8 +46,8 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  // Level 1
 		  new PacManII::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES3__, __PACMANII_MISSPACMAN1BLUEMAP__,
-			15, 75, 4.0,
-			{ { 0, 200, 40, 10.0, 0.0 } }, 
+			15, 75, 8.0,
+			{ { 0, 200, 40, 10.0, 0.25, 0 } }, 
 			sC, lH,
 			0.80, 0.71, 0.90, 0.79, 
 			0.75, 0.50, 0.40, 0.40,
@@ -56,8 +56,8 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  // Level 2
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1REDMAP__,
-			15, 75, 4.0,
-			{ { 1, 300, 40, 10.0, 0.0 }, { 0, 300, 100, 10.0, 0.0 } }, // two fruits... 
+			15, 75, 8.0,
+			{ { 1, 300, 40, 10.0, 0.25, 1 }, { 0, 300, 100, 10.0, 0.25, 2 } }, // two fruits... 
 			sC, lH,
 			0.90, 0.79, 0.95, 0.83, 
 			0.85, 0.55, 0.40, 0.45,
@@ -65,8 +65,8 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  // Level 3
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1GREENMAP__,
-			15, 75, 4.0,
-			{ { 2, 400, 50, 10.0, 0.0 } },
+			15, 75, 8.0,
+			{ { 2, 400, 50, 10.0, 0.25, 0 } },
 			sC, lH, 
 			0.90, 0.79, 0.95, 0.83, 
 			0.85, 0.55, 0.40, 0.45,
@@ -74,8 +74,8 @@ PacManII::DataGame* PacManII::DataGame::trainingDataGame ()
 		  // Level 4
 		  new PACMAN::DataGame::LevelDefinition (
 		  { __PACMANII_EXTENDEDWORLD__, __PACMANII_BLOCKSCENES2__, __PACMANII_MISSPACMAN1YELLOWMAP__,
-			15, 75, 4.0,
-			{ { 2, 400, 50, 10.0, 0.0 } },
+			15, 75, 8.0,
+			{ { 2, 400, 50, 10.0, 0.25, 1 } },
 			sC, lH, 
 			0.90, 0.79, 0.95, 0.83, 
 			0.85, 0.55, 0.40, 0.45,
@@ -100,7 +100,7 @@ PacManII::DataGame* PacManII::DataGame::missDataGame (int nL)
 	for (int i = 0; i < nL && i < __PACMAN_MAXNUMBERLEVELS__; i++)
 	{
 		// nB = Every three scenes, the type of miss pacman maze has to change.
-		// tB = There are 4 typs of miss pacman maze.
+		// tB = There are 4 types of miss pacman maze.
 		// eNB = The number of scene within the block of every three.
 		// nB = 0 && eNB = 1,2 
 		// means that the very two first mazes are always miss pacman type 1 (tB = 0) and miss pacman type 2 (tB = 1) respectively
@@ -257,8 +257,8 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 	PACMAN::DataGame::LevelDefinition* slD = // Just a template...
 		  new PACMAN::DataGame::LevelDefinition (
 			  { 0, 0, 0, // To define better later...
-				15, 75, 4.0,
-				{ { 0, 200, 40, 10.0, 0.0 } }, 
+				15, 75, 6.0,
+				{ { 0, 200, 40, 10.0, 0.0, 0 } }, 
 				sC, lH,
 				1.00, 0.87, 1.00, 0.87, 
 				0.95, 0.60, 0.40, 0.50, 
@@ -276,8 +276,8 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 	PacManII::DataGame::LevelDefinition* eLD = // Just a template...
 		  new PacManII::DataGame::LevelDefinition (
 			  { 0, 0, 0, // To define better later...
-				15, 75, 4.0,
-				{ { 0, 200, 40, 10.0, 0.0 } }, 
+				15, 75, 8.0,
+				{ { 0, 200, 40, 10.0, 0.0, 0 } }, 
 				sC, lH,
 				1.00, 0.87, 1.00, 0.87, 
 				0.95, 0.60, 0.40, 0.50,
