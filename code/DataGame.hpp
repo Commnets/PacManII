@@ -85,6 +85,7 @@ namespace PacManII
 							{ }
 
 			LevelDefinition (int wT, int sT, int mT, 
+				    int nI,
 					int pB, int pPB, double mSC, 
 				    const FruitConditions& fC, 
 					const ScatterChaseCycles& sC, 
@@ -93,7 +94,7 @@ namespace PacManII
 					double gS, double gWF, double gWE, double gWT,
 					const ElroyConditions& eC,
 				    const AdditionalMonsters& aM)
-				: PACMAN::DataGame::LevelDefinition (wT, sT, mT, pB, pPB, mSC, fC, sC, lHC, 
+				: PACMAN::DataGame::LevelDefinition (wT, sT, mT, nI, pB, pPB, mSC, fC, sC, lHC, 
 						pS, pED, pWF, pWEFD, gS, gWF, gWE, gWT, eC),
 				  _additionalMonsters (aM)
 							{ }
@@ -102,7 +103,7 @@ namespace PacManII
 
 			LevelDefinition& operator = (const LevelDefinition&) = default;
 
-			virtual PACMAN::DataGame::LevelDefinition* cloneFor (int wId, int sId, int mId) override;
+			virtual PACMAN::DataGame::LevelDefinition* cloneFor (int wId, int sId, int mId, int nI) override;
 
 			const AdditionalMonsters& additionalMonsters () const
 							{ return (_additionalMonsters); }
@@ -128,7 +129,7 @@ namespace PacManII
 		DataGame& operator = (const DataGame& d) = delete;
 
 		private:
-		static PACMAN::DataGame::LevelDefinition::FruitConditions changeTimeSpeedAndPosition
+		static PACMAN::DataGame::LevelDefinition::FruitConditions changeFruitTimeSpeedAndPosition
 			(const PACMAN::DataGame::LevelDefinition::FruitConditions& fC, double t, double spd, int p);
 	};
 }

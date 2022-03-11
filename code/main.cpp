@@ -40,11 +40,13 @@ int _tmain (int argc, char *argv [])
 #endif
 
 	// 5 types of game...
-	Game game ({ PACMAN::DataGame::basicDataGame (),
+	Game game ({ 
+				 PACMAN::DataGame::classicDataGame (),
 				 DataGame::missDataGame (),
 				 DataGame::mineDataGame (),
 				 DataGame::hardDataGame (),
-				 DataGame::trainingDataGame () });
+				 DataGame::trainingDataGame () 
+			  });
 	game.setLinkDrawToFrameRate (true); 
 	game.setPreLoad (false); 
 	game.exec ();

@@ -28,6 +28,6 @@
 	<!-- To draw the target of very artist. Important to follow the game! -->
 	<Property id="DRAWTARGET" value="YES"/>
 	<!-- The password to avoid being destroyed -->
-	<Property id="PASSWORD" value="PACMANPWD_WRONG"/>
+	<Property id="PASSWORD" value="PACMANPWD"/>
 
 </Properties>

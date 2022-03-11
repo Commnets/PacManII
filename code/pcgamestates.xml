@@ -18,6 +18,11 @@
 			<FlowCondition on="50100"  when="1" to="50100"/> <!-- After reaching a goal when playing starts back if there is more scenes to deal with -->
 			<FlowCondition on="50100"  when="2" to="50009"/> <!-- After selecting exit (while playing) the game finishes and the menu is back -->
 			<FlowCondition on="50100"  when="3" to="50600"/> <!-- After reaching a goal, after every a set of scenes, time for relax!! -->
+			<!-- This flow condition is key. Only one type of intermission has been programmed,
+				 But the templat admitis as many as wanted. Look at the methods 
+				 intermissionCircunstanceFor at PACMAN::GameStateControl class and
+				 intermissionScreenAfterCurrentLevel at PACMAN::Game class to program another behaviour. 
+				 Remeber that number 3 and for are reserved already -->
 			<FlowCondition on="50100"  when="4" to="50400"/> <!-- After reaching a goal, and there is no more scene to deal with, then player has won!! -->
 			<FlowCondition on="50019"  when="0" to="50014"/> <!-- After dieing, the game starts back -->
 			<FlowCondition on="50019"  when="1" to="50022"/> <!-- ..or the game is over -->
