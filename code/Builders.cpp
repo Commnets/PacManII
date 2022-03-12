@@ -71,7 +71,7 @@ QGAMES::Scene* PacManII::WorldBuilder::createSceneObject (int ns, const QGAMES::
 		ns == __PACMANII_BLOCKSCENES3MS2__ ||
 		ns == __PACMANII_BLOCKSCENES3MS3__ ||
 		ns == __PACMANII_BLOCKSCENES3MS4__)
-		result = new PacManII::ExtendedScene (ns, m, cn, p, ePL); // With wormy...
+		result = new PacManII::BasicSceneWithAppearingMonsters (ns, m, cn, p, ePL); // With wormy...
 	else
 	if (ns == __PACMANII_BLOCKSCENES2MS1__ ||
 		ns == __PACMANII_BLOCKSCENES2MS2__ ||

@@ -19,18 +19,24 @@
 namespace PacManII
 {
 	/** The extended scene, adds a specific block for monsters to appear. */
-	class ExtendedScene final : public PACMAN::BasicScene
+	class BasicSceneWithAppearingMonsters final : public PACMAN::BasicScene
 	{
 		public:
-		ExtendedScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
-			const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
-			const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ());
+		BasicSceneWithAppearingMonsters 
+			(int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn = QGAMES::Scene::Connections (), 
+			 const QGAMES::SceneProperties& p = QGAMES::SceneProperties (), 
+			 const QGAMES::EntitiesPerLayer& ePL = QGAMES::EntitiesPerLayer ())
+			: PACMAN::BasicScene (c, m, cn, p, ePL),
+			  _additionalMonstersActionBlocks ()
+							{ }
 
+		/** To set up and remove the blocks controlling additional monsters. */
 		virtual void initialize () override;
 		virtual void finalize () override;
 
-		protected:
-		std::vector <QGAMES::SceneActionBlock*> _monsterActionBlocksAdded;
+		private:
+		// Implementation
+		std::vector <QGAMES::SceneActionBlock*> _additionalMonstersActionBlocks;
 	};
 }
 

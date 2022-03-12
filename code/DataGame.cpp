@@ -193,6 +193,10 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 {
 	assert (nL >= 1);
 
+	PacManII::DataGame::LevelDefinition::AdditionalMonster aM1 
+		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0, 600, 12); 
+	// Wormy: When 100 balls were eaten or after 5 seconds no eaten anything. 600 points and 12 images length...
+
 	// Get the core levels...
 	PACMAN::DataGame::LevelDefinitions lD = PACMAN::DataGame::classicCoreLevels ();
 
@@ -201,14 +205,12 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 	int nELA = (lLD / 5); // Every 5 more or less...
 	if (nELA > __PACMANII_MAXNUMBERXTENDEDLEVELS__) nELA = __PACMANII_MAXNUMBERXTENDEDLEVELS__;
 	std::vector <int> wL (nELA, -1); // -1 means not used...
-	PacManII::DataGame::LevelDefinition::AdditionalMonster aM1 
-		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0, 600, 12); 
-	// Wormy: When 100 balls were eaten or after 5 seconds no eaten anything. 600 points and 12 images length...
 	for (int i = 0; i < nELA; i++) 
 	{
-		int pWL = rand () % (int) lD.size ();
+		int pWL = rand () % lLD;
 		while (std::find (wL.begin (), wL.end (), pWL) != wL.end ())
-			if (++pWL == (int) lD.size ()) pWL = 0; // If already used,, get the next...
+			if (++pWL == lLD) pWL = 0; // If already used, get the next...
+		assert (wL [i] == -1);
 		wL [i] = pWL; // Write it down as used!
 
 		// Replace the selected level definition
@@ -245,7 +247,7 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 	// Getting the attributes of a random one, but with a miss pacman aspect...
 	for (int i = lLD; i < nL && i < __PACMAN_MAXNUMBERLEVELS__; i++)
 	{
-		PACMAN::DataGame::LevelDefinition* lDR = lD [rand () % (int) lD.size ()]; // Which one to repeat?
+		PACMAN::DataGame::LevelDefinition* lDR = lD [rand () % lLD]; // Which one to repeat?
 
 		// Number of type of miss map to be choosen...
 		int nTMM = rand () % __PACMANII_MISSPACMANTYPEMAPS__;
@@ -356,6 +358,7 @@ PacManII::DataGame* PacManII::DataGame::mineDataGame (int nL)
 		int pWL = rand () % nLD;
 		while (std::find (wLR.begin (), wLR.end (), pWL) != wLR.end ())
 			if (++pWL == nLD) pWL = 0; // If already used,, get the next...
+		assert (wLR [i] == -1);
 		wLR [i] = pWL; // Write it down as used!
 
 		// The levels having an intermedite mission screen...
@@ -387,18 +390,6 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 		{ { { true, false }, { 20 /** No more monsters. */, 0 }, { 0.9f, 0.0f } }, 
 		  { { true, false }, { 10, 0 }, { 0.95f, 0.0f } } };
 
-	// Then...It is considered the max level of difficulty in the classical version
-	PACMAN::DataGame::LevelDefinition* slD = // Just a template used in many... No monsters but hard!
-		  new PACMAN::DataGame::LevelDefinition (
-			  { 0, 0, 0, // To define better later...
-			    -1, // It will be also fixed later...
-				15, 75, 6.0,
-				{ { 0, 200, 40, 10.0, 0.0, 0 } }, 
-				sC, lH,
-				1.00, 0.87, 1.00, 0.87, 
-				0.95, 0.60, 0.40, 0.50, 
-				eC });
-
 	// To add even more difficult additional monsters will be considered
 	PacManII::DataGame::LevelDefinition::AdditionalMonster aM1 
 		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 100, __BD 5.0, 600, 20);
@@ -410,18 +401,17 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 		(__PACMANII_WORMYBASEENTITYID__, PacManII::Wormy::_NUMBER, QGAMES::MazeModel::_noPosition, 50, __BD 3.0, 1000, 40);
 	// Crazy wormy: After only 50 balls, of 3 seconds not doing anything, 1000! points for eating it, and 40 ghost length...
 
-	// In just this templates...
-	PacManII::DataGame::LevelDefinition* eLD = // Just a template used in many...only one monster and hard!
-		  new PacManII::DataGame::LevelDefinition (
+	// Then...It is considered the max level of difficulty in the classical version
+	PACMAN::DataGame::LevelDefinition* slD = // Just a template used in many... No monsters but hard!
+		  new PACMAN::DataGame::LevelDefinition (
 			  { 0, 0, 0, // To define better later...
 			    -1, // It will be also fixed later...
-				15, 75, 8.0,
+				15, 75, 6.0,
 				{ { 0, 200, 40, 10.0, 0.0, 0 } }, 
 				sC, lH,
 				1.00, 0.87, 1.00, 0.87, 
-				0.95, 0.60, 0.40, 0.50,
-				eC,
-			    { aM1 }});
+				0.95, 0.60, 0.40, 0.50, 
+				eC });
 
 	// Now it is time to buid up the different levels...
 	// There aree a couple of levels having an intermission screen after
@@ -612,7 +602,6 @@ PacManII::DataGame* PacManII::DataGame::hardDataGame (int nL)
 
 	// The templates are no longer needed...
 	delete (slD);
-	delete (eLD);
 
 	return (new PacManII::DataGame (lD, 10000));
 }

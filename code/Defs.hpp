@@ -59,6 +59,7 @@
 // The World and Scenes used for PacManII
 #define __PACMANII_EXTENDEDWORLD__								60000
 // The Scenes...
+#define __PACMANII_MAXNUMBERADDITIONALMONSTERS__				5
 #define __PACMANII_BLOCKSCENES1__								60000 // With monsters appearing...
 #define __PACMANII_BLOCKSCENES2MS1__							70000
 #define __PACMANII_BLOCKSCENES2MS2__							70100

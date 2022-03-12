@@ -33,7 +33,7 @@ namespace PacManII
 			Properties (PACMAN::MonsterSceneActionBlock::Properties mprps, int tL)
 				: _monsterProperties (mprps),
 				  _trailLength (tL)
-							{ }
+							{ assert (_trailLength >= 2); }
 
 			Properties (const QGAMES::SceneActionBlockProperties& prps);
 

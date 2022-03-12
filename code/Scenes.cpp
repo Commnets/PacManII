@@ -1,5 +1,4 @@
 #include "Scenes.hpp"
-#include "Scenes.hpp"
 #include "SceneActionBlocks.hpp"
 #include "Monsters.hpp"
 #include "Game.hpp"
@@ -7,60 +6,57 @@
 #include "Defs.hpp"
 
 // ---
-PacManII::ExtendedScene::ExtendedScene (int c, const QGAMES::Maps& m, const QGAMES::Scene::Connections& cn, 
-			const QGAMES::SceneProperties& p, const QGAMES::EntitiesPerLayer& ePL)
-	: PACMAN::BasicScene (c, m, cn, p, ePL),
-	  _monsterActionBlocksAdded ()
-{
-	// Nothing else to do...
-}
-
-// ---
-void PacManII::ExtendedScene::initialize ()
+void PacManII::BasicSceneWithAppearingMonsters::initialize ()
 {
 	PacManII::Game* g = dynamic_cast <PacManII::Game*> (game ());
 	assert (g != nullptr);
-	const PACMAN::DataGame::LevelDefinition& lDef = g -> levelDefinition (g -> level ());
+	const PacManII::DataGame::LevelDefinition* nLDef = 
+		dynamic_cast <const PacManII::DataGame::LevelDefinition*> (&g -> levelDefinition (g -> level ())); 
+	
+	// This scene is only valid when the level includes the possibility of having addicional monsters,
+	// and they have been defined either...
+	if (nLDef == nullptr || (nLDef != nullptr && nLDef -> additionalMonsters ().empty ()))
+		return;
 
-	if (dynamic_cast <const PacManII::DataGame::LevelDefinition*> (&lDef) != nullptr)
+	_additionalMonstersActionBlocks = { };
+
+	// These block added ar transient
+	// They will be removed at finalize method...
+	for (int i = 0; 
+		 i < (int) nLDef -> additionalMonsters ().size (); i++)
 	{
-		const PacManII::DataGame::LevelDefinition& nLDef = 
-			*static_cast <const PacManII::DataGame::LevelDefinition*> (&lDef);
-		if (!nLDef.additionalMonsters ().empty ())
-		{
-			int ct = 0;
-			for (auto i : nLDef.additionalMonsters ())
-			{
-				QGAMES::SceneActionBlock* mABlk = new PacManII::WormyMonsterSceneActionBlock (100 + (ct << 1),
-					PacManII::WormyMonsterSceneActionBlock::Properties 
-						(PACMAN::MonsterSceneActionBlock::Properties (false, i.monsterId (), i.monsterNumber (), i.points ()), 
-						 i.trailLength ()));
-				QGAMES::SceneActionBlock* mABlkCtrl = new PacManII::ElementToAppearSceneActionBlock (101 + (ct << 1),
-					PacManII::ElementToAppearSceneActionBlock::Properties 
-						(i.monsterId (), QGAMES::MazeModel::_noPosition, 
-							i.numberBallsEatenToAppear (), i.maxSecondsToAppear (), 100 + (ct << 1)));
+		PacManII::DataGame::LevelDefinition::AdditionalMonster aM = nLDef -> additionalMonsters ()[i];
 
-				_monsterActionBlocksAdded.push_back (mABlk);
-				_monsterActionBlocksAdded.push_back (mABlkCtrl);
-				// Control is added later always, to control the destruction of element moved... 
+		PacManII::ElementToAppearSceneActionBlock* mABlkCtrl = 
+			new PacManII::ElementToAppearSceneActionBlock (100 + (i << 1), 
+				PacManII::ElementToAppearSceneActionBlock::Properties
+					(aM.monsterId (), QGAMES::MazeModel::_noPosition, 
+						aM.numberBallsEatenToAppear (), aM.maxSecondsToAppear (), 101 + (i << 1)));
+		PacManII::WormyMonsterSceneActionBlock* mABlk = 
+			new PacManII::WormyMonsterSceneActionBlock (101 + (i << 1), 
+				PacManII::WormyMonsterSceneActionBlock::Properties
+					(PACMAN::MonsterSceneActionBlock::Properties
+						(false, aM.monsterId (), aM.monsterNumber (), aM.points ()), aM.trailLength ()));
 
-				addActionBlock (mABlk, false); 
-				addActionBlock (mABlkCtrl, false);
-
-				ct++;
-			}
-		}
+		// First later in being finalized...
+		_additionalMonstersActionBlocks.push_back (mABlk); 
+		addActionBlock (mABlk, false); // Not initialized now...
+		_additionalMonstersActionBlocks.push_back (mABlkCtrl); 
+		// When this is finalized the element under control will be already removed from the scene 
+		// This is taken into account in the control object...
+		addActionBlock (mABlkCtrl, false); // Not initialized now...
 	}
 
 	PACMAN::BasicScene::initialize ();
 }
 
 // ---
-void PacManII::ExtendedScene::finalize ()
+void PacManII::BasicSceneWithAppearingMonsters::finalize ()
 {
-	for (auto i : _monsterActionBlocksAdded)
+	for (auto i : _additionalMonstersActionBlocks)
 		removeActionBlock (i);
-	_monsterActionBlocksAdded = { };
+
+	_additionalMonstersActionBlocks = { };
 
 	PACMAN::BasicScene::finalize ();
 }

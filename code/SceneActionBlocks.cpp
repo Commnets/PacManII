@@ -57,8 +57,8 @@ QGAMES::SetOfOpenValues PacManII::ElementToAppearSceneActionBlock::runtimeValues
 	QGAMES::SetOfOpenValues result;
 
 	// counters and onOffSwitches will return the object already created that at this point could be nullptr
-	result.addOpenValue (1, (onOffSwitches () == nullptr)
-		? -1 : (QGAMES::OpenValue (onOffSwitch (_SWITCHAPPEARED) ->  isOn () ? 1 : 0)));
+	result.addOpenValue (0, (onOffSwitches () == nullptr)
+		? -1 : (QGAMES::OpenValue (onOffSwitch (_SWITCHAPPEARED) -> isOn () ? 1 : 0)));
 	// The number of cycle has to be saved to avoid the monster to appear twice in th same conditions!
 
 	return (result);
@@ -67,11 +67,12 @@ QGAMES::SetOfOpenValues PacManII::ElementToAppearSceneActionBlock::runtimeValues
 // ---
 void PacManII::ElementToAppearSceneActionBlock::initializeRuntimeValuesFrom (const QGAMES::SetOfOpenValues& cfg)
 {
-	assert (cfg.existOpenValue (0) && cfg.existOpenValue (1));
+	assert (cfg.existOpenValue (0));
 
-	if (cfg.openValue (1).intValue () != -1)
+	if (cfg.openValue (0).intValue () != -1)
 		onOffSwitch (_SWITCHAPPEARED) -> set ((cfg.openValue (0).intValue () == 1) ? true : false);
-	scene () -> actionBlock (_properties._blockToControlElement) -> setActive (onOffSwitch (_SWITCHAPPEARED) -> isOn ());
+	if (_properties._blockToControlElement != -1) // It could belong to a non active block element...
+		scene () -> actionBlock (_properties._blockToControlElement) -> setActive (onOffSwitch (_SWITCHAPPEARED) -> isOn ());
 }
 
 // ---
@@ -79,7 +80,8 @@ void PacManII::ElementToAppearSceneActionBlock::initialize ()
 {
 	PACMAN::SceneActionBlock::initialize ();
 
-	assert (scene () -> existsActionBlock (_properties._blockToControlElement));
+	assert (scene () -> actionBlock (_properties._blockToControlElement) != nullptr);
+
 	scene () -> actionBlock (_properties._blockToControlElement) -> setActive (false);
 
 	_element = dynamic_cast <PACMAN::PacmanElement*> (game () -> character (_properties._entityId));
@@ -149,6 +151,9 @@ void PacManII::ElementToAppearSceneActionBlock::updatePositions ()
 		{
 			if (counter (_COUNTERFADE) -> isEnd ())
 			{
+				// Just in case...
+				assert (scene () -> actionBlock (_properties._blockToControlElement) != nullptr);
+
 				scene () -> actionBlock (_properties._blockToControlElement) -> setActive (true);
 
 				scene () -> actionBlock (_properties._blockToControlElement) -> initialize (); // It is needed again...
@@ -168,8 +173,9 @@ void PacManII::ElementToAppearSceneActionBlock::finalize ()
 {
 	PACMAN::SceneActionBlock::finalize ();
 
-	if (scene () -> existsActionBlock (_properties._blockToControlElement))
+	if (scene () -> actionBlock (_properties._blockToControlElement) != nullptr)
 		scene () -> actionBlock (_properties._blockToControlElement) -> setActive (false);
+	// If could be already removed from the list for the scene controlling the block...
 
 	unObserve (_element);
 
@@ -178,7 +184,9 @@ void PacManII::ElementToAppearSceneActionBlock::finalize ()
 	_element -> setMap (nullptr);
 
 	if (scene () -> existsCharacter (_element-> id ()))
-		scene () -> removeCharacter (_element); // It could also be already removed by the control block!
+		scene () -> removeCharacter (_element); 
+	// It could also be already removed by the controled block!
+	// Because both are pointing to the same element...
 
 	_element = nullptr;
 }
