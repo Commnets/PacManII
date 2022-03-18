@@ -29,7 +29,7 @@
  </layer>
  <layer id="6" name="MazeZones" width="21" height="24">
   <data encoding="base64" compression="zlib">
-   eJxjYBgFo4A64BQUDzazSAEn8GBqgKNUMgdmFjoebIDW4TkKRsEowA0AVasStw==
+   eJxjYBgFo4A64AgUDzazSAEn8GBqgKNUMgdmFjoebIDW4TkKRsEowA0A03wSnw==
   </data>
  </layer>
  <layer id="3" name="MazeLocations" width="21" height="24">
